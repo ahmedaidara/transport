@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yonou VTC - Chauffeurs</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Layout */
+        .driver-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Sidebar gauche */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            background: #0f172a;
+            color: white;
+        }
+        
+        .driver-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .status-toggle {
+            width: 60px;
+            height: 30px;
+            border-radius: 30px;
+            background: #e2e8f0;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .status-toggle.active {
+            background: #10b981;
+        }
+        
+        .status-toggle .dot {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .status-toggle.active .dot {
+            transform: translateX(30px);
+        }
+        
+        /* Liste des courses */
+        .trip-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .trip-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .trip-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .trip-card.accepted {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .trip-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .trip-distance {
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Carte */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* Panneau de course acceptée */
+        .accepted-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .accepted-panel.active {
+            display: block;
+        }
+        
+        .client-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .client-avatar {
+            width: 60px;
+            height: 60px;
+            background: #3b82f6;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 25px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        /* Bouton connexion */
+        .login-prompt {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .login-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        /* Modal connexion */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="driver-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="text-xl font-bold">🚖 Yonou VTC</h1>
+                <p class="text-sm opacity-80">Espace chauffeur</p>
+            </div>
+            
+            <!-- Statut du chauffeur -->
+            <div class="driver-status">
+                <div class="flex-1">
+                    <div class="font-semibold">Statut</div>
+                    <div id="statusText" class="text-sm text-gray-500">Hors ligne</div>
+                </div>
+                <div id="statusToggle" class="status-toggle" onclick="toggleDriverStatus()">
+                    <div class="dot"></div>
+                </div>
+            </div>
+            
+            <!-- Zone de connexion -->
+            <div id="loginSection" class="login-prompt">
+                <i class="fas fa-user-circle text-5xl text-gray-300 mb-3"></i>
+                <h3 class="font-semibold mb-2">Connectez-vous</h3>
+                <p class="text-sm text-gray-500 mb-4">Pour recevoir des courses</p>
+                <button class="login-btn" onclick="openDriverLogin()">Se connecter</button>
+            </div>
+            
+            <!-- Liste des courses (visible quand connecté) -->
+            <div id="tripsSection" style="display: none;">
+                <div class="p-4 bg-blue-50">
+                    <h3 class="font-semibold">📍 Courses disponibles</h3>
+                    <p class="text-xs text-gray-500">Appuyez sur une course pour la voir sur la carte</p>
+                </div>
+                
+                <div id="tripsList" class="trip-list">
+                    <!-- Les courses apparaîtront ici -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carte -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- Panneau de course acceptée -->
+            <div id="acceptedTripPanel" class="accepted-panel">
+                <div class="client-info">
+                    <div class="client-avatar">
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold" id="clientName">Client</h3>
+                        <p class="text-sm text-gray-500" id="clientPhone">77 XXX XX XX</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-circle text-green-500 text-sm"></i>
+                        <span class="text-sm" id="tripStart">Départ</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-circle text-red-500 text-sm"></i>
+                        <span class="text-sm" id="tripEnd">Destination</span>
+                    </div>
+                    <div class="flex justify-between mt-3 p-3 bg-gray-50 rounded-xl">
+                        <span>Prix</span>
+                        <span class="font-bold text-green-600" id="tripPrice">0 FCFA</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="startTrip()">
+                        <i class="fas fa-play mr-2"></i>Démarrer
+                    </button>
+                    <button class="btn btn-danger" onclick="cancelTrip()">
+                        <i class="fas fa-times mr-2"></i>Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Connexion Chauffeur -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-5">Connexion chauffeur</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Identifiant</label>
+                    <input type="text" class="w-full bg-gray-100 p-4 rounded-xl" placeholder="Votre numéro">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Code</label>
+                    <input type="password" class="w-full bg-gray-100 p-4 rounded-xl" placeholder="••••••">
+                </div>
+                <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold" onclick="loginDriver()">
+                    Se connecter
+                </button>
+                <button class="w-full text-gray-500 text-sm" onclick="closeDriverLogin()">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // Configuration Firebase (identique)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU5nYbQhj4mCFoFMzazF5cuAis57UucFs",
+            authDomain: "transport-e77d4.firebaseapp.com",
+            projectId: "transport-e77d4",
+            storageBucket: "transport-e77d4.firebasestorage.app",
+            messagingSenderId: "282190227630",
+            appId: "1:282190227630:web:42aeb85a25a5cda91c253f"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // Variables
+        let map;
+        let driverLoggedIn = false;
+        let driverStatus = false; // false = hors ligne, true = en ligne
+        let currentTrip = null;
+        let tripMarkers = [];
+        let selectedTripId = null;
+        
+        // Initialisation carte
+        function initMap() {
+            map = L.map('map').setView([14.7167, -17.4677], 12);
+            
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '©OpenStreetMap'
+            }).addTo(map);
+            
+            // Position du chauffeur (simulée)
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    // Mettre à jour la position du chauffeur dans Firebase
+                    if (driverLoggedIn && driverStatus) {
+                        db.ref('drivers/driver1').set({
+                            lat: latitude,
+                            lng: longitude,
+                            status: 'online',
+                            lastUpdate: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Écouter les nouvelles courses
+        function listenForTrips() {
+            db.ref('trips').on('value', (snapshot) => {
+                const trips = snapshot.val();
+                displayTrips(trips);
+            });
+        }
+        
+        // Afficher les courses
+        function displayTrips(trips) {
+            if (!trips) return;
+            
+            const list = document.getElementById('tripsList');
+            const tripsArray = Object.entries(trips).map(([id, trip]) => ({ id, ...trip }));
+            
+            // Filtrer les courses en attente
+            const pendingTrips = tripsArray.filter(t => !t.status || t.status === 'searching');
+            
+            list.innerHTML = pendingTrips.map(trip => `
+                <div class="trip-card ${trip.id === selectedTripId ? 'accepted' : ''}" 
+                     onclick="selectTrip('${trip.id}', ${JSON.stringify(trip).replace(/"/g, '&quot;')})">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="trip-price">${trip.price || '0 FCFA'}</span>
+                        <span class="trip-distance">${trip.distance || '0 km'}</span>
+                    </div>
+                    <div class="text-sm mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-circle text-green-500 text-xs"></i>
+                            <span class="truncate">${trip.startAddress || 'Départ'}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-1">
+                            <i class="fas fa-circle text-red-500 text-xs"></i>
+                            <span class="truncate">${trip.endAddress || 'Destination'}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <i class="far fa-clock mr-1"></i>
+                        ${new Date(trip.timestamp).toLocaleTimeString()}
+                    </div>
+                </div>
+            `).join('');
+            
+            // Mettre à jour les marqueurs sur la carte
+            updateTripMarkers(pendingTrips);
+        }
+        
+        // Mettre à jour les marqueurs des courses
+        function updateTripMarkers(trips) {
+            // Supprimer les anciens marqueurs
+            tripMarkers.forEach(m => map.removeLayer(m));
+            tripMarkers = [];
+            
+            trips.forEach(trip => {
+                if (trip.start) {
+                    const marker = L.marker([trip.start.lat, trip.start.lng], {
+                        icon: L.divIcon({
+                            html: '<div style="background:#10b981; width:16px; height:16px; border-radius:50%; border:3px solid white;"></div>',
+                            iconSize: [16, 16]
+                        })
+                    }).addTo(map).bindPopup(`
+                        <b>Course</b><br>
+                        Prix: ${trip.price}<br>
+                        Départ: ${trip.startAddress}
+                    `);
+                    
+                    tripMarkers.push(marker);
+                }
+            });
+        }
+        
+        // Sélectionner une course
+        function selectTrip(id, trip) {
+            selectedTripId = id;
+            currentTrip = { id, ...trip };
+            
+            // Afficher sur la carte
+            if (trip.start && trip.end) {
+                // Afficher l'itinéraire
+                if (window.routeLine) map.removeLayer(window.routeLine);
+                
+                window.routeLine = L.polyline([
+                    [trip.start.lat, trip.start.lng],
+                    [trip.end.lat, trip.end.lng]
+                ], { color: '#3b82f6', weight: 5, opacity: 0.7 }).addTo(map);
+                
+                map.fitBounds(L.latLngBounds(
+                    [trip.start.lat, trip.start.lng],
+                    [trip.end.lat, trip.end.lng]
+                ));
+            }
+            
+            // Mettre à jour l'affichage
+            displayTrips({});
+        }
+        
+        // Accepter une course
+        function acceptTrip() {
+            if (!currentTrip) return;
+            
+            // Mettre à jour le statut dans Firebase
+            db.ref(`trips/${currentTrip.id}`).update({
+                status: 'accepted',
+                driverId: 'driver1',
+                acceptedAt: new Date().toISOString()
+            });
+            
+            // Afficher le panneau
+            document.getElementById('acceptedTripPanel').classList.add('active');
+            document.getElementById('tripStart').innerText = currentTrip.startAddress;
+            document.getElementById('tripEnd').innerText = currentTrip.endAddress;
+            document.getElementById('tripPrice').innerText = currentTrip.price;
+        }
+        
+        // Basculer statut chauffeur
+        function toggleDriverStatus() {
+            if (!driverLoggedIn) {
+                alert('Veuillez d\'abord vous connecter');
+                return;
+            }
+            
+            driverStatus = !driverStatus;
+            const toggle = document.getElementById('statusToggle');
+            const statusText = document.getElementById('statusText');
+            
+            if (driverStatus) {
+                toggle.classList.add('active');
+                statusText.innerHTML = 'En ligne <span class="text-green-500">●</span>';
+            } else {
+                toggle.classList.remove('active');
+                statusText.innerHTML = 'Hors ligne';
+            }
+        }
+        
+        // Connexion chauffeur
+        function openDriverLogin() {
+            document.getElementById('loginModal').classList.add('active');
+        }
+        
+        function closeDriverLogin() {
+            document.getElementById('loginModal').classList.remove('active');
+        }
+        
+        function loginDriver() {
+            driverLoggedIn = true;
+            
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('tripsSection').style.display = 'block';
+            document.getElementById('statusText').innerHTML = 'Hors ligne';
+            
+            closeDriverLogin();
+            
+            // Commencer à écouter les courses
+            listenForTrips();
+        }
+        
+        // Actions sur course acceptée
+        function startTrip() {
+            alert('Course démarrée ! Direction le client.');
+        }
+        
+        function cancelTrip() {
+            if (confirm('Annuler cette course ?')) {
+                document.getElementById('acceptedTripPanel').classList.remove('active');
+                currentTrip = null;
+                selectedTripId = null;
+            }
+        }
+        
+        // Initialisation
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+</html>
