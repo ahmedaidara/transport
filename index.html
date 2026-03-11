@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yonou VTC - Sénégal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS - VERSION SIMPLE -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* RESET COMPLET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+        
+        /* CARTE - PRIORITAIRE */
+        #map {
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            background: #e5e7eb; /* gris en attendant */
+        }
+        
+        /* HEADER */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 10;
+            background: white;
+            border-radius: 30px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-btn {
+            flex: 1;
+            background: #f3f4f6;
+            border-radius: 25px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6b7280;
+            font-weight: 500;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .menu-btn {
+            width: 48px;
+            height: 48px;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            border: none;
+        }
+        
+        /* BOTTOM SHEET */
+        .bottom-card {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 30px 30px 0 0;
+            z-index: 10;
+            padding: 20px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
+            max-height: 70vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .drag-handle {
+            width: 50px;
+            height: 5px;
+            background: #d1d5db;
+            border-radius: 10px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+        
+        /* ADRESSES */
+        .address-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .address-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-green { background: #10b981; }
+        .dot-red { background: #ef4444; }
+        
+        /* BOUTON */
+        .btn-command {
+            background: #1e293b;
+            color: white;
+            padding: 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 18px;
+            width: 100%;
+            border: none;
+            margin-top: 15px;
+        }
+        
+        .btn-command:disabled {
+            opacity: 0.5;
+        }
+        
+        /* PAGES */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 20;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .page.active {
+            transform: translateX(0);
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .back-btn {
+            width: 45px;
+            height: 45px;
+            background: #f3f4f6;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: none;
+        }
+        
+        /* RECHERCHE */
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            background: #f3f4f6;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        /* STATUT */
+        .status-bar {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .status-bar.active {
+            display: flex;
+        }
+        
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <!-- CARTE -->
+    <div id="map"></div>
+    
+    <!-- STATUS BAR -->
+    <div id="statusBar" class="status-bar">
+        <div class="pulse"></div>
+        <span>Recherche d'un chauffeur...</span>
+    </div>
+    
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <button class="search-btn" onclick="openSearchPage()">
+            <i class="fas fa-search text-blue-500"></i>
+            <span>Où allez-vous ?</span>
+        </button>
+        <button class="menu-btn" onclick="openSettingsPage()">
+            <i class="fa-regular fa-user"></i>
+        </button>
+    </div>
+    
+    <!-- BOTTOM CARD -->
+    <div class="bottom-card" id="bottomCard">
+        <div class="drag-handle" onclick="toggleCard()"></div>
+        
+        <!-- Adresses -->
+        <div class="address-item" onclick="openStartSelection()">
+            <div class="address-dot dot-green"></div>
+            <div class="flex-1">
+                <div class="text-xs text-gray-500">DÉPART</div>
+                <div id="startText" class="font-medium">Choisir un lieu de départ</div>
+            </div>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+        </div>
+        
+        <div class="address-item" onclick="openDestinationSelection()">
+            <div class="address-dot dot-red"></div>
+            <div class="flex-1">
+                <div class="text-xs text-gray-500">DESTINATION</div>
+                <div id="endText" class="font-medium">Choisir une destination</div>
+            </div>
+            <i class="fas fa-chevron-right text-gray-400"></i>
+        </div>
+        
+        <!-- FAVORIS -->
+        <div class="mt-5">
+            <div class="flex justify-between items-center mb-3">
+                <span class="font-semibold">⭐ Favoris</span>
+                <button class="text-blue-500 text-sm" onclick="openFavoritesPage()">Voir tout</button>
+            </div>
+            <div id="favoritesList"></div>
+        </div>
+        
+        <!-- PRIX -->
+        <div id="priceBox" class="mt-4 p-4 bg-green-50 rounded-2xl hidden">
+            <div class="text-center">
+                <span class="text-3xl font-bold text-green-600" id="priceAmount">0</span>
+                <span class="text-lg text-green-600"> FCFA</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-600 mt-2">
+                <span>Distance: <span id="distanceText">0</span> km</span>
+                <span>Durée: <span id="durationText">0</span> min</span>
+            </div>
+        </div>
+        
+        <!-- BOUTON COMMANDER -->
+        <button class="btn-command" id="orderBtn" onclick="orderRide()" disabled>
+            <i class="fas fa-car mr-2"></i>
+            Commander
+        </button>
+    </div>
+    
+    <!-- PAGE RECHERCHE -->
+    <div id="searchPage" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="closeSearchPage()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="text-xl font-bold">Rechercher</h2>
+        </div>
+        
+        <div class="relative mb-5">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Adresse, lieu...">
+        </div>
+        
+        <div class="mb-4">
+            <button class="w-full bg-blue-50 p-4 rounded-xl flex items-center gap-3" onclick="selectCurrentLocation()">
+                <i class="fas fa-location-arrow text-blue-500"></i>
+                <span>Utiliser ma position actuelle</span>
+            </button>
+        </div>
+        
+        <div id="searchResults" class="space-y-2"></div>
+    </div>
+    
+    <!-- PAGE FAVORIS -->
+    <div id="favoritesPage" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="closeFavoritesPage()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="text-xl font-bold">Mes favoris</h2>
+        </div>
+        
+        <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold mb-5" onclick="addFavorite()">
+            <i class="fas fa-plus mr-2"></i>
+            Ajouter une adresse
+        </button>
+        
+        <div id="allFavoritesList"></div>
+    </div>
+    
+    <!-- PAGE PARAMÈTRES -->
+    <div id="settingsPage" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="closeSettingsPage()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="text-xl font-bold">Paramètres</h2>
+        </div>
+        
+        <div class="bg-gray-50 p-5 rounded-2xl mb-4">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
+                    <i class="fa-regular fa-user text-blue-500"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Invité</h3>
+                    <p class="text-gray-500 text-sm">Non connecté</p>
+                </div>
+            </div>
+            <button class="w-full mt-4 bg-blue-500 text-white p-3 rounded-xl" onclick="openLoginPage()">
+                Se connecter
+            </button>
+        </div>
+        
+        <div class="bg-gray-50 p-5 rounded-2xl">
+            <h3 class="font-semibold mb-3">Préférences</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span>Paiement</span>
+                    <span class="text-blue-500">Espèces</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Langue</span>
+                    <span class="text-blue-500">Français</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PAGE CONNEXION -->
+    <div id="loginPage" class="page">
+        <div class="page-header">
+            <button class="back-btn" onclick="closeLoginPage()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 class="text-xl font-bold">Connexion</h2>
+        </div>
+        
+        <div class="mt-8">
+            <label class="block text-sm font-medium mb-2">Téléphone</label>
+            <input type="tel" class="w-full bg-gray-100 p-4 rounded-xl" placeholder="77 123 45 67">
+            <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold mt-4">
+                Recevoir le code
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU5nYbQhj4mCFoFMzazF5cuAis57UucFs",
+            authDomain: "transport-e77d4.firebaseapp.com",
+            projectId: "transport-e77d4",
+            storageBucket: "transport-e77d4.firebasestorage.app",
+            messagingSenderId: "282190227630",
+            appId: "1:282190227630:web:42aeb85a25a5cda91c253f"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let map;
+        let userPosition = null;
+        let startPoint = null;
+        let endPoint = null;
+        let startMarker = null;
+        let endMarker = null;
+        let routeLine = null;
+        
+        // Pour savoir si on choisit départ ou destination
+        let selectionMode = null; // 'start' ou 'end'
+        
+        // ============================================
+        // INITIALISATION CARTE - GARANTIE
+        // ============================================
+        function initMap() {
+            console.log("Initialisation de la carte...");
+            
+            // Coordonnées Dakar par défaut
+            const defaultLat = 14.7167;
+            const defaultLng = -17.4677;
+            
+            // Créer la carte
+            map = L.map('map').setView([defaultLat, defaultLng], 13);
+            
+            // Ajouter les tuiles OpenStreetMap (simples et fiables)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            console.log("Carte initialisée avec succès");
+            
+            // Essayer d'obtenir la position
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        userPosition = { lat: latitude, lng: longitude };
+                        
+                        // Centrer sur l'utilisateur
+                        map.setView([latitude, longitude], 14);
+                        
+                        // Ajouter un marqueur
+                        L.marker([latitude, longitude], {
+                            icon: L.divIcon({
+                                html: '<div style="background:#3b82f6; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+                                iconSize: [16, 16]
+                            })
+                        }).addTo(map).bindPopup('Vous êtes ici');
+                        
+                        // Définir le départ par défaut
+                        startPoint = { lat: latitude, lng: longitude };
+                        document.getElementById('startText').innerHTML = 'Ma position actuelle';
+                        
+                        console.log("Position utilisateur obtenue");
+                    },
+                    (error) => {
+                        console.log("Géolocalisation refusée, utilisation de Dakar");
+                        // Position par défaut
+                        startPoint = { lat: defaultLat, lng: defaultLng };
+                        document.getElementById('startText').innerHTML = 'Dakar (position par défaut)';
+                    }
+                );
+            } else {
+                startPoint = { lat: defaultLat, lng: defaultLng };
+                document.getElementById('startText').innerHTML = 'Dakar (position par défaut)';
+            }
+        }
+        
+        // ============================================
+        // SÉLECTION DE LIEU
+        // ============================================
+        function openStartSelection() {
+            selectionMode = 'start';
+            openSearchPage();
+        }
+        
+        function openDestinationSelection() {
+            selectionMode = 'end';
+            openSearchPage();
+        }
+        
+        function selectCurrentLocation() {
+            if (userPosition) {
+                if (selectionMode === 'start') {
+                    startPoint = userPosition;
+                    document.getElementById('startText').innerHTML = 'Ma position actuelle';
+                    
+                    // Ajouter marqueur
+                    if (startMarker) map.removeLayer(startMarker);
+                    startMarker = L.marker([userPosition.lat, userPosition.lng], {
+                        icon: L.divIcon({
+                            html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
+                            iconSize: [20, 20]
+                        })
+                    }).addTo(map);
+                    
+                } else if (selectionMode === 'end') {
+                    endPoint = userPosition;
+                    document.getElementById('endText').innerHTML = 'Ma position actuelle';
+                    
+                    if (endMarker) map.removeLayer(endMarker);
+                    endMarker = L.marker([userPosition.lat, userPosition.lng], {
+                        icon: L.divIcon({
+                            html: '<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
+                            iconSize: [20, 20]
+                        })
+                    }).addTo(map);
+                }
+                
+                drawRoute();
+                calculatePrice();
+                closeSearchPage();
+            } else {
+                alert("Position non disponible, réessayez");
+            }
+        }
+        
+        function selectPlace(lat, lng, displayName) {
+            if (selectionMode === 'start') {
+                startPoint = { lat, lng };
+                document.getElementById('startText').innerHTML = displayName;
+                
+                if (startMarker) map.removeLayer(startMarker);
+                startMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
+                        iconSize: [20, 20]
+                    })
+                }).addTo(map);
+                
+            } else if (selectionMode === 'end') {
+                endPoint = { lat, lng };
+                document.getElementById('endText').innerHTML = displayName;
+                
+                if (endMarker) map.removeLayer(endMarker);
+                endMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: '<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
+                        iconSize: [20, 20]
+                    })
+                }).addTo(map);
+            }
+            
+            drawRoute();
+            calculatePrice();
+            closeSearchPage();
+        }
+        
+        // ============================================
+        // DESSINER L'ITINÉRAIRE
+        // ============================================
+        function drawRoute() {
+            if (routeLine) map.removeLayer(routeLine);
+            
+            if (startPoint && endPoint) {
+                routeLine = L.polyline([
+                    [startPoint.lat, startPoint.lng],
+                    [endPoint.lat, endPoint.lng]
+                ], { color: '#3b82f6', weight: 5, opacity: 0.7 }).addTo(map);
+                
+                map.fitBounds(L.latLngBounds(
+                    [startPoint.lat, startPoint.lng],
+                    [endPoint.lat, endPoint.lng]
+                ), { padding: [50, 50] });
+            }
+        }
+        
+        // ============================================
+        // CALCUL PRIX
+        // ============================================
+        function calculatePrice() {
+            if (startPoint && endPoint) {
+                const distance = calculateDistance(
+                    startPoint.lat, startPoint.lng,
+                    endPoint.lat, endPoint.lng
+                );
+                
+                const price = 1000 + (distance * 350);
+                const duration = Math.round(distance * 3);
+                
+                document.getElementById('priceAmount').innerHTML = Math.round(price).toLocaleString();
+                document.getElementById('distanceText').innerHTML = distance.toFixed(1);
+                document.getElementById('durationText').innerHTML = duration;
+                document.getElementById('priceBox').classList.remove('hidden');
+                document.getElementById('orderBtn').disabled = false;
+            }
+        }
+        
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        // ============================================
+        // COMMANDER
+        // ============================================
+        function orderRide() {
+            if (!startPoint || !endPoint) return;
+            
+            document.getElementById('statusBar').classList.add('active');
+            document.getElementById('orderBtn').disabled = true;
+            
+            const trip = {
+                start: startPoint,
+                end: endPoint,
+                startAddress: document.getElementById('startText').innerHTML,
+                endAddress: document.getElementById('endText').innerHTML,
+                price: document.getElementById('priceAmount').innerHTML + ' FCFA',
+                timestamp: new Date().toISOString()
+            };
+            
+            db.ref('trips').push(trip).then(() => {
+                setTimeout(() => {
+                    document.getElementById('statusBar').classList.remove('active');
+                    document.getElementById('orderBtn').disabled = false;
+                    alert('✅ Chauffeur trouvé !');
+                }, 3000);
+            });
+        }
+        
+        // ============================================
+        // RECHERCHE
+        // ============================================
+        document.getElementById('searchInput')?.addEventListener('input', function(e) {
+            const query = e.target.value;
+            if (query.length > 2) {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}, Senegal&countrycodes=sn&limit=5&accept-language=fr`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const results = document.getElementById('searchResults');
+                        results.innerHTML = data.map(item => `
+                            <div class="p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100"
+                                 onclick="selectPlace(${item.lat}, ${item.lon}, '${item.display_name.split(',')[0]}')">
+                                <div class="font-medium">${item.display_name.split(',')[0]}</div>
+                                <div class="text-sm text-gray-500">${item.display_name}</div>
+                            </div>
+                        `).join('');
+                    });
+            }
+        });
+        
+        // ============================================
+        // FAVORIS
+        // ============================================
+        function loadFavorites() {
+            const favs = [
+                { name: '🏠 Maison', addr: 'Almadies, Dakar', lat: 14.7441, lng: -17.5208 },
+                { name: '💼 Travail', addr: 'Plateau, Dakar', lat: 14.6928, lng: -17.4464 },
+                { name: '✈️ Aéroport', addr: 'AIBD', lat: 14.6727, lng: -17.0732 }
+            ];
+            
+            const list = document.getElementById('favoritesList');
+            list.innerHTML = favs.map(f => `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 cursor-pointer"
+                     onclick="useFavorite(${f.lat}, ${f.lng}, '${f.name}')">
+                    <span class="text-xl">${f.name.split(' ')[0]}</span>
+                    <div>
+                        <div class="font-medium">${f.name}</div>
+                        <div class="text-xs text-gray-500">${f.addr}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function useFavorite(lat, lng, name) {
+            if (selectionMode === 'start') {
+                startPoint = { lat, lng };
+                document.getElementById('startText').innerHTML = name;
+            } else {
+                endPoint = { lat, lng };
+                document.getElementById('endText').innerHTML = name;
+            }
+            
+            if (startPoint && endPoint) {
+                drawRoute();
+                calculatePrice();
+            }
+            closeFavoritesPage();
+        }
+        
+        // ============================================
+        // NAVIGATION
+        // ============================================
+        function toggleCard() {
+            const card = document.getElementById('bottomCard');
+            card.style.transform = card.style.transform === 'translateY(calc(100% - 100px))' ? 
+                'translateY(0)' : 'translateY(calc(100% - 100px))';
+        }
+        
+        function openSearchPage() { document.getElementById('searchPage').classList.add('active'); }
+        function closeSearchPage() { document.getElementById('searchPage').classList.remove('active'); }
+        function openFavoritesPage() { document.getElementById('favoritesPage').classList.add('active'); }
+        function closeFavoritesPage() { document.getElementById('favoritesPage').classList.remove('active'); }
+        function openSettingsPage() { document.getElementById('settingsPage').classList.add('active'); }
+        function closeSettingsPage() { document.getElementById('settingsPage').classList.remove('active'); }
+        function openLoginPage() { document.getElementById('loginPage').classList.add('active'); }
+        function closeLoginPage() { document.getElementById('loginPage').classList.remove('active'); }
+        function addFavorite() { alert('Fonctionnalité à venir'); }
+        
+        // ============================================
+        // DÉMARRAGE
+        // ============================================
+        window.addEventListener('load', function() {
+            console.log("Page chargée, lancement de la carte...");
+            initMap();
+            loadFavorites();
+        });
+    </script>
+</body>
+</html>
