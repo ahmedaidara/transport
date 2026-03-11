@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yonou VTC - Sénégal</title>
+    <title>Yonou VTC - Client</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,25 +11,24 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Leaflet CSS - VERSION SIMPLE -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
     <style>
-        /* RESET COMPLET */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        html, body {
-            height: 100%;
-            width: 100%;
+        body {
+            height: 100vh;
+            width: 100vw;
             overflow: hidden;
             position: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
-        /* CARTE - PRIORITAIRE */
+        /* Carte plein écran */
         #map {
             height: 100vh;
             width: 100vw;
@@ -37,38 +36,37 @@
             top: 0;
             left: 0;
             z-index: 1;
-            background: #e5e7eb; /* gris en attendant */
         }
         
-        /* HEADER */
+        /* Header flottant */
         .top-bar {
             position: absolute;
             top: 20px;
             left: 20px;
             right: 20px;
             z-index: 10;
-            background: white;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 12px 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             gap: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
         .search-btn {
             flex: 1;
-            background: #f3f4f6;
+            background: #f1f5f9;
             border-radius: 25px;
             padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 10px;
-            color: #6b7280;
-            font-weight: 500;
             border: none;
-            width: 100%;
-            text-align: left;
+            color: #1e293b;
+            font-weight: 500;
         }
         
         .menu-btn {
@@ -82,43 +80,48 @@
             color: white;
             font-size: 20px;
             border: none;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
         
-        /* BOTTOM SHEET */
-        .bottom-card {
+        /* Bottom Sheet */
+        .bottom-sheet {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             background: white;
             border-radius: 30px 30px 0 0;
-            z-index: 10;
+            z-index: 20;
             padding: 20px;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
-            max-height: 70vh;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15);
+            max-height: 80vh;
             overflow-y: auto;
             transition: transform 0.3s ease;
         }
         
-        .drag-handle {
+        .bottom-sheet.collapsed {
+            transform: translateY(calc(100% - 100px));
+        }
+        
+        .sheet-handle {
             width: 50px;
             height: 5px;
-            background: #d1d5db;
+            background: #e2e8f0;
             border-radius: 10px;
             margin: 0 auto 20px;
             cursor: pointer;
         }
         
-        /* ADRESSES */
+        /* Adresses */
         .address-item {
             display: flex;
             align-items: center;
             gap: 15px;
             padding: 15px;
-            background: #f9fafb;
+            background: #f8fafc;
             border-radius: 20px;
             margin-bottom: 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e2e8f0;
             cursor: pointer;
         }
         
@@ -127,13 +130,104 @@
             height: 12px;
             border-radius: 50%;
         }
-        
         .dot-green { background: #10b981; }
         .dot-red { background: #ef4444; }
         
-        /* BOUTON */
-        .btn-command {
-            background: #1e293b;
+        /* Sélecteur d'itinéraire */
+        .route-selector {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .route-option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border-radius: 15px;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .route-option.selected {
+            border: 2px solid #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .route-option:hover {
+            background: #f1f5f9;
+        }
+        
+        .route-badge {
+            background: #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* Étapes de l'itinéraire */
+        .steps-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+        }
+        
+        .step-item:last-child {
+            border-bottom: none;
+        }
+        
+        .step-icon {
+            width: 24px;
+            text-align: center;
+            color: #3b82f6;
+        }
+        
+        /* Prix */
+        .price-card {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            padding: 20px;
+            border-radius: 25px;
+            margin: 15px 0;
+        }
+        
+        .price-amount {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .price-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        /* Bouton commander */
+        .order-btn {
+            background: #0f172a;
             color: white;
             padding: 18px;
             border-radius: 30px;
@@ -141,31 +235,30 @@
             font-size: 18px;
             width: 100%;
             border: none;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.2);
+            transition: all 0.2s;
             margin-top: 15px;
         }
         
-        .btn-command:disabled {
-            opacity: 0.5;
-        }
+        .order-btn:active { transform: scale(0.98); }
+        .order-btn:disabled { opacity: 0.5; }
         
-        /* PAGES */
-        .page {
+        /* Pages secondaires */
+        .page-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: white;
-            z-index: 20;
+            z-index: 100;
             transform: translateX(100%);
             transition: transform 0.3s ease;
             overflow-y: auto;
             padding: 20px;
         }
         
-        .page.active {
-            transform: translateX(0);
-        }
+        .page-overlay.active { transform: translateX(0); }
         
         .page-header {
             display: flex;
@@ -173,58 +266,38 @@
             gap: 15px;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e2e8f0;
         }
         
         .back-btn {
             width: 45px;
             height: 45px;
-            background: #f3f4f6;
+            background: #f1f5f9;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: none;
             font-size: 20px;
-            border: none;
         }
         
-        /* RECHERCHE */
-        .search-input {
-            width: 100%;
-            padding: 16px 20px 16px 50px;
-            background: #f3f4f6;
-            border-radius: 25px;
-            border: none;
-            font-size: 16px;
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-        }
-        
-        /* STATUT */
+        /* Statut recherche */
         .status-bar {
             position: absolute;
             top: 100px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 15;
+            z-index: 30;
             background: white;
             padding: 15px 30px;
             border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             display: none;
             gap: 10px;
             font-weight: 600;
         }
         
-        .status-bar.active {
-            display: flex;
-        }
+        .status-bar.active { display: flex; }
         
         .pulse {
             width: 12px;
@@ -238,11 +311,36 @@
             0% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.3); opacity: 0.7; }
         }
+        
+        /* Bouton fermer */
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            z-index: 40;
+            border: none;
+            font-size: 20px;
+            color: #1e293b;
+        }
     </style>
 </head>
 <body>
     <!-- CARTE -->
     <div id="map"></div>
+    
+    <!-- BOUTON FERMER (pour les itinéraires) -->
+    <button class="close-btn" id="closeRouteBtn" onclick="clearRoute()" style="display: none;">
+        <i class="fas fa-times"></i>
+    </button>
     
     <!-- STATUS BAR -->
     <div id="statusBar" class="status-bar">
@@ -261,118 +359,120 @@
         </button>
     </div>
     
-    <!-- BOTTOM CARD -->
-    <div class="bottom-card" id="bottomCard">
-        <div class="drag-handle" onclick="toggleCard()"></div>
+    <!-- BOTTOM SHEET -->
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="sheet-handle" onclick="toggleSheet()"></div>
         
         <!-- Adresses -->
         <div class="address-item" onclick="openStartSelection()">
             <div class="address-dot dot-green"></div>
             <div class="flex-1">
                 <div class="text-xs text-gray-500">DÉPART</div>
-                <div id="startText" class="font-medium">Choisir un lieu de départ</div>
+                <div id="startText" class="font-medium">Choisir un lieu</div>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
         </div>
         
-        <div class="address-item" onclick="openDestinationSelection()">
+        <div class="address-item" onclick="openEndSelection()">
             <div class="address-dot dot-red"></div>
             <div class="flex-1">
                 <div class="text-xs text-gray-500">DESTINATION</div>
-                <div id="endText" class="font-medium">Choisir une destination</div>
+                <div id="endText" class="font-medium">Choisir un lieu</div>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
         </div>
         
-        <!-- FAVORIS -->
-        <div class="mt-5">
+        <!-- SÉLECTEUR D'ITINÉRAIRE (apparaît quand départ ET destination sont choisis) -->
+        <div id="routeSelector" class="route-selector hidden">
             <div class="flex justify-between items-center mb-3">
-                <span class="font-semibold">⭐ Favoris</span>
-                <button class="text-blue-500 text-sm" onclick="openFavoritesPage()">Voir tout</button>
+                <h3 class="font-semibold">🛣️ Itinéraires disponibles</h3>
+                <button onclick="toggleSteps()" class="text-blue-500 text-sm">
+                    <i class="far fa-list-alt"></i> Étapes
+                </button>
             </div>
-            <div id="favoritesList"></div>
+            
+            <!-- Liste des itinéraires -->
+            <div id="routesList"></div>
+            
+            <!-- Étapes détaillées -->
+            <div id="stepsPanel" class="steps-container hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-medium">Détail du trajet</span>
+                    <button onclick="toggleSteps()" class="text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="stepsList"></div>
+            </div>
         </div>
         
         <!-- PRIX -->
-        <div id="priceBox" class="mt-4 p-4 bg-green-50 rounded-2xl hidden">
-            <div class="text-center">
-                <span class="text-3xl font-bold text-green-600" id="priceAmount">0</span>
-                <span class="text-lg text-green-600"> FCFA</span>
-            </div>
-            <div class="flex justify-between text-sm text-gray-600 mt-2">
-                <span>Distance: <span id="distanceText">0</span> km</span>
-                <span>Durée: <span id="durationText">0</span> min</span>
+        <div id="priceContainer" class="hidden">
+            <div class="price-card">
+                <div class="price-amount">
+                    <span id="priceAmount">0</span> FCFA
+                </div>
+                <div class="price-details">
+                    <span>Distance: <span id="distanceText">0</span> km</span>
+                    <span>Durée: <span id="durationText">0</span> min</span>
+                </div>
             </div>
         </div>
         
         <!-- BOUTON COMMANDER -->
-        <button class="btn-command" id="orderBtn" onclick="orderRide()" disabled>
+        <button class="order-btn" id="orderBtn" onclick="orderRide()" disabled>
             <i class="fas fa-car mr-2"></i>
             Commander
         </button>
     </div>
     
     <!-- PAGE RECHERCHE -->
-    <div id="searchPage" class="page">
+    <div id="searchPage" class="page-overlay">
         <div class="page-header">
-            <button class="back-btn" onclick="closeSearchPage()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
+            <button class="back-btn" onclick="closeSearchPage()"><i class="fas fa-arrow-left"></i></button>
             <h2 class="text-xl font-bold">Rechercher</h2>
         </div>
         
-        <div class="relative mb-5">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-input" placeholder="Adresse, lieu...">
+        <div class="relative mb-4">
+            <i class="fas fa-search absolute left-4 top-4 text-gray-400"></i>
+            <input type="text" id="searchInput" class="w-full bg-gray-100 p-4 pl-12 rounded-2xl" 
+                   placeholder="Adresse, lieu...">
         </div>
         
-        <div class="mb-4">
-            <button class="w-full bg-blue-50 p-4 rounded-xl flex items-center gap-3" onclick="selectCurrentLocation()">
-                <i class="fas fa-location-arrow text-blue-500"></i>
-                <span>Utiliser ma position actuelle</span>
-            </button>
-        </div>
+        <button class="w-full bg-blue-50 p-4 rounded-2xl flex items-center gap-3 mb-4" onclick="selectCurrentLocation()">
+            <i class="fas fa-location-arrow text-blue-500"></i>
+            <span>Utiliser ma position actuelle</span>
+        </button>
         
         <div id="searchResults" class="space-y-2"></div>
     </div>
     
     <!-- PAGE FAVORIS -->
-    <div id="favoritesPage" class="page">
+    <div id="favoritesPage" class="page-overlay">
         <div class="page-header">
-            <button class="back-btn" onclick="closeFavoritesPage()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <h2 class="text-xl font-bold">Mes favoris</h2>
+            <button class="back-btn" onclick="closeFavoritesPage()"><i class="fas fa-arrow-left"></i></button>
+            <h2 class="text-xl font-bold">Favoris</h2>
         </div>
         
-        <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold mb-5" onclick="addFavorite()">
-            <i class="fas fa-plus mr-2"></i>
-            Ajouter une adresse
-        </button>
-        
-        <div id="allFavoritesList"></div>
+        <div id="favoritesList"></div>
     </div>
     
     <!-- PAGE PARAMÈTRES -->
-    <div id="settingsPage" class="page">
+    <div id="settingsPage" class="page-overlay">
         <div class="page-header">
-            <button class="back-btn" onclick="closeSettingsPage()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
+            <button class="back-btn" onclick="closeSettingsPage()"><i class="fas fa-arrow-left"></i></button>
             <h2 class="text-xl font-bold">Paramètres</h2>
         </div>
         
         <div class="bg-gray-50 p-5 rounded-2xl mb-4">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
-                    <i class="fa-regular fa-user text-blue-500"></i>
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl text-blue-500">
+                    <i class="fa-regular fa-user"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold">Invité</h3>
-                    <p class="text-gray-500 text-sm">Non connecté</p>
+                    <h3 class="font-bold">Client</h3>
+                    <p class="text-gray-500">Non connecté</p>
                 </div>
             </div>
-            <button class="w-full mt-4 bg-blue-500 text-white p-3 rounded-xl" onclick="openLoginPage()">
+            <button class="w-full bg-blue-500 text-white p-3 rounded-xl" onclick="openLoginPage()">
                 Se connecter
             </button>
         </div>
@@ -381,7 +481,7 @@
             <h3 class="font-semibold mb-3">Préférences</h3>
             <div class="space-y-3">
                 <div class="flex justify-between">
-                    <span>Paiement</span>
+                    <span>Mode de paiement</span>
                     <span class="text-blue-500">Espèces</span>
                 </div>
                 <div class="flex justify-between">
@@ -393,18 +493,18 @@
     </div>
     
     <!-- PAGE CONNEXION -->
-    <div id="loginPage" class="page">
+    <div id="loginPage" class="page-overlay">
         <div class="page-header">
-            <button class="back-btn" onclick="closeLoginPage()">
-                <i class="fas fa-arrow-left"></i>
-            </button>
+            <button class="back-btn" onclick="closeLoginPage()"><i class="fas fa-arrow-left"></i></button>
             <h2 class="text-xl font-bold">Connexion</h2>
         </div>
         
-        <div class="mt-8">
-            <label class="block text-sm font-medium mb-2">Téléphone</label>
-            <input type="tel" class="w-full bg-gray-100 p-4 rounded-xl" placeholder="77 123 45 67">
-            <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold mt-4">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-2">Téléphone</label>
+                <input type="tel" class="w-full bg-gray-100 p-4 rounded-xl" placeholder="77 123 45 67">
+            </div>
+            <button class="w-full bg-blue-500 text-white p-4 rounded-xl font-semibold">
                 Recevoir le code
             </button>
         </div>
@@ -412,12 +512,13 @@
 
     <!-- SCRIPTS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
-    
+
     <script>
         // ============================================
-        // CONFIGURATION
+        // CONFIGURATION FIREBASE
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyAU5nYbQhj4mCFoFMzazF5cuAis57UucFs",
@@ -435,119 +536,237 @@
         // VARIABLES GLOBALES
         // ============================================
         let map;
+        let routingControl = null;
+        let selectedRoute = null;
+        let availableRoutes = [];
+        
         let userPosition = null;
         let startPoint = null;
         let endPoint = null;
-        let startMarker = null;
-        let endMarker = null;
-        let routeLine = null;
         
-        // Pour savoir si on choisit départ ou destination
         let selectionMode = null; // 'start' ou 'end'
         
         // ============================================
-        // INITIALISATION CARTE - GARANTIE
+        // INITIALISATION CARTE
         // ============================================
         function initMap() {
-            console.log("Initialisation de la carte...");
-            
-            // Coordonnées Dakar par défaut
+            // Dakar par défaut
             const defaultLat = 14.7167;
             const defaultLng = -17.4677;
             
-            // Créer la carte
             map = L.map('map').setView([defaultLat, defaultLng], 13);
             
-            // Ajouter les tuiles OpenStreetMap (simples et fiables)
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '©OpenStreetMap, ©CartoDB'
             }).addTo(map);
             
-            console.log("Carte initialisée avec succès");
-            
-            // Essayer d'obtenir la position
+            // Géolocalisation
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const { latitude, longitude } = position.coords;
-                        userPosition = { lat: latitude, lng: longitude };
+                        userPosition = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        map.setView([userPosition.lat, userPosition.lng], 14);
                         
-                        // Centrer sur l'utilisateur
-                        map.setView([latitude, longitude], 14);
-                        
-                        // Ajouter un marqueur
-                        L.marker([latitude, longitude], {
+                        // Marqueur utilisateur
+                        L.marker([userPosition.lat, userPosition.lng], {
                             icon: L.divIcon({
                                 html: '<div style="background:#3b82f6; width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
                                 iconSize: [16, 16]
                             })
                         }).addTo(map).bindPopup('Vous êtes ici');
-                        
-                        // Définir le départ par défaut
-                        startPoint = { lat: latitude, lng: longitude };
-                        document.getElementById('startText').innerHTML = 'Ma position actuelle';
-                        
-                        console.log("Position utilisateur obtenue");
                     },
                     (error) => {
-                        console.log("Géolocalisation refusée, utilisation de Dakar");
-                        // Position par défaut
-                        startPoint = { lat: defaultLat, lng: defaultLng };
-                        document.getElementById('startText').innerHTML = 'Dakar (position par défaut)';
+                        console.log("Géolocalisation refusée");
                     }
                 );
-            } else {
-                startPoint = { lat: defaultLat, lng: defaultLng };
-                document.getElementById('startText').innerHTML = 'Dakar (position par défaut)';
             }
         }
         
         // ============================================
-        // SÉLECTION DE LIEU
+        // RECHERCHE D'ITINÉRAIRES (PAS DE LIGNE DROITE)
         // ============================================
-        function openStartSelection() {
-            selectionMode = 'start';
-            openSearchPage();
+        function findRoutes() {
+            if (!startPoint || !endPoint) return;
+            
+            // Supprimer l'ancien contrôle
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+            
+            // Créer un nouveau contrôle de routage
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(startPoint.lat, startPoint.lng),
+                    L.latLng(endPoint.lat, endPoint.lng)
+                ],
+                routeWhileDragging: false,
+                addWaypoints: false,
+                draggableWaypoints: false,
+                showAlternatives: true,      // Afficher plusieurs itinéraires
+                fitSelectedRoutes: true,
+                lineOptions: {
+                    styles: [
+                        { color: '#3b82f6', weight: 5, opacity: 0.7 },
+                        { color: '#94a3b8', weight: 3, opacity: 0.5 }
+                    ]
+                },
+                altLineOptions: {
+                    styles: [
+                        { color: '#94a3b8', weight: 4, opacity: 0.5, dashArray: '5,5' }
+                    ]
+                }
+            }).addTo(map);
+            
+            // Quand les itinéraires sont trouvés
+            routingControl.on('routesfound', function(e) {
+                availableRoutes = e.routes;
+                displayRouteOptions(availableRoutes);
+                
+                // Sélectionner le premier par défaut
+                if (availableRoutes.length > 0) {
+                    selectRoute(0);
+                }
+                
+                // Afficher le bouton fermer
+                document.getElementById('closeRouteBtn').style.display = 'flex';
+            });
         }
         
-        function openDestinationSelection() {
-            selectionMode = 'end';
-            openSearchPage();
+        // ============================================
+        // AFFICHER LES OPTIONS D'ITINÉRAIRE
+        // ============================================
+        function displayRouteOptions(routes) {
+            const container = document.getElementById('routesList');
+            const selector = document.getElementById('routeSelector');
+            
+            selector.classList.remove('hidden');
+            
+            container.innerHTML = routes.map((route, index) => {
+                const distance = (route.summary.totalDistance / 1000).toFixed(1);
+                const duration = Math.round(route.summary.totalTime / 60);
+                const isSelected = selectedRoute && selectedRoute.index === index;
+                
+                return `
+                    <div class="route-option ${isSelected ? 'selected' : ''}" onclick="selectRoute(${index})">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium">Itinéraire ${index + 1}</span>
+                                <span class="route-badge">${distance} km</span>
+                                <span class="route-badge">${duration} min</span>
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                ${route.summary.summary || 'Trajet standard'}
+                            </div>
+                        </div>
+                        ${isSelected ? '<i class="fas fa-check-circle text-blue-500 text-xl"></i>' : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Calculer le prix
+            if (selectedRoute) {
+                const distance = selectedRoute.summary.totalDistance / 1000;
+                const price = 1000 + (distance * 350);
+                const duration = Math.round(selectedRoute.summary.totalTime / 60);
+                
+                document.getElementById('priceAmount').innerHTML = Math.round(price).toLocaleString();
+                document.getElementById('distanceText').innerHTML = distance.toFixed(1);
+                document.getElementById('durationText').innerHTML = duration;
+                document.getElementById('priceContainer').classList.remove('hidden');
+                document.getElementById('orderBtn').disabled = false;
+                
+                // Afficher les étapes
+                displayRouteSteps(selectedRoute);
+            }
         }
+        
+        // ============================================
+        // SÉLECTIONNER UN ITINÉRAIRE
+        // ============================================
+        function selectRoute(index) {
+            if (!availableRoutes[index]) return;
+            
+            selectedRoute = availableRoutes[index];
+            selectedRoute.index = index;
+            
+            // Mettre à jour l'affichage
+            displayRouteOptions(availableRoutes);
+            
+            // Mettre à jour la carte
+            if (routingControl) {
+                routingControl.setAlternatives([selectedRoute]);
+            }
+        }
+        
+        // ============================================
+        // AFFICHER LES ÉTAPES
+        // ============================================
+        function displayRouteSteps(route) {
+            if (!route || !route.instructions) return;
+            
+            const stepsList = document.getElementById('stepsList');
+            const steps = route.instructions.slice(0, 8); // Limiter à 8 étapes
+            
+            stepsList.innerHTML = steps.map(step => {
+                let icon = 'fa-arrow-right';
+                if (step.type === 'Straight') icon = 'fa-arrow-up';
+                else if (step.type === 'SlightRight') icon = 'fa-arrow-up-right';
+                else if (step.type === 'Right') icon = 'fa-arrow-right';
+                else if (step.type === 'SharpRight') icon = 'fa-arrow-down-right';
+                else if (step.type === 'Left') icon = 'fa-arrow-left';
+                else if (step.type === 'SlightLeft') icon = 'fa-arrow-up-left';
+                else if (step.type === 'SharpLeft') icon = 'fa-arrow-down-left';
+                else if (step.type === 'Roundabout') icon = 'fa-rotate-right';
+                
+                return `
+                    <div class="step-item">
+                        <div class="step-icon"><i class="fas ${icon}"></i></div>
+                        <div class="flex-1">${step.text}</div>
+                        <div class="text-xs text-gray-500">${Math.round(step.distance)} m</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // ============================================
+        // BASculer les étapes
+        // ============================================
+        function toggleSteps() {
+            document.getElementById('stepsPanel').classList.toggle('hidden');
+        }
+        
+        // ============================================
+        // EFFACER L'ITINÉRAIRE
+        // ============================================
+        function clearRoute() {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+            
+            selectedRoute = null;
+            availableRoutes = [];
+            
+            document.getElementById('routeSelector').classList.add('hidden');
+            document.getElementById('priceContainer').classList.add('hidden');
+            document.getElementById('closeRouteBtn').style.display = 'none';
+            document.getElementById('orderBtn').disabled = true;
+        }
+        
+        // ============================================
+        // SÉLECTION DE LIEUX
+        // ============================================
+        function openStartSelection() { selectionMode = 'start'; openSearchPage(); }
+        function openEndSelection() { selectionMode = 'end'; openSearchPage(); }
         
         function selectCurrentLocation() {
             if (userPosition) {
-                if (selectionMode === 'start') {
-                    startPoint = userPosition;
-                    document.getElementById('startText').innerHTML = 'Ma position actuelle';
-                    
-                    // Ajouter marqueur
-                    if (startMarker) map.removeLayer(startMarker);
-                    startMarker = L.marker([userPosition.lat, userPosition.lng], {
-                        icon: L.divIcon({
-                            html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
-                            iconSize: [20, 20]
-                        })
-                    }).addTo(map);
-                    
-                } else if (selectionMode === 'end') {
-                    endPoint = userPosition;
-                    document.getElementById('endText').innerHTML = 'Ma position actuelle';
-                    
-                    if (endMarker) map.removeLayer(endMarker);
-                    endMarker = L.marker([userPosition.lat, userPosition.lng], {
-                        icon: L.divIcon({
-                            html: '<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
-                            iconSize: [20, 20]
-                        })
-                    }).addTo(map);
-                }
-                
-                drawRoute();
-                calculatePrice();
-                closeSearchPage();
+                selectPlace(userPosition.lat, userPosition.lng, 'Ma position');
             } else {
-                alert("Position non disponible, réessayez");
+                alert("Position non disponible");
             }
         }
         
@@ -555,90 +774,24 @@
             if (selectionMode === 'start') {
                 startPoint = { lat, lng };
                 document.getElementById('startText').innerHTML = displayName;
-                
-                if (startMarker) map.removeLayer(startMarker);
-                startMarker = L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        html: '<div style="background:#10b981; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
-                        iconSize: [20, 20]
-                    })
-                }).addTo(map);
-                
             } else if (selectionMode === 'end') {
                 endPoint = { lat, lng };
                 document.getElementById('endText').innerHTML = displayName;
-                
-                if (endMarker) map.removeLayer(endMarker);
-                endMarker = L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        html: '<div style="background:#ef4444; width:20px; height:20px; border-radius:50%; border:3px solid white;"></div>',
-                        iconSize: [20, 20]
-                    })
-                }).addTo(map);
             }
             
-            drawRoute();
-            calculatePrice();
             closeSearchPage();
-        }
-        
-        // ============================================
-        // DESSINER L'ITINÉRAIRE
-        // ============================================
-        function drawRoute() {
-            if (routeLine) map.removeLayer(routeLine);
             
             if (startPoint && endPoint) {
-                routeLine = L.polyline([
-                    [startPoint.lat, startPoint.lng],
-                    [endPoint.lat, endPoint.lng]
-                ], { color: '#3b82f6', weight: 5, opacity: 0.7 }).addTo(map);
-                
-                map.fitBounds(L.latLngBounds(
-                    [startPoint.lat, startPoint.lng],
-                    [endPoint.lat, endPoint.lng]
-                ), { padding: [50, 50] });
+                clearRoute(); // Nettoyer l'ancien itinéraire
+                findRoutes(); // Trouver les vrais itinéraires
             }
-        }
-        
-        // ============================================
-        // CALCUL PRIX
-        // ============================================
-        function calculatePrice() {
-            if (startPoint && endPoint) {
-                const distance = calculateDistance(
-                    startPoint.lat, startPoint.lng,
-                    endPoint.lat, endPoint.lng
-                );
-                
-                const price = 1000 + (distance * 350);
-                const duration = Math.round(distance * 3);
-                
-                document.getElementById('priceAmount').innerHTML = Math.round(price).toLocaleString();
-                document.getElementById('distanceText').innerHTML = distance.toFixed(1);
-                document.getElementById('durationText').innerHTML = duration;
-                document.getElementById('priceBox').classList.remove('hidden');
-                document.getElementById('orderBtn').disabled = false;
-            }
-        }
-        
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
         }
         
         // ============================================
         // COMMANDER
         // ============================================
         function orderRide() {
-            if (!startPoint || !endPoint) return;
+            if (!selectedRoute) return;
             
             document.getElementById('statusBar').classList.add('active');
             document.getElementById('orderBtn').disabled = true;
@@ -646,23 +799,28 @@
             const trip = {
                 start: startPoint,
                 end: endPoint,
-                startAddress: document.getElementById('startText').innerHTML,
-                endAddress: document.getElementById('endText').innerHTML,
+                route: {
+                    distance: selectedRoute.summary.totalDistance,
+                    time: selectedRoute.summary.totalTime,
+                    instructions: selectedRoute.instructions,
+                    coordinates: selectedRoute.coordinates
+                },
                 price: document.getElementById('priceAmount').innerHTML + ' FCFA',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                status: 'searching'
             };
             
             db.ref('trips').push(trip).then(() => {
                 setTimeout(() => {
                     document.getElementById('statusBar').classList.remove('active');
                     document.getElementById('orderBtn').disabled = false;
-                    alert('✅ Chauffeur trouvé !');
+                    alert('✅ Chauffeur trouvé ! Votre course est confirmée.');
                 }, 3000);
             });
         }
         
         // ============================================
-        // RECHERCHE
+        // RECHERCHE D'ADRESSES
         // ============================================
         document.getElementById('searchInput')?.addEventListener('input', function(e) {
             const query = e.target.value;
@@ -670,8 +828,7 @@
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}, Senegal&countrycodes=sn&limit=5&accept-language=fr`)
                     .then(res => res.json())
                     .then(data => {
-                        const results = document.getElementById('searchResults');
-                        results.innerHTML = data.map(item => `
+                        document.getElementById('searchResults').innerHTML = data.map(item => `
                             <div class="p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100"
                                  onclick="selectPlace(${item.lat}, ${item.lon}, '${item.display_name.split(',')[0]}')">
                                 <div class="font-medium">${item.display_name.split(',')[0]}</div>
@@ -692,14 +849,13 @@
                 { name: '✈️ Aéroport', addr: 'AIBD', lat: 14.6727, lng: -17.0732 }
             ];
             
-            const list = document.getElementById('favoritesList');
-            list.innerHTML = favs.map(f => `
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-2 cursor-pointer"
+            document.getElementById('favoritesList').innerHTML = favs.map(f => `
+                <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl mb-2 cursor-pointer"
                      onclick="useFavorite(${f.lat}, ${f.lng}, '${f.name}')">
-                    <span class="text-xl">${f.name.split(' ')[0]}</span>
+                    <span class="text-2xl">${f.name.split(' ')[0]}</span>
                     <div>
                         <div class="font-medium">${f.name}</div>
-                        <div class="text-xs text-gray-500">${f.addr}</div>
+                        <div class="text-sm text-gray-500">${f.addr}</div>
                     </div>
                 </div>
             `).join('');
@@ -715,8 +871,8 @@
             }
             
             if (startPoint && endPoint) {
-                drawRoute();
-                calculatePrice();
+                clearRoute();
+                findRoutes();
             }
             closeFavoritesPage();
         }
@@ -724,10 +880,8 @@
         // ============================================
         // NAVIGATION
         // ============================================
-        function toggleCard() {
-            const card = document.getElementById('bottomCard');
-            card.style.transform = card.style.transform === 'translateY(calc(100% - 100px))' ? 
-                'translateY(0)' : 'translateY(calc(100% - 100px))';
+        function toggleSheet() {
+            document.getElementById('bottomSheet').classList.toggle('collapsed');
         }
         
         function openSearchPage() { document.getElementById('searchPage').classList.add('active'); }
@@ -738,13 +892,11 @@
         function closeSettingsPage() { document.getElementById('settingsPage').classList.remove('active'); }
         function openLoginPage() { document.getElementById('loginPage').classList.add('active'); }
         function closeLoginPage() { document.getElementById('loginPage').classList.remove('active'); }
-        function addFavorite() { alert('Fonctionnalité à venir'); }
         
         // ============================================
         // DÉMARRAGE
-        // ============================================
+        // ============================================ 
         window.addEventListener('load', function() {
-            console.log("Page chargée, lancement de la carte...");
             initMap();
             loadFavorites();
         });
