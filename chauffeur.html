@@ -2,18 +2,19 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>YONOU VTC - Chauffeur</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
     
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
 
         body {
@@ -30,23 +31,23 @@
         .sidebar {
             width: 350px;
             background: white;
-            border-right: 2px solid #ddd;
+            border-right: 2px solid #e0e0e0;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
 
-        .header-driver {
+        .sidebar-header {
             background: #1877f2;
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
         }
 
-        .status-box {
+        .status-card {
             background: rgba(255,255,255,0.2);
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 15px;
-            margin-top: 15px;
+            margin-top: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -56,8 +57,8 @@
             background: white;
             border: none;
             padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: bold;
+            border-radius: 25px;
+            font-weight: 600;
             cursor: pointer;
         }
 
@@ -65,21 +66,21 @@
         .status-btn.on { color: #4caf50; }
 
         .profile-section {
-            padding: 20px;
+            padding: 25px;
             border-bottom: 1px solid #eee;
             text-align: center;
         }
 
-        .avatar-big {
-            width: 80px;
-            height: 80px;
-            background: #f0f0f0;
+        .driver-avatar {
+            width: 90px;
+            height: 90px;
+            background: #f0f2f5;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            font-size: 40px;
+            font-size: 45px;
             border: 3px solid #1877f2;
         }
 
@@ -87,15 +88,14 @@
             background: #1877f2;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 16px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
             width: 100%;
             cursor: pointer;
         }
 
-        /* LISTE DES COURSES */
         .rides-section {
             flex: 1;
             overflow-y: auto;
@@ -103,8 +103,8 @@
         }
 
         .section-title {
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
         }
@@ -112,54 +112,70 @@
         .ride-count {
             background: #1877f2;
             color: white;
-            padding: 3px 10px;
-            border-radius: 15px;
+            padding: 3px 12px;
+            border-radius: 20px;
         }
 
         .ride-card {
             background: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 15px;
-            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 20px;
             margin-bottom: 15px;
             animation: slideIn 0.3s;
         }
 
         .ride-card.new {
             border-color: #1877f2;
-            background: #e7f3ff;
+            background: #e3f2fd;
+            animation: pulse 1s infinite;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         .ride-price {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4caf50;
-            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 12px;
         }
 
         .ride-location {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin: 8px 0;
+            gap: 12px;
+            margin: 10px 0;
+            font-size: 16px;
         }
 
         .accept-btn {
             background: #4caf50;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 16px;
             width: 100%;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 10px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 15px;
             cursor: pointer;
+        }
+
+        .completed-rides {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 16px;
+        }
+
+        .completed-item {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
         }
 
         /* CARTE */
@@ -180,66 +196,74 @@
             left: 20px;
             right: 20px;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
-            padding: 20px;
-            max-width: 450px;
+            border-radius: 25px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
+            padding: 25px;
+            max-width: 500px;
             margin: 0 auto;
             display: none;
+            z-index: 10;
         }
 
         .panel-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .status-badge {
             background: #4caf50;
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
+            padding: 6px 16px;
+            border-radius: 25px;
         }
 
-        .client-info {
+        .client-card {
             background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 15px 0;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
         .client-avatar {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             background: #1877f2;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
         }
 
         .action-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         .action-btn {
             flex: 1;
-            padding: 15px;
+            padding: 18px;
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
         }
 
         .start-btn {
             background: #1877f2;
+            color: white;
+        }
+
+        .arrive-btn {
+            background: #ff9800;
             color: white;
         }
 
@@ -252,12 +276,19 @@
             background: #4caf50;
             color: white;
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-top: 10px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 15px;
             display: none;
+        }
+
+        .distance-info {
+            text-align: center;
+            margin: 15px 0;
+            color: #666;
         }
 
         /* MODAL */
@@ -276,29 +307,29 @@
 
         .modal-box {
             background: white;
-            border-radius: 25px;
+            border-radius: 30px;
             width: 90%;
-            max-width: 350px;
-            padding: 25px;
+            max-width: 400px;
+            padding: 30px;
         }
 
         .modal-box input {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
         }
 
         .modal-btn {
             background: #1877f2;
             color: white;
             border: none;
-            padding: 15px;
+            padding: 16px;
             width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-top: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 20px;
             cursor: pointer;
         }
 
@@ -310,8 +341,8 @@
             right: 20px;
             background: #323232;
             color: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 16px;
+            border-radius: 12px;
             z-index: 2000;
             display: none;
         }
@@ -321,11 +352,11 @@
     <div class="app">
         <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="header-driver">
-                <h2>🚖 YONOU VTC</h2>
+            <div class="sidebar-header">
+                <h1>🚖 YONOU VTC</h1>
                 <p>Espace chauffeur</p>
                 
-                <div class="status-box">
+                <div class="status-card">
                     <span id="statusText">🔴 Hors ligne</span>
                     <button class="status-btn off" id="statusBtn" onclick="toggleStatus()">
                         DÉSACTIVÉ
@@ -333,32 +364,41 @@
                 </div>
             </div>
 
-            <!-- NON CONNECTE -->
-            <div id="nonConnecte">
+            <!-- PROFIL NON CONNECTE -->
+            <div id="disconnectedProfile">
                 <div class="profile-section">
-                    <div class="avatar-big">👤</div>
+                    <div class="driver-avatar">👤</div>
                     <button class="login-btn" onclick="openLogin()">
                         SE CONNECTER
                     </button>
                 </div>
             </div>
 
-            <!-- CONNECTE -->
-            <div id="connecte" style="display: none;">
+            <!-- PROFIL CONNECTE -->
+            <div id="connectedProfile" style="display: none;">
                 <div class="profile-section">
-                    <div class="avatar-big">👨‍✈️</div>
-                    <div style="font-weight: bold;" id="driverName">Moussa Diop</div>
+                    <div class="driver-avatar">👨‍✈️</div>
+                    <div style="font-weight: 600; font-size: 20px;" id="driverName">Moussa Diop</div>
                     <div style="color: #666;" id="driverPhone">77 123 45 67</div>
+                    <div style="margin-top: 15px; background: #f5f5f5; padding: 12px; border-radius: 10px;">
+                        🚗 Toyota Corolla - Noir - AB-1234-CD
+                    </div>
                 </div>
             </div>
 
-            <!-- LISTE COURSES -->
+            <!-- COURSES DISPONIBLES -->
             <div class="rides-section">
                 <div class="section-title">
                     📋 COURSES DISPONIBLES
                     <span class="ride-count" id="rideCount">0</span>
                 </div>
                 <div id="ridesList"></div>
+
+                <!-- COURSES TERMINEES -->
+                <div class="completed-rides" id="completedSection" style="display: none;">
+                    <h3 style="margin-bottom: 15px;">✅ Courses terminées</h3>
+                    <div id="completedList"></div>
+                </div>
             </div>
         </div>
 
@@ -369,20 +409,20 @@
             <!-- PANNEAU COURSE ACTIVE -->
             <div class="active-panel" id="activePanel">
                 <div class="panel-header">
-                    <span style="font-weight: bold;">Course en cours</span>
-                    <span class="status-badge" id="rideStatus">Acceptée</span>
+                    <span style="font-weight: 600; font-size: 18px;">Course en cours</span>
+                    <span class="status-badge" id="tripStatus">Acceptée</span>
                 </div>
 
-                <div class="client-info">
+                <div class="client-card">
                     <div class="client-avatar">👤</div>
                     <div>
-                        <div style="font-weight: bold;" id="clientName">Client</div>
-                        <div style="color: #666;" id="clientPhone">77 888 99 00</div>
+                        <div style="font-weight: 600; font-size: 18px;" id="clientName">Client</div>
+                        <div style="color: #666;" id="clientPhone">-</div>
                     </div>
                 </div>
 
                 <div style="margin: 15px 0;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
                         <span style="color: #4caf50;">🟢</span>
                         <span id="tripStart">Départ</span>
                     </div>
@@ -392,20 +432,29 @@
                     </div>
                 </div>
 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 15px 0;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Prix:</span>
-                        <span style="font-weight: bold;" id="tripPrice">0 F</span>
-                    </div>
+                <div class="distance-info" id="distanceToClient">
+                    Distance: <span id="clientDistance">-</span>
                 </div>
 
                 <div class="action-buttons" id="initialActions">
-                    <button class="action-btn start-btn" onclick="startTrip()">DÉMARRER</button>
-                    <button class="action-btn cancel-btn" onclick="cancelTrip()">ANNULER</button>
+                    <button class="action-btn start-btn" onclick="goToClient()" id="goToClientBtn">
+                        🚗 ALLER VERS CLIENT
+                    </button>
+                    <button class="action-btn cancel-btn" onclick="cancelTrip()">
+                        ANNULER
+                    </button>
                 </div>
 
+                <button class="action-btn arrive-btn" id="arrivedBtn" style="display: none;" onclick="markArrived()">
+                    🟢 JE SUIS ARRIVÉ
+                </button>
+
+                <button class="action-btn start-btn" id="startTripBtn" style="display: none;" onclick="startTrip()">
+                    🚀 COMMENCER LA COURSE
+                </button>
+
                 <button class="complete-btn" id="completeBtn" onclick="completeTrip()">
-                    TERMINER
+                    ✅ TERMINER LA COURSE
                 </button>
             </div>
         </div>
@@ -414,7 +463,7 @@
     <!-- MODAL CONNEXION -->
     <div class="modal" id="loginModal">
         <div class="modal-box">
-            <h3 style="text-align: center; margin-bottom: 20px;">Connexion chauffeur</h3>
+            <h2 style="text-align: center; margin-bottom: 25px;">Connexion chauffeur</h2>
             <input type="text" id="loginPhone" placeholder="Téléphone">
             <input type="password" id="loginCode" placeholder="Code">
             <button class="modal-btn" onclick="loginDriver()">SE CONNECTER</button>
@@ -430,209 +479,316 @@
     
     <!-- LEAFLET -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
     <script>
-        // ========== CONFIG FIREBASE ==========
+        // ==================== FIREBASE ====================
         const firebaseConfig = {
             apiKey: "AIzaSyAmLwdTDiT6XP9iB3aNbSWRdQ6njw3TlLc",
             authDomain: "saldiaemploidutemps.firebaseapp.com",
             projectId: "saldiaemploidutemps",
             storageBucket: "saldiaemploidutemps.firebasestorage.app",
             messagingSenderId: "666378499509",
-            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc",
-            measurementId: "G-PGVQBS70F5"
+            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc"
         };
 
-        // INITIALISER FIREBASE
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ========== VARIABLES ==========
+        // ==================== VARIABLES ====================
         let map;
         let driverMarker;
+        let routingControl = null;
         let isOnline = false;
         let isLoggedIn = false;
-        let driverId = null;
+        let driverId = localStorage.getItem('driverId') || null;
         let currentTripId = null;
+        let currentTrip = null;
         let unsubscribeTrips = null;
+        let watchPosition = null;
 
-        // ========== INITIALISATION ==========
+        // ==================== INITIALISATION ====================
         window.onload = function() {
-            // Carte
-            map = L.map('driverMap').setView([14.7167, -17.4677], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-            // Position chauffeur
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(function(pos) {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    
-                    if (driverMarker) {
-                        driverMarker.setLatLng([lat, lng]);
-                    } else {
-                        driverMarker = L.marker([lat, lng]).addTo(map);
-                    }
-                });
-            }
-
-            // COMMENCER À ÉCOUTER LES COURSES
+            initMap();
+            startLocationTracking();
             listenForTrips();
+            loadCompletedTrips();
+            
+            if (driverId) {
+                autoLogin();
+            }
         };
 
-        // ========== ÉCOUTER LES COURSES FIREBASE ==========
+        function initMap() {
+            map = L.map('driverMap').setView([14.7167, -17.4677], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+        }
+
+        function startLocationTracking() {
+            if (navigator.geolocation) {
+                watchPosition = navigator.geolocation.watchPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        updateDriverPosition(lat, lng);
+                        
+                        if (driverMarker) {
+                            driverMarker.setLatLng([lat, lng]);
+                        } else {
+                            driverMarker = L.marker([lat, lng], {
+                                icon: L.divIcon({ html: '🚗', iconSize: [30, 30] })
+                            }).addTo(map);
+                        }
+                        
+                        // Si une course est active, mettre à jour la distance
+                        if (currentTrip && currentTrip.depart) {
+                            updateDistanceToClient(lat, lng, currentTrip.depart);
+                        }
+                    },
+                    function(error) {
+                        console.log("Erreur GPS:", error);
+                    }
+                );
+            }
+        }
+
+        async function updateDriverPosition(lat, lng) {
+            if (isLoggedIn && driverId) {
+                await db.collection("drivers").doc(driverId).set({
+                    location: { lat, lng },
+                    lastUpdate: new Date().toISOString(),
+                    status: isOnline ? 'online' : 'offline'
+                }, { merge: true });
+            }
+        }
+
+        // ==================== ÉCOUTE DES COURSES ====================
         function listenForTrips() {
-            // ← IMPORTANT : Écoute toutes les courses en "searching"
             unsubscribeTrips = db.collection("trips")
                 .where("status", "==", "searching")
                 .onSnapshot((snapshot) => {
-                    console.log("🔥 Courses trouvées:", snapshot.size);
-                    
-                    // Vider la liste
                     document.getElementById('ridesList').innerHTML = '';
                     
                     snapshot.forEach((doc) => {
                         const trip = doc.data();
-                        const tripId = doc.id;
-                        
-                        // Afficher la course
-                        addRideToList(tripId, trip);
+                        addRideToList(doc.id, trip);
                     });
                     
-                    // Mettre à jour le compteur
                     updateRideCount();
-                }, (error) => {
-                    console.error("Erreur d'écoute:", error);
                 });
         }
 
-        // ========== AJOUTER UNE COURSE À LA LISTE ==========
         function addRideToList(tripId, trip) {
             const list = document.getElementById('ridesList');
             
-            const rideCard = document.createElement('div');
-            rideCard.className = 'ride-card new';
-            rideCard.id = `ride_${tripId}`;
+            const card = document.createElement('div');
+            card.className = 'ride-card new';
+            card.id = `ride_${tripId}`;
             
-            const depart = trip.depart?.label || "Point de départ";
-            const arrivee = trip.arrivee?.label || "Point d'arrivée";
-            const prix = trip.prix || "2500 F";
-            
-            rideCard.innerHTML = `
-                <div class="ride-price">${prix}</div>
+            card.innerHTML = `
+                <div class="ride-price">${trip.prix || '2500 F'}</div>
                 <div class="ride-location">
-                    <span style="color: #4caf50;">🟢</span> ${depart}
+                    <span style="color: #4caf50;">🟢</span> ${trip.depart?.label || 'Départ'}
                 </div>
                 <div class="ride-location">
-                    <span style="color: #f44336;">🔴</span> ${arrivee}
+                    <span style="color: #f44336;">🔴</span> ${trip.arrivee?.label || 'Arrivée'}
                 </div>
                 <button class="accept-btn" onclick="acceptTrip('${tripId}')">
                     ACCEPTER
                 </button>
             `;
             
-            list.appendChild(rideCard);
+            list.appendChild(card);
         }
 
-        // ========== METTRE À JOUR LE COMPTEUR ==========
         function updateRideCount() {
             const count = document.getElementById('ridesList').children.length;
             document.getElementById('rideCount').innerHTML = count;
         }
 
-        // ========== ACCEPTER UNE COURSE ==========
+        // ==================== ACCEPTATION COURSE ====================
         async function acceptTrip(tripId) {
             if (!isLoggedIn) {
-                alert("Connectez-vous d'abord");
+                showNotification("Connectez-vous d'abord");
                 openLogin();
                 return;
             }
             
             if (!isOnline) {
-                alert("Passez en mode EN LIGNE");
+                showNotification("Passez en mode EN LIGNE");
                 return;
             }
 
             try {
-                // Récupérer la course
                 const tripDoc = await db.collection("trips").doc(tripId).get();
                 const trip = tripDoc.data();
                 
-                if (!trip || trip.status !== 'searching') {
-                    alert("Cette course n'est plus disponible");
+                if (trip.status !== 'searching') {
+                    showNotification("Course déjà prise");
                     return;
                 }
 
-                // Mettre à jour le statut dans Firebase
+                const driverInfo = {
+                    id: driverId,
+                    name: document.getElementById('driverName').innerHTML,
+                    phone: document.getElementById('driverPhone').innerHTML,
+                    vehicle: "Toyota Corolla - Noir - AB-1234-CD",
+                    plate: "AB-1234-CD"
+                };
+
                 await db.collection("trips").doc(tripId).update({
                     status: 'accepted',
                     driverId: driverId,
-                    driverName: "Moussa Diop",
+                    driverInfo: driverInfo,
                     acceptedAt: new Date().toISOString()
                 });
 
                 currentTripId = tripId;
+                currentTrip = trip;
 
-                // Afficher le panneau
+                // Afficher panneau
                 document.getElementById('activePanel').style.display = 'block';
-                document.getElementById('tripStart').innerHTML = trip.depart?.label || "Départ";
-                document.getElementById('tripEnd').innerHTML = trip.arrivee?.label || "Arrivée";
-                document.getElementById('tripPrice').innerHTML = trip.prix || "2500 F";
-                document.getElementById('clientPhone').innerHTML = trip.clientTel || "77 888 99 00";
-
-                // Cacher la course de la liste
-                const rideElement = document.getElementById(`ride_${tripId}`);
-                if (rideElement) {
-                    rideElement.style.display = 'none';
-                }
+                document.getElementById('tripStart').innerHTML = trip.depart?.label || 'Départ';
+                document.getElementById('tripEnd').innerHTML = trip.arrivee?.label || 'Arrivée';
+                document.getElementById('clientPhone').innerHTML = trip.clientTel || '77 XXX XX XX';
+                
+                // Cacher de la liste
+                document.getElementById(`ride_${tripId}`).style.display = 'none';
                 updateRideCount();
 
-                // Notification
+                // Tracer itinéraire vers client
+                if (trip.depart) {
+                    traceRouteToClient(trip.depart);
+                }
+
                 showNotification("✅ Course acceptée !");
 
             } catch (error) {
                 console.error("Erreur:", error);
-                alert("Erreur lors de l'acceptation");
+                showNotification("Erreur lors de l'acceptation");
             }
         }
 
-        // ========== DÉMARRER LA COURSE ==========
-        async function startTrip() {
-            if (!currentTripId) return;
+        function traceRouteToClient(depart) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(pos.coords.latitude, pos.coords.longitude),
+                        L.latLng(depart.lat, depart.lng)
+                    ],
+                    routeWhileDragging: false,
+                    lineOptions: { styles: [{ color: '#1877f2', weight: 6 }] }
+                }).addTo(map);
+            });
+        }
+
+        function updateDistanceToClient(driverLat, driverLng, clientPoint) {
+            const distance = getDistance(
+                driverLat, driverLng,
+                clientPoint.lat, clientPoint.lng
+            );
             
+            document.getElementById('clientDistance').innerHTML = distance.toFixed(2) + ' km';
+            
+            // Si à moins de 10 mètres
+            if (distance < 0.01) {
+                document.getElementById('goToClientBtn').style.display = 'none';
+                document.getElementById('arrivedBtn').style.display = 'block';
+            }
+        }
+
+        // ==================== ACTIONS COURSE ====================
+        async function goToClient() {
+            document.getElementById('tripStatus').innerHTML = 'En route vers client';
+            showNotification("🚗 En route vers le point de départ");
+        }
+
+        async function markArrived() {
+            await db.collection("trips").doc(currentTripId).update({
+                status: 'arrived'
+            });
+            
+            document.getElementById('arrivedBtn').style.display = 'none';
+            document.getElementById('startTripBtn').style.display = 'block';
+            document.getElementById('tripStatus').innerHTML = 'Arrivé';
+            
+            showNotification("✅ Vous êtes arrivé, le client peut monter");
+        }
+
+        async function startTrip() {
             await db.collection("trips").doc(currentTripId).update({
                 status: 'started',
                 startedAt: new Date().toISOString()
             });
             
-            document.getElementById('rideStatus').innerHTML = 'En route';
-            document.getElementById('initialActions').style.display = 'none';
+            document.getElementById('startTripBtn').style.display = 'none';
             document.getElementById('completeBtn').style.display = 'block';
+            document.getElementById('tripStatus').innerHTML = 'Course en cours';
             
-            showNotification("🚗 En route vers la destination");
+            // Tracer itinéraire vers destination
+            if (currentTrip.arrivee) {
+                traceRouteToDestination(currentTrip.arrivee);
+            }
+            
+            showNotification("🚀 Course commencée !");
         }
 
-        // ========== TERMINER LA COURSE ==========
+        function traceRouteToDestination(arrivee) {
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(pos.coords.latitude, pos.coords.longitude),
+                        L.latLng(arrivee.lat, arrivee.lng)
+                    ],
+                    routeWhileDragging: false,
+                    lineOptions: { styles: [{ color: '#4caf50', weight: 6 }] }
+                }).addTo(map);
+            });
+        }
+
         async function completeTrip() {
-            if (!currentTripId) return;
-            
+            const earnings = {
+                date: new Date().toLocaleDateString('fr-FR'),
+                prix: currentTrip.prix,
+                client: 'Client',
+                depart: currentTrip.depart?.label,
+                arrivee: currentTrip.arrivee?.label
+            };
+
             await db.collection("trips").doc(currentTripId).update({
                 status: 'completed',
-                completedAt: new Date().toISOString()
+                completedAt: new Date().toISOString(),
+                earnings: earnings
             });
-            
-            showNotification("✅ Course terminée !");
+
+            // Sauvegarder localement
+            saveCompletedTrip(earnings);
+
+            showNotification("✅ Course terminée ! +" + currentTrip.prix);
             
             setTimeout(() => {
                 document.getElementById('activePanel').style.display = 'none';
                 document.getElementById('completeBtn').style.display = 'none';
                 document.getElementById('initialActions').style.display = 'flex';
-                document.getElementById('rideStatus').innerHTML = 'Acceptée';
+                document.getElementById('goToClientBtn').style.display = 'block';
+                document.getElementById('tripStatus').innerHTML = 'Acceptée';
                 currentTripId = null;
+                currentTrip = null;
             }, 2000);
         }
 
-        // ========== ANNULER LA COURSE ==========
         async function cancelTrip() {
             if (!currentTripId) return;
             
@@ -643,15 +799,85 @@
                 
                 document.getElementById('activePanel').style.display = 'none';
                 currentTripId = null;
+                currentTrip = null;
                 
                 showNotification("Course annulée");
             }
         }
 
-        // ========== CHANGER STATUT ==========
+        // ==================== COURSES TERMINEES ====================
+        function saveCompletedTrip(trip) {
+            let completed = JSON.parse(localStorage.getItem('completedTrips') || '[]');
+            completed.unshift(trip);
+            if (completed.length > 20) completed = completed.slice(0, 20);
+            localStorage.setItem('completedTrips', JSON.stringify(completed));
+            loadCompletedTrips();
+        }
+
+        function loadCompletedTrips() {
+            const completed = JSON.parse(localStorage.getItem('completedTrips') || '[]');
+            const list = document.getElementById('completedList');
+            
+            if (completed.length === 0) {
+                document.getElementById('completedSection').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('completedSection').style.display = 'block';
+            
+            let html = '';
+            completed.forEach(trip => {
+                html += `
+                    <div class="completed-item">
+                        <div style="font-weight: 600;">${trip.prix}</div>
+                        <div style="color: #666; font-size: 12px;">${trip.date}</div>
+                    </div>
+                `;
+            });
+            
+            list.innerHTML = html;
+        }
+
+        // ==================== CONNEXION ====================
+        function openLogin() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function loginDriver() {
+            const phone = document.getElementById('loginPhone').value;
+            const code = document.getElementById('loginCode').value;
+            
+            if (phone && code) {
+                isLoggedIn = true;
+                driverId = 'driver_' + Date.now();
+                localStorage.setItem('driverId', driverId);
+                
+                document.getElementById('disconnectedProfile').style.display = 'none';
+                document.getElementById('connectedProfile').style.display = 'block';
+                document.getElementById('driverPhone').innerHTML = phone;
+                
+                document.getElementById('loginModal').style.display = 'none';
+                
+                // Enregistrer dans Firebase
+                db.collection("drivers").doc(driverId).set({
+                    phone: phone,
+                    name: "Moussa Diop",
+                    status: 'offline',
+                    registeredAt: new Date().toISOString()
+                });
+                
+                showNotification("Connecté avec succès");
+            }
+        }
+
+        function autoLogin() {
+            isLoggedIn = true;
+            document.getElementById('disconnectedProfile').style.display = 'none';
+            document.getElementById('connectedProfile').style.display = 'block';
+        }
+
         function toggleStatus() {
             if (!isLoggedIn) {
-                alert("Connectez-vous d'abord");
                 openLogin();
                 return;
             }
@@ -669,42 +895,32 @@
                 statusBtn.innerHTML = 'DÉSACTIVÉ';
                 statusBtn.className = 'status-btn off';
             }
-        }
-
-        // ========== CONNEXION ==========
-        function openLogin() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-
-        function loginDriver() {
-            const phone = document.getElementById('loginPhone').value;
-            const code = document.getElementById('loginCode').value;
             
-            if (phone && code) {
-                isLoggedIn = true;
-                driverId = "driver_" + Date.now();
-                
-                document.getElementById('nonConnecte').style.display = 'none';
-                document.getElementById('connecte').style.display = 'block';
-                document.getElementById('driverPhone').innerHTML = phone;
-                
-                document.getElementById('loginModal').style.display = 'none';
-                
-                showNotification("Connecté avec succès");
-            } else {
-                alert("Remplissez tous les champs");
+            // Mettre à jour Firebase
+            if (driverId) {
+                db.collection("drivers").doc(driverId).update({
+                    status: isOnline ? 'online' : 'offline'
+                });
             }
         }
 
-        // ========== NOTIFICATION ==========
-        function showNotification(message) {
+        // ==================== UTILITAIRES ====================
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function showNotification(msg) {
             const notif = document.getElementById('notification');
-            notif.innerHTML = message;
+            notif.innerHTML = msg;
             notif.style.display = 'block';
-            
-            setTimeout(() => {
-                notif.style.display = 'none';
-            }, 3000);
+            setTimeout(() => notif.style.display = 'none', 3000);
         }
     </script>
 </body>
