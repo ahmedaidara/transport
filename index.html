@@ -8,20 +8,19 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
     
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         }
 
         body {
             height: 100vh;
             overflow: hidden;
-            background: #f5f5f5;
+            background: #f8f9fa;
         }
 
         /* HEADER */
@@ -40,21 +39,21 @@
 
         .search-bar {
             flex: 1;
-            background: #f0f2f5;
+            background: #f1f3f4;
             border-radius: 30px;
             padding: 16px 20px;
             display: flex;
             align-items: center;
             gap: 10px;
             cursor: pointer;
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
         }
 
         .search-bar span:first-child {
             font-size: 20px;
         }
 
-        .avatar-large {
+        .avatar {
             width: 55px;
             height: 55px;
             background: #1877f2;
@@ -77,8 +76,8 @@
             z-index: 1;
         }
 
-        /* PANNEAU DE COMMANDE */
-        .order-panel {
+        /* PANNEAU PRINCIPAL */
+        .main-panel {
             position: fixed;
             bottom: 0;
             left: 0;
@@ -88,7 +87,7 @@
             border-top-right-radius: 30px;
             box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
             z-index: 2;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             transition: transform 0.3s ease;
         }
@@ -107,7 +106,7 @@
         }
 
         /* ADRESSES */
-        .address-container {
+        .address-section {
             background: #f8f9fa;
             border-radius: 20px;
             padding: 10px;
@@ -118,9 +117,9 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 16px 10px;
+            padding: 16px 12px;
             cursor: pointer;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #eaeaea;
         }
 
         .address-row:last-child {
@@ -128,23 +127,23 @@
         }
 
         .address-icon {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .address-icon.green {
-            background: #e8f5e9;
-            color: #4caf50;
+            background: #e3f2e5;
+            color: #2e7d32;
         }
 
         .address-icon.red {
             background: #ffebee;
-            color: #f44336;
+            color: #c62828;
         }
 
         .address-text {
@@ -159,39 +158,32 @@
             gap: 12px;
             margin: 20px 0;
             overflow-x: auto;
-            padding: 5px 0;
+            padding-bottom: 10px;
         }
 
-        .favorite-pill {
-            background: #f0f2f5;
-            border: 1px solid #ddd;
+        .favorite-item {
+            background: #f1f3f4;
             border-radius: 40px;
-            padding: 12px 20px;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             gap: 8px;
             white-space: nowrap;
             cursor: pointer;
-            transition: all 0.2s;
+            border: 1px solid #ddd;
         }
 
-        .favorite-pill:active {
-            background: #1877f2;
-            color: white;
-            border-color: #1877f2;
-        }
-
-        .favorite-pill span:first-child {
-            font-size: 20px;
+        .favorite-item span:first-child {
+            font-size: 22px;
         }
 
         /* ITINERAIRES */
-        .routes-container {
-            margin: 20px 0;
+        .routes-section {
+            margin: 25px 0;
         }
 
         .route-card {
-            background: white;
+            background: #f8f9fa;
             border: 2px solid #e0e0e0;
             border-radius: 16px;
             padding: 16px;
@@ -205,7 +197,7 @@
 
         .route-card.selected {
             border-color: #1877f2;
-            background: #e7f3ff;
+            background: #e3f2fd;
         }
 
         .route-color {
@@ -236,15 +228,15 @@
         .route-price {
             font-size: 20px;
             font-weight: 700;
-            color: #4caf50;
+            color: #2e7d32;
         }
 
         /* PRIX */
         .price-banner {
-            background: #4caf50;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            border-radius: 20px;
             padding: 20px;
-            margin: 20px 0;
+            margin: 25px 0;
             color: white;
             display: flex;
             justify-content: space-between;
@@ -254,11 +246,6 @@
         .price-big {
             font-size: 36px;
             font-weight: 700;
-        }
-
-        .price-small {
-            font-size: 14px;
-            opacity: 0.9;
         }
 
         /* BOUTON COMMANDER */
@@ -286,35 +273,96 @@
             box-shadow: none;
         }
 
-        /* INSTRUCTIONS */
-        .instructions-panel {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px 0;
+        /* PANNEAU SUIVI COURSE */
+        .tracking-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
+            z-index: 3;
+            padding: 25px;
             display: none;
         }
 
-        .instructions-panel.show {
-            display: block;
-        }
-
-        .instruction-step {
+        .driver-info-card {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid #e0e0e0;
+            gap: 20px;
         }
 
-        .instruction-step:last-child {
-            border-bottom: none;
+        .driver-photo {
+            width: 80px;
+            height: 80px;
+            background: #1877f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
         }
 
-        .instruction-icon {
-            width: 30px;
+        .driver-details h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .driver-details p {
+            color: #666;
+            margin: 3px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .status-accepted {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-arrived {
+            background: #4caf50;
+            color: white;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #4caf50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .arrived-message {
+            background: #4caf50;
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 20px 0;
+            display: none;
         }
 
         /* PAGE RECHERCHE */
@@ -335,20 +383,17 @@
             display: flex;
             gap: 15px;
             background: white;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #eee;
         }
 
-        .back-button {
+        .back-btn {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: #f0f2f5;
+            background: #f1f3f4;
             border: none;
             font-size: 24px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .search-input {
@@ -359,9 +404,29 @@
             font-size: 16px;
         }
 
-        .search-input:focus {
+        .search-options {
+            padding: 15px 20px;
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 15px;
+            background: #f1f3f4;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .option-btn.active {
+            background: #1877f2;
+            color: white;
             border-color: #1877f2;
-            outline: none;
         }
 
         .search-results {
@@ -372,32 +437,21 @@
 
         .result-item {
             padding: 18px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #eee;
             display: flex;
             align-items: center;
             gap: 15px;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .result-item:hover {
-            background: #f5f5f5;
         }
 
         .result-item.current-location {
-            background: #e7f3ff;
+            background: #e3f2fd;
             border-radius: 12px;
-            border: 2px solid #1877f2;
             margin-bottom: 20px;
+            border: 2px solid #1877f2;
         }
 
-        .result-icon {
-            font-size: 24px;
-            width: 40px;
-            text-align: center;
-        }
-
-        /* MODAL CONNEXION */
+        /* MODAL */
         .modal {
             position: fixed;
             top: 0;
@@ -417,26 +471,19 @@
             border-radius: 30px;
             width: 100%;
             max-width: 400px;
-            padding: 30px 25px;
+            padding: 30px;
         }
 
-        .modal-icon {
-            font-size: 60px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .phone-input-group {
+        .phone-input {
             display: flex;
             gap: 10px;
             margin: 25px 0;
         }
 
         .country-code {
-            background: #f0f2f5;
+            background: #f1f3f4;
             padding: 16px;
             border-radius: 12px;
-            font-weight: 600;
             border: 1px solid #ddd;
         }
 
@@ -448,7 +495,7 @@
             font-size: 16px;
         }
 
-        .modal-button {
+        .modal-btn {
             background: #1877f2;
             color: white;
             border: none;
@@ -460,6 +507,50 @@
             cursor: pointer;
         }
 
+        /* HISTORIQUE */
+        .history-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .history-date {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .history-route {
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .history-price {
+            color: #2e7d32;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
         /* NOTIFICATION */
         .notification {
             position: fixed;
@@ -468,8 +559,8 @@
             right: 20px;
             background: #323232;
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
+            padding: 16px 20px;
+            border-radius: 12px;
             z-index: 4000;
             display: none;
             animation: slideDown 0.3s;
@@ -478,17 +569,6 @@
         @keyframes slideDown {
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            .price-big {
-                font-size: 28px;
-            }
-            
-            .favorite-pill {
-                padding: 10px 16px;
-            }
         }
     </style>
 </head>
@@ -499,21 +579,21 @@
             <span>🔍</span>
             <span>Où allez-vous ?</span>
         </div>
-        <div class="avatar-large" onclick="openLoginModal()">👤</div>
+        <div class="avatar" onclick="openHistory()">👤</div>
     </div>
 
     <!-- CARTE -->
     <div id="map"></div>
 
-    <!-- PANNEAU DE COMMANDE -->
-    <div class="order-panel" id="orderPanel">
+    <!-- PANNEAU PRINCIPAL -->
+    <div class="main-panel" id="mainPanel">
         <div class="panel-handle" onclick="togglePanel()"></div>
         <div class="panel-content">
             <!-- ADRESSES -->
-            <div class="address-container">
+            <div class="address-section">
                 <div class="address-row" onclick="openSearch('depart')">
                     <div class="address-icon green">🟢</div>
-                    <div class="address-text" id="departText">Choisir départ</div>
+                    <div class="address-text" id="departText">Choisir lieu de départ</div>
                 </div>
                 <div class="address-row" onclick="openSearch('arrivee')">
                     <div class="address-icon red">🔴</div>
@@ -523,29 +603,29 @@
 
             <!-- FAVORIS -->
             <div class="favorites-row">
-                <div class="favorite-pill" onclick="setFavorite('maison')">
+                <div class="favorite-item" onclick="setFavorite('maison')">
                     <span>🏠</span>
                     <span>Maison</span>
                 </div>
-                <div class="favorite-pill" onclick="setFavorite('travail')">
+                <div class="favorite-item" onclick="setFavorite('travail')">
                     <span>💼</span>
                     <span>Travail</span>
                 </div>
-                <div class="favorite-pill" onclick="setFavorite('aeroport')">
+                <div class="favorite-item" onclick="setFavorite('aeroport')">
                     <span>✈️</span>
                     <span>Aéroport</span>
                 </div>
             </div>
 
             <!-- ITINERAIRES -->
-            <div class="routes-container" id="routesContainer" style="display: none;">
+            <div class="routes-section" id="routesSection" style="display: none;">
                 <h3 style="margin-bottom: 15px;">🛣️ Itinéraires disponibles</h3>
                 
                 <div class="route-card selected" id="route1" onclick="selectRoute(1)">
                     <div class="route-color blue"></div>
                     <div class="route-info">
                         <div class="route-name" id="routeName1">Route principale</div>
-                        <div class="route-details" id="routeDetails1">Calcul en cours...</div>
+                        <div class="route-details" id="routeDetails1">Calcul...</div>
                     </div>
                     <div class="route-price" id="routePrice1">-</div>
                 </div>
@@ -554,7 +634,7 @@
                     <div class="route-color green"></div>
                     <div class="route-info">
                         <div class="route-name" id="routeName2">Itinéraire alternatif</div>
-                        <div class="route-details" id="routeDetails2">Calcul en cours...</div>
+                        <div class="route-details" id="routeDetails2">Calcul...</div>
                     </div>
                     <div class="route-price" id="routePrice2">-</div>
                 </div>
@@ -563,7 +643,7 @@
                     <div class="route-color orange"></div>
                     <div class="route-info">
                         <div class="route-name" id="routeName3">Éviter péages</div>
-                        <div class="route-details" id="routeDetails3">Calcul en cours...</div>
+                        <div class="route-details" id="routeDetails3">Calcul...</div>
                     </div>
                     <div class="route-price" id="routePrice3">-</div>
                 </div>
@@ -572,12 +652,12 @@
             <!-- PRIX -->
             <div class="price-banner" id="priceBanner" style="display: none;">
                 <div>
-                    <div class="price-small">Prix total</div>
+                    <div style="font-size: 16px; opacity: 0.9;">Prix total</div>
                     <div class="price-big" id="totalPrice">0 F</div>
                 </div>
                 <div style="text-align: right;">
                     <div>💰 Espèces/OM</div>
-                    <div class="price-small">Course sécurisée</div>
+                    <div style="font-size: 14px;">Course sécurisée</div>
                 </div>
             </div>
 
@@ -585,52 +665,103 @@
             <button class="order-button" id="orderBtn" onclick="commanderCourse()" disabled>
                 <span>🚗</span> COMMANDER
             </button>
+        </div>
+    </div>
 
-            <!-- INSTRUCTIONS -->
-            <div class="instructions-panel" id="instructionsPanel">
-                <h3 style="margin-bottom: 15px;">📋 Détail du trajet</h3>
-                <div id="instructionsList"></div>
+    <!-- PANNEAU SUIVI COURSE -->
+    <div class="tracking-panel" id="trackingPanel">
+        <h2 style="margin-bottom: 20px;">🚗 Votre course</h2>
+        
+        <div class="driver-info-card">
+            <div class="driver-photo" id="driverPhoto">👨‍✈️</div>
+            <div class="driver-details">
+                <h3 id="driverName">Chauffeur</h3>
+                <p id="driverPhone">-</p>
+                <p id="driverVehicle">-</p>
+                <p id="driverPlate">-</p>
             </div>
+        </div>
+
+        <div id="statusContainer">
+            <div class="status-badge status-accepted" id="statusText">
+                🔍 Recherche de chauffeur...
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="distanceInfo" style="text-align: center; margin: 15px 0; color: #666;">
+            Distance du chauffeur: <span id="driverDistance">-</span>
+        </div>
+
+        <div class="arrived-message" id="arrivedMessage">
+            🎉 VOTRE CHAUFFEUR EST ARRIVÉ !
         </div>
     </div>
 
     <!-- PAGE RECHERCHE -->
     <div class="search-page" id="searchPage">
         <div class="search-header">
-            <button class="back-button" onclick="closeSearch()">←</button>
+            <button class="back-btn" onclick="closeSearch()">←</button>
             <input type="text" class="search-input" id="searchInput" 
-                   placeholder="Rechercher une adresse à Dakar..." 
+                   placeholder="Rechercher une adresse..." 
                    onkeyup="searchAddresses()">
         </div>
+        
+        <div class="search-options">
+            <div class="option-btn active" id="optionDepart" onclick="setSearchMode('depart')">🟢 Départ</div>
+            <div class="option-btn" id="optionArrivee" onclick="setSearchMode('arrivee')">🔴 Arrivée</div>
+        </div>
+
         <div class="search-results" id="searchResults">
+            <!-- Position actuelle -->
             <div class="result-item current-location" onclick="selectCurrentLocation()">
-                <span class="result-icon">📍</span>
+                <span style="font-size: 24px;">📍</span>
                 <div>
                     <div style="font-weight: 600;">Ma position actuelle</div>
-                    <div style="color: #666; font-size: 14px;">Utiliser la géolocalisation</div>
+                    <div style="color: #666;">Utiliser la géolocalisation</div>
                 </div>
             </div>
+
+            <!-- Sélection sur carte -->
+            <div class="result-item" onclick="selectOnMap()">
+                <span style="font-size: 24px;">🗺️</span>
+                <div>
+                    <div style="font-weight: 600;">Sélectionner sur la carte</div>
+                    <div style="color: #666;">Touchez un point sur la carte</div>
+                </div>
+            </div>
+
             <div id="addressResults"></div>
+        </div>
+    </div>
+
+    <!-- PAGE HISTORIQUE -->
+    <div class="history-page" id="historyPage">
+        <div class="search-header">
+            <button class="back-btn" onclick="closeHistory()">←</button>
+            <h2 style="flex:1;">📋 Historique</h2>
+        </div>
+        <div class="history-list" id="historyList">
+            <!-- L'historique sera chargé ici -->
         </div>
     </div>
 
     <!-- MODAL CONNEXION -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <div class="modal-icon">📱</div>
+            <div style="font-size: 60px; text-align: center; margin-bottom: 20px;">📱</div>
             <h2 style="text-align: center; margin-bottom: 10px;">YONOU VTC</h2>
             <p style="text-align: center; color: #666; margin-bottom: 25px;">Connectez-vous pour commander</p>
             
-            <div class="phone-input-group">
+            <div class="phone-input">
                 <div class="country-code">+221</div>
                 <input type="tel" class="phone-number" id="phoneNumber" placeholder="77 000 00 00">
             </div>
             
-            <button class="modal-button" onclick="connecterClient()">SE CONNECTER</button>
-            
-            <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #999;">
-                En continuant, vous acceptez nos conditions d'utilisation
-            </p>
+            <button class="modal-btn" onclick="connecterClient()">SE CONNECTER</button>
         </div>
     </div>
 
@@ -640,12 +771,10 @@
     <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
-    <!-- LEAFET ET PLUGINS -->
+    <!-- LEAFLET -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
 
     <script>
         // ==================== CONFIGURATION FIREBASE ====================
@@ -655,29 +784,28 @@
             projectId: "saldiaemploidutemps",
             storageBucket: "saldiaemploidutemps.firebasestorage.app",
             messagingSenderId: "666378499509",
-            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc",
-            measurementId: "G-PGVQBS70F5"
+            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc"
         };
 
-        // Initialiser Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const auth = firebase.auth();
 
         // ==================== VARIABLES GLOBALES ====================
         let map;
         let routingControl = null;
-        let currentRoutes = [];
-        let selectedRoute = 0;
-        let departPoint = null;
-        arriveePoint = null;
         let userMarker = null;
-        let panelOpen = true;
+        let departMarker = null;
+        let arriveeMarker = null;
+        let driverMarker = null;
+        let departPoint = null;
+        let arriveePoint = null;
         let searchMode = 'depart';
-        let clientId = null;
-        let unsubscribeTrips = null;
+        let clientId = localStorage.getItem('clientId') || 'client_' + Date.now();
+        let currentTripId = null;
+        let selectedRoute = 1;
+        let currentRoutes = [];
 
-        // Base de données d'adresses à Dakar
+        // Adresses Dakar
         const addresses = [
             { name: "Plateau", address: "Plateau, Dakar", lat: 14.6928, lng: -17.4464 },
             { name: "Almadies", address: "Almadies, Dakar", lat: 14.7441, lng: -17.5208 },
@@ -685,38 +813,32 @@
             { name: "Fann", address: "Fann, Dakar", lat: 14.6868, lng: -17.4692 },
             { name: "Ouakam", address: "Ouakam, Dakar", lat: 14.7205, lng: -17.4936 },
             { name: "Yoff", address: "Yoff, Dakar", lat: 14.7569, lng: -17.4757 },
-            { name: "Grand Dakar", address: "Grand Dakar, Dakar", lat: 14.7095, lng: -17.4590 },
-            { name: "Pikine", address: "Pikine, Dakar", lat: 14.7500, lng: -17.4000 },
-            { name: "Guediawaye", address: "Guediawaye, Dakar", lat: 14.7833, lng: -17.4000 },
-            { name: "Rufisque", address: "Rufisque, Dakar", lat: 14.7167, lng: -17.2667 },
-            { name: "Place de l'Indépendance", address: "Dakar Plateau", lat: 14.6657, lng: -17.4372 },
-            { name: "Aéroport AIBD", address: "Diass, Sénégal", lat: 14.6700, lng: -17.0733 },
-            { name: "UCAD", address: "Université Cheikh Anta Diop", lat: 14.6873, lng: -17.4670 },
-            { name: "Sacre Coeur", address: "Sacre Coeur, Dakar", lat: 14.7150, lng: -17.4800 },
-            { name: "Point E", address: "Point E, Dakar", lat: 14.6980, lng: -17.4580 },
-            { name: "HLM", address: "HLM, Dakar", lat: 14.6900, lng: -17.4400 },
-            { name: "Medina", address: "Medina, Dakar", lat: 14.6800, lng: -17.4400 },
-            { name: "Gare Routiere", address: "Gare Routiere, Dakar", lat: 14.6850, lng: -17.4300 }
+            { name: "Aéroport", address: "AIBD, Diass", lat: 14.6700, lng: -17.0733 },
+            { name: "UCAD", address: "Université, Dakar", lat: 14.6873, lng: -17.4670 }
         ];
 
         // Favoris
         const favorites = {
-            maison: { name: "Maison", address: "Almadies - Villa 123", lat: 14.7441, lng: -17.5208 },
-            travail: { name: "Travail", address: "Plateau - Immeuble Kébé", lat: 14.6928, lng: -17.4464 },
-            aeroport: { name: "Aéroport", address: "AIBD - Diass", lat: 14.6700, lng: -17.0733 }
+            maison: { address: "Almadies - Villa 123", lat: 14.7441, lng: -17.5208 },
+            travail: { address: "Plateau - Immeuble Kébé", lat: 14.6928, lng: -17.4464 },
+            aeroport: { address: "AIBD - Diass", lat: 14.6700, lng: -17.0733 }
         };
 
         // ==================== INITIALISATION ====================
         window.onload = function() {
             initMap();
-            setupAuth();
+            loadHistory();
+            checkExistingTrip();
+            
+            // Sauvegarder clientId
+            localStorage.setItem('clientId', clientId);
         };
 
         function initMap() {
             map = L.map('map').setView([14.7167, -17.4677], 13);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap'
             }).addTo(map);
 
             // Géolocalisation
@@ -731,66 +853,50 @@
                         } else {
                             userMarker = L.marker([lat, lng], {
                                 icon: L.divIcon({
-                                    className: 'user-marker',
                                     html: '📍',
                                     iconSize: [30, 30]
                                 })
                             }).addTo(map);
                         }
-                        map.setView([lat, lng], 14);
-                    },
-                    function(error) {
-                        console.log("Erreur de géolocalisation:", error);
                     }
                 );
             }
 
-            // Gestionnaire de clic sur la carte
+            // Clic sur carte
             map.on('click', function(e) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-                
-                if (searchMode === 'depart') {
-                    setDepartPoint(lat, lng, "Point sur carte");
-                } else {
-                    setArriveePoint(lat, lng, "Point sur carte");
+                if (document.getElementById('searchPage').style.display === 'flex') {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
+                    
+                    if (searchMode === 'depart') {
+                        setDepartPoint(lat, lng, "Point sur carte");
+                    } else {
+                        setArriveePoint(lat, lng, "Point sur carte");
+                    }
+                    closeSearch();
                 }
             });
         }
 
-        // ==================== AUTHENTIFICATION ====================
-        function setupAuth() {
-            auth.onAuthStateChanged(function(user) {
-                if (user) {
-                    clientId = user.uid;
-                    console.log("Client connecté:", user.phoneNumber);
-                    showNotification("Connecté avec succès");
-                }
-            });
-        }
-
-        function connecterClient() {
-            const phone = document.getElementById('phoneNumber').value;
-            if (phone) {
-                // Simuler connexion (en vrai utiliser Firebase Auth)
-                clientId = "client_" + Date.now();
-                localStorage.setItem('clientId', clientId);
-                document.getElementById('loginModal').style.display = 'none';
-                showNotification("Connecté avec succès");
-            } else {
-                alert("Veuillez entrer votre numéro de téléphone");
-            }
-        }
-
-        // ==================== RECHERCHE D'ADRESSES ====================
+        // ==================== GESTION RECHERCHE ====================
         function openSearch(mode = 'depart') {
             searchMode = mode;
             document.getElementById('searchPage').style.display = 'flex';
             document.getElementById('searchInput').focus();
+            
+            // Mettre à jour les boutons
+            document.getElementById('optionDepart').classList.toggle('active', mode === 'depart');
+            document.getElementById('optionArrivee').classList.toggle('active', mode === 'arrivee');
         }
 
         function closeSearch() {
             document.getElementById('searchPage').style.display = 'none';
+        }
+
+        function setSearchMode(mode) {
+            searchMode = mode;
+            document.getElementById('optionDepart').classList.toggle('active', mode === 'depart');
+            document.getElementById('optionArrivee').classList.toggle('active', mode === 'arrivee');
         }
 
         function searchAddresses() {
@@ -811,10 +917,10 @@
             filtered.forEach(addr => {
                 html += `
                     <div class="result-item" onclick="selectAddress('${addr.address}', ${addr.lat}, ${addr.lng})">
-                        <span class="result-icon">📍</span>
+                        <span style="font-size: 20px;">📍</span>
                         <div>
                             <div style="font-weight: 600;">${addr.name}</div>
-                            <div style="color: #666; font-size: 14px;">${addr.address}</div>
+                            <div style="color: #666;">${addr.address}</div>
                         </div>
                     </div>
                 `;
@@ -835,10 +941,16 @@
                         setArriveePoint(lat, lng, "Ma position");
                     }
                     closeSearch();
+                    
+                    // Retour à la page principale
+                    document.getElementById('mainPanel').style.display = 'block';
                 });
-            } else {
-                alert("Géolocalisation non disponible");
             }
+        }
+
+        function selectOnMap() {
+            closeSearch();
+            showNotification("Touchez sur la carte pour choisir le point");
         }
 
         function selectAddress(address, lat, lng) {
@@ -850,43 +962,6 @@
             closeSearch();
         }
 
-        // ==================== GESTION DES POINTS ====================
-        function setDepartPoint(lat, lng, label) {
-            departPoint = { lat, lng, label };
-            document.getElementById('departText').innerHTML = label;
-            
-            // Supprimer ancien marqueur
-            if (window.departMarker) map.removeLayer(window.departMarker);
-            
-            // Ajouter nouveau marqueur
-            window.departMarker = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    html: '🟢',
-                    iconSize: [30, 30]
-                })
-            }).addTo(map);
-            
-            calculateRoutes();
-        }
-
-        function setArriveePoint(lat, lng, label) {
-            arriveePoint = { lat, lng, label };
-            document.getElementById('arriveeText').innerHTML = label;
-            
-            // Supprimer ancien marqueur
-            if (window.arriveeMarker) map.removeLayer(window.arriveeMarker);
-            
-            // Ajouter nouveau marqueur
-            window.arriveeMarker = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    html: '🔴',
-                    iconSize: [30, 30]
-                })
-            }).addTo(map);
-            
-            calculateRoutes();
-        }
-
         function setFavorite(type) {
             const fav = favorites[type];
             if (searchMode === 'depart') {
@@ -896,21 +971,43 @@
             }
         }
 
-        // ==================== CALCUL D'ITINERAIRES ====================
-        function calculateRoutes() {
-            if (!departPoint || !arriveePoint) return;
+        // ==================== GESTION POINTS ====================
+        function setDepartPoint(lat, lng, label) {
+            departPoint = { lat, lng, label };
+            document.getElementById('departText').innerHTML = label;
+            
+            if (departMarker) map.removeLayer(departMarker);
+            departMarker = L.marker([lat, lng], {
+                icon: L.divIcon({ html: '🟢', iconSize: [30, 30] })
+            }).addTo(map);
+            
+            checkAndCalculate();
+        }
 
-            // Supprimer ancien itinéraire
+        function setArriveePoint(lat, lng, label) {
+            arriveePoint = { lat, lng, label };
+            document.getElementById('arriveeText').innerHTML = label;
+            
+            if (arriveeMarker) map.removeLayer(arriveeMarker);
+            arriveeMarker = L.marker([lat, lng], {
+                icon: L.divIcon({ html: '🔴', iconSize: [30, 30] })
+            }).addTo(map);
+            
+            checkAndCalculate();
+        }
+
+        function checkAndCalculate() {
+            if (departPoint && arriveePoint) {
+                calculateRoutes();
+            }
+        }
+
+        // ==================== CALCUL ITINERAIRES ====================
+        function calculateRoutes() {
             if (routingControl) {
                 map.removeControl(routingControl);
             }
 
-            // Afficher le conteneur d'itinéraires
-            document.getElementById('routesContainer').style.display = 'block';
-            document.getElementById('priceBanner').style.display = 'flex';
-            document.getElementById('orderBtn').disabled = false;
-
-            // Calculer itinéraire avec OSRM
             routingControl = L.Routing.control({
                 waypoints: [
                     L.latLng(departPoint.lat, departPoint.lng),
@@ -918,197 +1015,286 @@
                 ],
                 routeWhileDragging: false,
                 showAlternatives: true,
-                altLineOptions: {
-                    styles: [
-                        { color: '#1877f2', opacity: 0.8, weight: 6 },
-                        { color: '#4caf50', opacity: 0.8, weight: 6 },
-                        { color: '#ff9800', opacity: 0.8, weight: 6 }
-                    ]
-                },
-                router: L.Routing.osrmv1({
-                    serviceUrl: 'https://router.project-osrm.org/route/v1'
-                }),
-                lineOptions: {
-                    styles: [{ color: '#1877f2', opacity: 0.8, weight: 6 }]
-                }
+                lineOptions: { styles: [{ color: '#1877f2', weight: 6 }] }
             }).addTo(map);
 
-            // Quand les itinéraires sont trouvés
             routingControl.on('routesfound', function(e) {
                 currentRoutes = e.routes;
                 updateRoutesDisplay();
             });
+
+            document.getElementById('routesSection').style.display = 'block';
+            document.getElementById('priceBanner').style.display = 'flex';
+            document.getElementById('orderBtn').disabled = false;
         }
 
         function updateRoutesDisplay() {
-            if (!currentRoutes || currentRoutes.length === 0) return;
-
             for (let i = 0; i < Math.min(3, currentRoutes.length); i++) {
                 const route = currentRoutes[i];
                 const distance = (route.summary.totalDistance / 1000).toFixed(1);
                 const duration = Math.round(route.summary.totalTime / 60);
-                const price = Math.round(1000 + (distance * 350)); // Base 1000 F + 350 F/km
+                const price = Math.round(1000 + (distance * 350));
 
-                // Mettre à jour l'affichage
                 document.getElementById(`routeName${i+1}`).innerHTML = 
-                    i === 0 ? "Route principale" : 
-                    i === 1 ? "Itinéraire alternatif" : 
-                    "Éviter péages";
-                
-                document.getElementById(`routeDetails${i+1}`).innerHTML = 
-                    `${distance} km • ${duration} min`;
-                
-                document.getElementById(`routePrice${i+1}`).innerHTML = 
-                    `${price} F`;
+                    i === 0 ? "Route principale" : i === 1 ? "Littoral" : "Sans péage";
+                document.getElementById(`routeDetails${i+1}`).innerHTML = `${distance} km • ${duration} min`;
+                document.getElementById(`routePrice${i+1}`).innerHTML = `${price} F`;
             }
-
-            // Sélectionner le premier itinéraire par défaut
             selectRoute(1);
         }
 
         function selectRoute(index) {
             selectedRoute = index;
-            
-            // Mettre à jour les classes
-            document.querySelectorAll('.route-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
             document.getElementById(`route${index}`).classList.add('selected');
             
-            // Afficher le prix
             const price = document.getElementById(`routePrice${index}`).innerHTML;
             document.getElementById('totalPrice').innerHTML = price;
             
-            // Afficher l'itinéraire sélectionné sur la carte
             if (routingControl && currentRoutes[index-1]) {
                 routingControl.showRoute(index-1);
             }
         }
 
-        // ==================== COMMANDE DE COURSE ====================
+        // ==================== COMMANDE ====================
         async function commanderCourse() {
-            if (!clientId) {
-                alert("Veuillez vous connecter d'abord");
-                openLoginModal();
-                return;
-            }
-
             if (!departPoint || !arriveePoint) {
-                alert("Veuillez choisir une destination");
+                showNotification("Choisissez une destination");
                 return;
             }
 
             const prix = document.getElementById('totalPrice').innerHTML;
             
-            // Créer la course dans Firebase
             try {
                 const courseData = {
                     clientId: clientId,
-                    clientNom: "Client",
-                    clientTel: "77 000 00 00",
                     depart: departPoint,
                     arrivee: arriveePoint,
                     prix: prix,
                     route: selectedRoute,
-                    status: 'searching', // searching, accepted, started, completed
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    createdAt: new Date().toISOString()
+                    status: 'searching',
+                    timestamp: new Date().toISOString()
                 };
 
-                await db.collection("trips").add(courseData);
+                const docRef = await db.collection("trips").add(courseData);
+                currentTripId = docRef.id;
                 
-                // Afficher les instructions
-                document.getElementById('instructionsPanel').classList.add('show');
-                generateInstructions();
+                // Cacher panneau principal, afficher suivi
+                document.getElementById('mainPanel').style.display = 'none';
+                document.getElementById('trackingPanel').style.display = 'block';
                 
                 showNotification("✅ Course envoyée - Recherche de chauffeur...");
                 
-                // Écouter les changements de statut
-                listenForTripUpdates();
+                // Écouter les changements
+                listenForTripUpdates(currentTripId);
                 
             } catch (error) {
                 console.error("Erreur:", error);
-                alert("Erreur lors de la commande");
+                showNotification("Erreur lors de la commande");
             }
         }
 
-        function generateInstructions() {
-            const instructions = [
-                { icon: '↑', text: 'Continuez tout droit - 800m' },
-                { icon: '↳', text: 'Tournez à droite - 400m' },
-                { icon: '🌊', text: 'Longez le littoral - 2.5km' },
-                { icon: '↱', text: 'Tournez à gauche - 1.2km' },
-                { icon: '📍', text: 'Vous êtes arrivé à destination' }
-            ];
+        // ==================== SUIVI COURSE ====================
+        function listenForTripUpdates(tripId) {
+            db.collection("trips").doc(tripId).onSnapshot((doc) => {
+                const trip = doc.data();
+                if (!trip) return;
+
+                switch(trip.status) {
+                    case 'accepted':
+                        document.getElementById('statusText').innerHTML = '✅ Chauffeur trouvé - En route vers vous';
+                        document.getElementById('statusText').className = 'status-badge status-accepted';
+                        
+                        // Afficher infos chauffeur
+                        if (trip.driverInfo) {
+                            document.getElementById('driverName').innerHTML = trip.driverInfo.name;
+                            document.getElementById('driverPhone').innerHTML = trip.driverInfo.phone;
+                            document.getElementById('driverVehicle').innerHTML = trip.driverInfo.vehicle;
+                            document.getElementById('driverPlate').innerHTML = trip.driverInfo.plate;
+                        }
+                        
+                        // Commencer à suivre le chauffeur
+                        if (trip.driverId) {
+                            trackDriverLocation(trip.driverId);
+                        }
+                        break;
+                        
+                    case 'arrived':
+                        document.getElementById('arrivedMessage').style.display = 'block';
+                        document.getElementById('statusText').innerHTML = '🚗 Le chauffeur est arrivé !';
+                        break;
+                        
+                    case 'started':
+                        document.getElementById('statusText').innerHTML = '🚗 En route vers destination';
+                        document.getElementById('arrivedMessage').style.display = 'none';
+                        break;
+                        
+                    case 'completed':
+                        showNotification('✅ Course terminée !');
+                        saveToHistory(trip);
+                        setTimeout(() => {
+                            document.getElementById('trackingPanel').style.display = 'none';
+                            document.getElementById('mainPanel').style.display = 'block';
+                            resetTrip();
+                        }, 3000);
+                        break;
+                }
+            });
+        }
+
+        function trackDriverLocation(driverId) {
+            db.collection("drivers").doc(driverId).onSnapshot((doc) => {
+                const driver = doc.data();
+                if (driver && driver.location) {
+                    updateDriverPosition(driver.location);
+                    calculateDriverDistance(driver.location);
+                }
+            });
+        }
+
+        function updateDriverPosition(location) {
+            if (driverMarker) {
+                driverMarker.setLatLng([location.lat, location.lng]);
+            } else {
+                driverMarker = L.marker([location.lat, location.lng], {
+                    icon: L.divIcon({ html: '🚗', iconSize: [30, 30] })
+                }).addTo(map);
+            }
+        }
+
+        function calculateDriverDistance(driverLoc) {
+            if (!departPoint) return;
+            
+            const distance = getDistance(
+                driverLoc.lat, driverLoc.lng,
+                departPoint.lat, departPoint.lng
+            );
+            
+            document.getElementById('driverDistance').innerHTML = distance.toFixed(1) + ' km';
+            
+            // Mettre à jour progression
+            const progress = Math.min(100, (1 - distance/10) * 100);
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Vérifier si arrivé (moins de 10 mètres)
+            if (distance < 0.01) { // 10 mètres = 0.01 km
+                updateTripStatus('arrived');
+            }
+        }
+
+        async function updateTripStatus(status) {
+            if (currentTripId) {
+                await db.collection("trips").doc(currentTripId).update({
+                    status: status
+                });
+            }
+        }
+
+        // ==================== HISTORIQUE ====================
+        function saveToHistory(trip) {
+            let history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
+            
+            history.unshift({
+                date: new Date().toLocaleDateString('fr-FR'),
+                depart: trip.depart.label,
+                arrivee: trip.arrivee.label,
+                prix: trip.prix,
+                driver: trip.driverInfo?.name || 'Chauffeur'
+            });
+            
+            // Garder seulement les 20 dernières courses
+            if (history.length > 20) history = history.slice(0, 20);
+            
+            localStorage.setItem('tripHistory', JSON.stringify(history));
+        }
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
+            const list = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">Aucune course pour le moment</div>';
+                return;
+            }
             
             let html = '';
-            instructions.forEach(inst => {
+            history.forEach(item => {
                 html += `
-                    <div class="instruction-step">
-                        <span class="instruction-icon">${inst.icon}</span>
-                        <span>${inst.text}</span>
+                    <div class="history-item">
+                        <div class="history-date">📅 ${item.date}</div>
+                        <div class="history-route">${item.depart} → ${item.arrivee}</div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                            <span>👤 ${item.driver}</span>
+                            <span class="history-price">${item.prix}</span>
+                        </div>
                     </div>
                 `;
             });
             
-            document.getElementById('instructionsList').innerHTML = html;
+            list.innerHTML = html;
         }
 
-        function listenForTripUpdates() {
-            if (unsubscribeTrips) {
-                unsubscribeTrips();
-            }
+        function openHistory() {
+            loadHistory();
+            document.getElementById('historyPage').style.display = 'flex';
+        }
 
-            unsubscribeTrips = db.collection("trips")
-                .where("clientId", "==", clientId)
-                .orderBy("timestamp", "desc")
-                .limit(1)
-                .onSnapshot((snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "modified") {
-                            const trip = change.doc.data();
-                            const status = trip.status;
-                            
-                            if (status === 'accepted') {
-                                showNotification("✅ Chauffeur trouvé - En route vers vous");
-                            } else if (status === 'started') {
-                                showNotification("🚗 Chauffeur en route vers la destination");
-                            } else if (status === 'completed') {
-                                showNotification("✅ Course terminée - Merci d'avoir choisi YONOU");
-                            }
-                        }
-                    });
-                });
+        function closeHistory() {
+            document.getElementById('historyPage').style.display = 'none';
         }
 
         // ==================== UTILITAIRES ====================
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
         function togglePanel() {
-            panelOpen = !panelOpen;
-            const panel = document.getElementById('orderPanel');
-            panel.style.transform = panelOpen ? 'translateY(0)' : 'translateY(calc(100% - 100px))';
+            const panel = document.getElementById('mainPanel');
+            panel.style.transform = panel.style.transform === 'translateY(calc(100% - 100px))' 
+                ? 'translateY(0)' 
+                : 'translateY(calc(100% - 100px))';
         }
 
-        function openLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-
-        function showNotification(message) {
+        function showNotification(msg) {
             const notif = document.getElementById('notification');
-            notif.innerHTML = message;
+            notif.innerHTML = msg;
             notif.style.display = 'block';
-            
-            setTimeout(() => {
-                notif.style.display = 'none';
-            }, 3000);
+            setTimeout(() => notif.style.display = 'none', 3000);
         }
 
-        // Fermer modal en cliquant dehors
-        window.onclick = function(event) {
-            const modal = document.getElementById('loginModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
+        function connecterClient() {
+            const phone = document.getElementById('phoneNumber').value;
+            if (phone) {
+                document.getElementById('loginModal').style.display = 'none';
+                showNotification("Connecté avec succès");
             }
         }
+
+        function checkExistingTrip() {
+            // Vérifier si une course est en cours
+        }
+
+        function resetTrip() {
+            departPoint = null;
+            arriveePoint = null;
+            currentTripId = null;
+            document.getElementById('departText').innerHTML = 'Choisir lieu de départ';
+            document.getElementById('arriveeText').innerHTML = 'Choisir destination';
+            document.getElementById('routesSection').style.display = 'none';
+            document.getElementById('priceBanner').style.display = 'none';
+            document.getElementById('orderBtn').disabled = true;
+            
+            if (departMarker) map.removeLayer(departMarker);
+            if (arriveeMarker) map.removeLayer(arriveeMarker);
+            if (driverMarker) map.removeLayer(driverMarker);
+        }
     </script>
-</body>
+</body> 
 </html>
