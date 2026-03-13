@@ -7,86 +7,93 @@
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.css" />
     
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
             height: 100vh;
             overflow: hidden;
-            background: #f0f2f5;
+            background: #f5f5f5;
         }
 
-        /* HEADER SIMPLE */
+        /* HEADER */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            padding: 10px;
+            padding: 12px 16px;
             background: white;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .search-box {
+        .search-bar {
             flex: 1;
-            background: #f5f5f5;
+            background: #f0f2f5;
             border-radius: 30px;
-            padding: 15px 20px;
-            font-size: 18px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
             border: 1px solid #ddd;
         }
 
-        .avatar {
+        .search-bar span:first-child {
+            font-size: 20px;
+        }
+
+        .avatar-large {
             width: 55px;
             height: 55px;
-            background: #0066cc;
+            background: #1877f2;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 28px;
+            cursor: pointer;
         }
 
         /* CARTE */
         #map {
             position: fixed;
-            top: 75px;
+            top: 79px;
             left: 0;
             right: 0;
             bottom: 0;
             z-index: 1;
         }
 
-        /* PANGLETTE DE COMMANDE */
-        .order-tab {
+        /* PANNEAU DE COMMANDE */
+        .order-panel {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: white;
-            border-top-left-radius: 25px;
-            border-top-right-radius: 25px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
             z-index: 2;
             max-height: 80vh;
             overflow-y: auto;
-            transition: bottom 0.3s;
+            transition: transform 0.3s ease;
         }
 
-        .tab-handle {
+        .panel-handle {
             width: 60px;
             height: 6px;
             background: #ccc;
@@ -95,129 +102,147 @@
             cursor: pointer;
         }
 
-        .tab-content {
-            padding: 0 20px 20px;
+        .panel-content {
+            padding: 0 20px 25px;
         }
 
         /* ADRESSES */
-        .address-block {
+        .address-container {
             background: #f8f9fa;
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 10px;
             margin-bottom: 20px;
         }
 
-        .address-line {
+        .address-row {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 15px 10px;
-            border-bottom: 1px solid #eee;
+            padding: 16px 10px;
             cursor: pointer;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .address-line:last-child {
+        .address-row:last-child {
             border-bottom: none;
         }
 
-        .dot {
-            width: 25px;
-            height: 25px;
+        .address-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
         }
 
-        .dot.green {
-            background: #4caf50;
-            color: white;
+        .address-icon.green {
+            background: #e8f5e9;
+            color: #4caf50;
         }
 
-        .dot.red {
-            background: #f44336;
-            color: white;
+        .address-icon.red {
+            background: #ffebee;
+            color: #f44336;
         }
 
-        /* FAVORIS - GRANDS ICONES */
-        .favorites {
-            display: flex;
-            gap: 15px;
-            margin: 20px 0;
-            justify-content: center;
-        }
-
-        .fav-item {
-            background: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 20px;
-            padding: 15px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
+        .address-text {
             flex: 1;
-            cursor: pointer;
-            font-size: 24px;
+            font-size: 16px;
+            font-weight: 500;
         }
 
-        .fav-item span:last-child {
-            font-size: 14px;
+        /* FAVORIS */
+        .favorites-row {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            overflow-x: auto;
+            padding: 5px 0;
+        }
+
+        .favorite-pill {
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 40px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .favorite-pill:active {
+            background: #1877f2;
+            color: white;
+            border-color: #1877f2;
+        }
+
+        .favorite-pill span:first-child {
+            font-size: 20px;
         }
 
         /* ITINERAIRES */
-        .route-option {
-            background: #f8f9fa;
-            border: 2px solid #ddd;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 10px;
+        .routes-container {
+            margin: 20px 0;
+        }
+
+        .route-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 15px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .route-option.selected {
-            border-color: #0066cc;
-            background: #e3f2fd;
+        .route-card.selected {
+            border-color: #1877f2;
+            background: #e7f3ff;
         }
 
         .route-color {
-            width: 15px;
-            height: 15px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
         }
 
-        .color-blue { background: #0066cc; }
-        .color-green { background: #4caf50; }
-        .color-orange { background: #ff9800; }
+        .route-color.blue { background: #1877f2; }
+        .route-color.green { background: #4caf50; }
+        .route-color.orange { background: #ff9800; }
 
-        .route-details {
+        .route-info {
             flex: 1;
         }
 
-        .route-title {
-            font-weight: bold;
-            font-size: 18px;
+        .route-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
         }
 
-        .route-sub {
+        .route-details {
             color: #666;
             font-size: 14px;
         }
 
         .route-price {
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
             color: #4caf50;
         }
 
         /* PRIX */
-        .price-box {
+        .price-banner {
             background: #4caf50;
-            border-radius: 15px;
+            border-radius: 16px;
             padding: 20px;
             margin: 20px 0;
             color: white;
@@ -226,49 +251,70 @@
             align-items: center;
         }
 
-        .big-price {
-            font-size: 40px;
-            font-weight: bold;
+        .price-big {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .price-small {
+            font-size: 14px;
+            opacity: 0.9;
         }
 
         /* BOUTON COMMANDER */
-        .order-btn {
-            background: #0066cc;
+        .order-button {
+            background: #1877f2;
             color: white;
             border: none;
             padding: 20px;
             width: 100%;
-            border-radius: 15px;
-            font-size: 24px;
-            font-weight: bold;
+            border-radius: 16px;
+            font-size: 22px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             cursor: pointer;
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(24,119,242,0.3);
+        }
+
+        .order-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         /* INSTRUCTIONS */
-        .instructions {
+        .instructions-panel {
             background: #f8f9fa;
-            border-radius: 15px;
-            padding: 15px;
+            border-radius: 16px;
+            padding: 20px;
             margin: 20px 0;
             display: none;
         }
 
-        .instructions.show {
+        .instructions-panel.show {
             display: block;
         }
 
-        .inst-item {
+        .instruction-step {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .instruction-step:last-child {
+            border-bottom: none;
+        }
+
+        .instruction-icon {
+            width: 30px;
+            text-align: center;
+            font-size: 18px;
         }
 
         /* PAGE RECHERCHE */
@@ -289,25 +335,33 @@
             display: flex;
             gap: 15px;
             background: white;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .back-btn {
+        .back-button {
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: #f5f5f5;
+            background: #f0f2f5;
             border: none;
             font-size: 24px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .search-field {
+        .search-input {
             flex: 1;
-            padding: 15px 20px;
-            border: 2px solid #ddd;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
             border-radius: 30px;
-            font-size: 18px;
+            font-size: 16px;
+        }
+
+        .search-input:focus {
+            border-color: #1877f2;
+            outline: none;
         }
 
         .search-results {
@@ -317,20 +371,30 @@
         }
 
         .result-item {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
+            padding: 18px;
+            border-bottom: 1px solid #f0f0f0;
             display: flex;
             align-items: center;
             gap: 15px;
             cursor: pointer;
-            font-size: 18px;
+            transition: background 0.2s;
         }
 
-        .result-item.current {
-            background: #e3f2fd;
-            border-radius: 15px;
+        .result-item:hover {
+            background: #f5f5f5;
+        }
+
+        .result-item.current-location {
+            background: #e7f3ff;
+            border-radius: 12px;
+            border: 2px solid #1877f2;
             margin-bottom: 20px;
-            border: 2px solid #0066cc;
+        }
+
+        .result-icon {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
         }
 
         /* MODAL CONNEXION */
@@ -345,142 +409,187 @@
             display: none;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .modal-content {
             background: white;
             border-radius: 30px;
-            width: 90%;
+            width: 100%;
             max-width: 400px;
-            padding: 30px;
-            text-align: center;
+            padding: 30px 25px;
         }
 
-        .phone-input {
+        .modal-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .phone-input-group {
             display: flex;
             gap: 10px;
-            margin: 30px 0;
+            margin: 25px 0;
         }
 
-        .code {
-            background: #f5f5f5;
-            padding: 18px;
-            border-radius: 15px;
-            font-weight: bold;
+        .country-code {
+            background: #f0f2f5;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 600;
             border: 1px solid #ddd;
         }
 
-        .phone {
+        .phone-number {
             flex: 1;
-            padding: 18px;
+            padding: 16px;
             border: 1px solid #ddd;
-            border-radius: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        .modal-button {
+            background: #1877f2;
+            color: white;
+            border: none;
+            padding: 18px;
+            width: 100%;
+            border-radius: 12px;
             font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* NOTIFICATION */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: #323232;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 4000;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            .price-big {
+                font-size: 28px;
+            }
+            
+            .favorite-pill {
+                padding: 10px 16px;
+            }
         }
     </style>
 </head>
 <body>
     <!-- HEADER -->
     <div class="header">
-        <div class="search-box" onclick="openSearch()">
+        <div class="search-bar" onclick="openSearch()">
             <span>🔍</span>
-            <span>Où allez-vous?</span>
+            <span>Où allez-vous ?</span>
         </div>
-        <div class="avatar" onclick="openLogin()">👤</div>
+        <div class="avatar-large" onclick="openLoginModal()">👤</div>
     </div>
 
     <!-- CARTE -->
     <div id="map"></div>
 
-    <!-- PANGLETTE DE COMMANDE -->
-    <div class="order-tab" id="orderTab">
-        <div class="tab-handle" onclick="toggleTab()"></div>
-        <div class="tab-content">
+    <!-- PANNEAU DE COMMANDE -->
+    <div class="order-panel" id="orderPanel">
+        <div class="panel-handle" onclick="togglePanel()"></div>
+        <div class="panel-content">
             <!-- ADRESSES -->
-            <div class="address-block">
-                <div class="address-line" onclick="openSearch('depart')">
-                    <div class="dot green">🟢</div>
-                    <div style="flex:1; font-size: 18px;" id="departText">Ma position</div>
+            <div class="address-container">
+                <div class="address-row" onclick="openSearch('depart')">
+                    <div class="address-icon green">🟢</div>
+                    <div class="address-text" id="departText">Choisir départ</div>
                 </div>
-                <div class="address-line" onclick="openSearch('arrivee')">
-                    <div class="dot red">🔴</div>
-                    <div style="flex:1; font-size: 18px;" id="arriveeText">Choisir destination</div>
+                <div class="address-row" onclick="openSearch('arrivee')">
+                    <div class="address-icon red">🔴</div>
+                    <div class="address-text" id="arriveeText">Choisir destination</div>
                 </div>
             </div>
 
-            <!-- FAVORIS (GRANDS) -->
-            <div class="favorites">
-                <div class="fav-item" onclick="setFav('maison')">
+            <!-- FAVORIS -->
+            <div class="favorites-row">
+                <div class="favorite-pill" onclick="setFavorite('maison')">
                     <span>🏠</span>
                     <span>Maison</span>
                 </div>
-                <div class="fav-item" onclick="setFav('travail')">
+                <div class="favorite-pill" onclick="setFavorite('travail')">
                     <span>💼</span>
                     <span>Travail</span>
                 </div>
-                <div class="fav-item" onclick="setFav('aeroport')">
+                <div class="favorite-pill" onclick="setFavorite('aeroport')">
                     <span>✈️</span>
                     <span>Aéroport</span>
                 </div>
             </div>
 
             <!-- ITINERAIRES -->
-            <div style="margin: 20px 0;">
-                <h3>🛣️ Routes disponibles</h3>
+            <div class="routes-container" id="routesContainer" style="display: none;">
+                <h3 style="margin-bottom: 15px;">🛣️ Itinéraires disponibles</h3>
                 
-                <div class="route-option selected" id="route1" onclick="selectRoute(1)">
-                    <div class="route-color color-blue"></div>
-                    <div class="route-details">
-                        <div class="route-title">Route nationale</div>
-                        <div class="route-sub">5.2 km • 12 min</div>
+                <div class="route-card selected" id="route1" onclick="selectRoute(1)">
+                    <div class="route-color blue"></div>
+                    <div class="route-info">
+                        <div class="route-name" id="routeName1">Route principale</div>
+                        <div class="route-details" id="routeDetails1">Calcul en cours...</div>
                     </div>
-                    <div class="route-price" id="price1">2500 F</div>
+                    <div class="route-price" id="routePrice1">-</div>
                 </div>
 
-                <div class="route-option" id="route2" onclick="selectRoute(2)">
-                    <div class="route-color color-green"></div>
-                    <div class="route-details">
-                        <div class="route-title">Par le littoral</div>
-                        <div class="route-sub">6.8 km • 15 min • Vue mer</div>
+                <div class="route-card" id="route2" onclick="selectRoute(2)">
+                    <div class="route-color green"></div>
+                    <div class="route-info">
+                        <div class="route-name" id="routeName2">Itinéraire alternatif</div>
+                        <div class="route-details" id="routeDetails2">Calcul en cours...</div>
                     </div>
-                    <div class="route-price" id="price2">2800 F</div>
+                    <div class="route-price" id="routePrice2">-</div>
                 </div>
 
-                <div class="route-option" id="route3" onclick="selectRoute(3)">
-                    <div class="route-color color-orange"></div>
-                    <div class="route-details">
-                        <div class="route-title">Sans péage</div>
-                        <div class="route-sub">7.1 km • 18 min</div>
+                <div class="route-card" id="route3" onclick="selectRoute(3)">
+                    <div class="route-color orange"></div>
+                    <div class="route-info">
+                        <div class="route-name" id="routeName3">Éviter péages</div>
+                        <div class="route-details" id="routeDetails3">Calcul en cours...</div>
                     </div>
-                    <div class="route-price" id="price3">2300 F</div>
+                    <div class="route-price" id="routePrice3">-</div>
                 </div>
             </div>
 
             <!-- PRIX -->
-            <div class="price-box">
+            <div class="price-banner" id="priceBanner" style="display: none;">
                 <div>
-                    <div style="font-size: 16px;">Prix total</div>
-                    <div class="big-price" id="totalPrice">2500 F</div>
+                    <div class="price-small">Prix total</div>
+                    <div class="price-big" id="totalPrice">0 F</div>
                 </div>
                 <div style="text-align: right;">
                     <div>💰 Espèces/OM</div>
-                    <div style="font-size: 14px;">Sécurisé</div>
+                    <div class="price-small">Course sécurisée</div>
                 </div>
             </div>
 
             <!-- BOUTON COMMANDER -->
-            <button class="order-btn" onclick="commander()">
+            <button class="order-button" id="orderBtn" onclick="commanderCourse()" disabled>
                 <span>🚗</span> COMMANDER
             </button>
 
-            <!-- INSTRUCTIONS (cachées) -->
-            <div class="instructions" id="instructions">
-                <h3>📋 Détail du trajet</h3>
-                <div class="inst-item">↑ Continuez tout droit - 800m</div>
-                <div class="inst-item">↳ Tournez à droite - 400m</div>
-                <div class="inst-item">🌊 Longez le littoral - 2.5km</div>
-                <div class="inst-item">↱ Tournez à gauche - 1.2km</div>
-                <div class="inst-item">📍 Vous êtes arrivé</div>
+            <!-- INSTRUCTIONS -->
+            <div class="instructions-panel" id="instructionsPanel">
+                <h3 style="margin-bottom: 15px;">📋 Détail du trajet</h3>
+                <div id="instructionsList"></div>
             </div>
         </div>
     </div>
@@ -488,127 +597,194 @@
     <!-- PAGE RECHERCHE -->
     <div class="search-page" id="searchPage">
         <div class="search-header">
-            <button class="back-btn" onclick="closeSearch()">←</button>
-            <input type="text" class="search-field" id="searchInput" 
-                   placeholder="Rechercher une adresse..." 
-                   onkeyup="rechercher()">
+            <button class="back-button" onclick="closeSearch()">←</button>
+            <input type="text" class="search-input" id="searchInput" 
+                   placeholder="Rechercher une adresse à Dakar..." 
+                   onkeyup="searchAddresses()">
         </div>
         <div class="search-results" id="searchResults">
-            <!-- Position actuelle -->
-            <div class="result-item current" onclick="selectCurrent()">
-                <span>📍</span>
+            <div class="result-item current-location" onclick="selectCurrentLocation()">
+                <span class="result-icon">📍</span>
                 <div>
-                    <div style="font-weight: bold;">Ma position</div>
-                    <div style="color: #666;">Utiliser ma position actuelle</div>
+                    <div style="font-weight: 600;">Ma position actuelle</div>
+                    <div style="color: #666; font-size: 14px;">Utiliser la géolocalisation</div>
                 </div>
             </div>
-
-            <!-- Résultats -->
-            <div id="addressList"></div>
+            <div id="addressResults"></div>
         </div>
     </div>
 
     <!-- MODAL CONNEXION -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <div style="font-size: 60px; margin-bottom: 20px;">📱</div>
-            <h2 style="margin-bottom: 30px;">YONOU VTC</h2>
+            <div class="modal-icon">📱</div>
+            <h2 style="text-align: center; margin-bottom: 10px;">YONOU VTC</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 25px;">Connectez-vous pour commander</p>
             
-            <div class="phone-input">
-                <div class="code">+221</div>
-                <input type="tel" class="phone" placeholder="77 000 00 00" id="phoneNum">
+            <div class="phone-input-group">
+                <div class="country-code">+221</div>
+                <input type="tel" class="phone-number" id="phoneNumber" placeholder="77 000 00 00">
             </div>
-
-            <button class="order-btn" onclick="envoyerCode()" style="margin: 20px 0;">
-                CONTINUER
-            </button>
+            
+            <button class="modal-button" onclick="connecterClient()">SE CONNECTER</button>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #999;">
+                En continuant, vous acceptez nos conditions d'utilisation
+            </p>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- NOTIFICATION -->
+    <div class="notification" id="notification"></div>
+
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
+    <!-- LEAFET ET PLUGINS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder@2.4.0/dist/Control.Geocoder.js"></script>
+
     <script>
-        // VARIABLES
+        // ==================== CONFIGURATION FIREBASE ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmLwdTDiT6XP9iB3aNbSWRdQ6njw3TlLc",
+            authDomain: "saldiaemploidutemps.firebaseapp.com",
+            projectId: "saldiaemploidutemps",
+            storageBucket: "saldiaemploidutemps.firebasestorage.app",
+            messagingSenderId: "666378499509",
+            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc",
+            measurementId: "G-PGVQBS70F5"
+        };
+
+        // Initialiser Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // ==================== VARIABLES GLOBALES ====================
         let map;
-        let userMarker;
-        let departMarker;
-        let arriveeMarker;
-        let currentRoute = 1;
-        let tabOpen = true;
-        let mode = 'depart';
-        
-        // Adresses pour recherche
-        const adresses = [
-            { nom: 'Plateau', adresse: 'Plateau, Dakar', lat: 14.6928, lng: -17.4464 },
-            { nom: 'Almadies', adresse: 'Almadies, Dakar', lat: 14.7441, lng: -17.5208 },
-            { nom: 'Mermoz', adresse: 'Mermoz, Dakar', lat: 14.7065, lng: -17.4873 },
-            { nom: 'Fann', adresse: 'Fann, Dakar', lat: 14.6868, lng: -17.4692 },
-            { nom: 'Ouakam', adresse: 'Ouakam, Dakar', lat: 14.7205, lng: -17.4936 },
-            { nom: 'Yoff', adresse: 'Yoff, Dakar', lat: 14.7569, lng: -17.4757 },
-            { nom: 'Aéroport', adresse: 'AIBD, Diass', lat: 14.6700, lng: -17.0733 },
-            { nom: 'UCAD', adresse: 'Université, Dakar', lat: 14.6873, lng: -17.4670 },
-            { nom: 'Place Indépendance', adresse: 'Dakar Plateau', lat: 14.6657, lng: -17.4372 }
+        let routingControl = null;
+        let currentRoutes = [];
+        let selectedRoute = 0;
+        let departPoint = null;
+        arriveePoint = null;
+        let userMarker = null;
+        let panelOpen = true;
+        let searchMode = 'depart';
+        let clientId = null;
+        let unsubscribeTrips = null;
+
+        // Base de données d'adresses à Dakar
+        const addresses = [
+            { name: "Plateau", address: "Plateau, Dakar", lat: 14.6928, lng: -17.4464 },
+            { name: "Almadies", address: "Almadies, Dakar", lat: 14.7441, lng: -17.5208 },
+            { name: "Mermoz", address: "Mermoz, Dakar", lat: 14.7065, lng: -17.4873 },
+            { name: "Fann", address: "Fann, Dakar", lat: 14.6868, lng: -17.4692 },
+            { name: "Ouakam", address: "Ouakam, Dakar", lat: 14.7205, lng: -17.4936 },
+            { name: "Yoff", address: "Yoff, Dakar", lat: 14.7569, lng: -17.4757 },
+            { name: "Grand Dakar", address: "Grand Dakar, Dakar", lat: 14.7095, lng: -17.4590 },
+            { name: "Pikine", address: "Pikine, Dakar", lat: 14.7500, lng: -17.4000 },
+            { name: "Guediawaye", address: "Guediawaye, Dakar", lat: 14.7833, lng: -17.4000 },
+            { name: "Rufisque", address: "Rufisque, Dakar", lat: 14.7167, lng: -17.2667 },
+            { name: "Place de l'Indépendance", address: "Dakar Plateau", lat: 14.6657, lng: -17.4372 },
+            { name: "Aéroport AIBD", address: "Diass, Sénégal", lat: 14.6700, lng: -17.0733 },
+            { name: "UCAD", address: "Université Cheikh Anta Diop", lat: 14.6873, lng: -17.4670 },
+            { name: "Sacre Coeur", address: "Sacre Coeur, Dakar", lat: 14.7150, lng: -17.4800 },
+            { name: "Point E", address: "Point E, Dakar", lat: 14.6980, lng: -17.4580 },
+            { name: "HLM", address: "HLM, Dakar", lat: 14.6900, lng: -17.4400 },
+            { name: "Medina", address: "Medina, Dakar", lat: 14.6800, lng: -17.4400 },
+            { name: "Gare Routiere", address: "Gare Routiere, Dakar", lat: 14.6850, lng: -17.4300 }
         ];
 
         // Favoris
-        const favs = {
-            maison: { adresse: 'Almadies - Villa 123', lat: 14.7441, lng: -17.5208 },
-            travail: { adresse: 'Plateau - Immeuble Kébé', lat: 14.6928, lng: -17.4464 },
-            aeroport: { adresse: 'AIBD - Diass', lat: 14.6700, lng: -17.0733 }
+        const favorites = {
+            maison: { name: "Maison", address: "Almadies - Villa 123", lat: 14.7441, lng: -17.5208 },
+            travail: { name: "Travail", address: "Plateau - Immeuble Kébé", lat: 14.6928, lng: -17.4464 },
+            aeroport: { name: "Aéroport", address: "AIBD - Diass", lat: 14.6700, lng: -17.0733 }
         };
 
-        // INITIALISATION
+        // ==================== INITIALISATION ====================
         window.onload = function() {
-            // Carte
+            initMap();
+            setupAuth();
+        };
+
+        function initMap() {
             map = L.map('map').setView([14.7167, -17.4677], 13);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
+                attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Position utilisateur
+            // Géolocalisation
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    
-                    map.setView([lat, lng], 15);
-                    
-                    userMarker = L.marker([lat, lng]).addTo(map)
-                        .bindPopup('Vous êtes ici');
-                });
+                navigator.geolocation.watchPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        if (userMarker) {
+                            userMarker.setLatLng([lat, lng]);
+                        } else {
+                            userMarker = L.marker([lat, lng], {
+                                icon: L.divIcon({
+                                    className: 'user-marker',
+                                    html: '📍',
+                                    iconSize: [30, 30]
+                                })
+                            }).addTo(map);
+                        }
+                        map.setView([lat, lng], 14);
+                    },
+                    function(error) {
+                        console.log("Erreur de géolocalisation:", error);
+                    }
+                );
             }
 
-            // Clic sur la carte
+            // Gestionnaire de clic sur la carte
             map.on('click', function(e) {
-                if (mode === 'depart') {
-                    if (departMarker) departMarker.remove();
-                    departMarker = L.marker(e.latlng, {color: 'green'}).addTo(map);
-                    document.getElementById('departText').innerHTML = 'Point sur carte';
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                if (searchMode === 'depart') {
+                    setDepartPoint(lat, lng, "Point sur carte");
                 } else {
-                    if (arriveeMarker) arriveeMarker.remove();
-                    arriveeMarker = L.marker(e.latlng, {color: 'red'}).addTo(map);
-                    document.getElementById('arriveeText').innerHTML = 'Point sur carte';
+                    setArriveePoint(lat, lng, "Point sur carte");
                 }
-                tracerRoute();
             });
-        };
-
-        // FERMER/OUVRIR PANGLETTE
-        function toggleTab() {
-            const tab = document.getElementById('orderTab');
-            if (tabOpen) {
-                tab.style.bottom = '-70vh';
-            } else {
-                tab.style.bottom = '0';
-            }
-            tabOpen = !tabOpen;
         }
 
-        // OUVRIR RECHERCHE
-        function openSearch(type = 'depart') {
-            mode = type;
+        // ==================== AUTHENTIFICATION ====================
+        function setupAuth() {
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    clientId = user.uid;
+                    console.log("Client connecté:", user.phoneNumber);
+                    showNotification("Connecté avec succès");
+                }
+            });
+        }
+
+        function connecterClient() {
+            const phone = document.getElementById('phoneNumber').value;
+            if (phone) {
+                // Simuler connexion (en vrai utiliser Firebase Auth)
+                clientId = "client_" + Date.now();
+                localStorage.setItem('clientId', clientId);
+                document.getElementById('loginModal').style.display = 'none';
+                showNotification("Connecté avec succès");
+            } else {
+                alert("Veuillez entrer votre numéro de téléphone");
+            }
+        }
+
+        // ==================== RECHERCHE D'ADRESSES ====================
+        function openSearch(mode = 'depart') {
+            searchMode = mode;
             document.getElementById('searchPage').style.display = 'flex';
             document.getElementById('searchInput').focus();
         }
@@ -617,137 +793,322 @@
             document.getElementById('searchPage').style.display = 'none';
         }
 
-        // RECHERCHE
-        function rechercher() {
-            const terme = document.getElementById('searchInput').value.toLowerCase();
-            const listDiv = document.getElementById('addressList');
+        function searchAddresses() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const resultsDiv = document.getElementById('addressResults');
             
-            if (terme.length < 2) {
-                listDiv.innerHTML = '';
+            if (term.length < 2) {
+                resultsDiv.innerHTML = '';
                 return;
             }
 
+            const filtered = addresses.filter(addr => 
+                addr.name.toLowerCase().includes(term) || 
+                addr.address.toLowerCase().includes(term)
+            );
+
             let html = '';
-            adresses.forEach(addr => {
-                if (addr.nom.toLowerCase().includes(terme) || addr.adresse.toLowerCase().includes(terme)) {
-                    html += `
-                        <div class="result-item" onclick="selectAdresse('${addr.adresse}', ${addr.lat}, ${addr.lng})">
-                            <span>📍</span>
-                            <div>
-                                <div style="font-weight: bold;">${addr.nom}</div>
-                                <div style="color: #666;">${addr.adresse}</div>
-                            </div>
+            filtered.forEach(addr => {
+                html += `
+                    <div class="result-item" onclick="selectAddress('${addr.address}', ${addr.lat}, ${addr.lng})">
+                        <span class="result-icon">📍</span>
+                        <div>
+                            <div style="font-weight: 600;">${addr.name}</div>
+                            <div style="color: #666; font-size: 14px;">${addr.address}</div>
                         </div>
-                    `;
-                }
+                    </div>
+                `;
             });
             
-            listDiv.innerHTML = html;
+            resultsDiv.innerHTML = html;
         }
 
-        // SELECTION ADRESSE
-        function selectAdresse(adresse, lat, lng) {
-            if (mode === 'depart') {
-                document.getElementById('departText').innerHTML = adresse;
-                if (departMarker) departMarker.remove();
-                departMarker = L.marker([lat, lng], {color: 'green'}).addTo(map);
-            } else {
-                document.getElementById('arriveeText').innerHTML = adresse;
-                if (arriveeMarker) arriveeMarker.remove();
-                arriveeMarker = L.marker([lat, lng], {color: 'red'}).addTo(map);
-            }
-            closeSearch();
-            tracerRoute();
-        }
-
-        // POSITION ACTUELLE
-        function selectCurrent() {
+        function selectCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(pos) {
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
                     
-                    if (mode === 'depart') {
-                        document.getElementById('departText').innerHTML = 'Ma position';
-                        if (departMarker) departMarker.remove();
-                        departMarker = L.marker([lat, lng], {color: 'green'}).addTo(map);
+                    if (searchMode === 'depart') {
+                        setDepartPoint(lat, lng, "Ma position");
                     } else {
-                        document.getElementById('arriveeText').innerHTML = 'Ma position';
-                        if (arriveeMarker) arriveeMarker.remove();
-                        arriveeMarker = L.marker([lat, lng], {color: 'red'}).addTo(map);
+                        setArriveePoint(lat, lng, "Ma position");
                     }
                     closeSearch();
-                    tracerRoute();
                 });
-            }
-        }
-
-        // FAVORIS
-        function setFav(type) {
-            const fav = favs[type];
-            if (mode === 'depart') {
-                document.getElementById('departText').innerHTML = fav.adresse;
-                if (departMarker) departMarker.remove();
-                departMarker = L.marker([fav.lat, fav.lng], {color: 'green'}).addTo(map);
             } else {
-                document.getElementById('arriveeText').innerHTML = fav.adresse;
-                if (arriveeMarker) arriveeMarker.remove();
-                arriveeMarker = L.marker([fav.lat, fav.lng], {color: 'red'}).addTo(map);
-            }
-            tracerRoute();
-        }
-
-        // TRACER ROUTE
-        function tracerRoute() {
-            if (departMarker && arriveeMarker) {
-                // Simuler tracé (faire un trait simple)
-                const points = [
-                    departMarker.getLatLng(),
-                    arriveeMarker.getLatLng()
-                ];
-                
-                L.polyline(points, {color: 'blue', weight: 5}).addTo(map);
+                alert("Géolocalisation non disponible");
             }
         }
 
-        // SELECTION ITINERAIRE
-        function selectRoute(num) {
-            currentRoute = num;
+        function selectAddress(address, lat, lng) {
+            if (searchMode === 'depart') {
+                setDepartPoint(lat, lng, address);
+            } else {
+                setArriveePoint(lat, lng, address);
+            }
+            closeSearch();
+        }
+
+        // ==================== GESTION DES POINTS ====================
+        function setDepartPoint(lat, lng, label) {
+            departPoint = { lat, lng, label };
+            document.getElementById('departText').innerHTML = label;
             
-            document.querySelectorAll('.route-option').forEach(el => {
-                el.classList.remove('selected');
+            // Supprimer ancien marqueur
+            if (window.departMarker) map.removeLayer(window.departMarker);
+            
+            // Ajouter nouveau marqueur
+            window.departMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: '🟢',
+                    iconSize: [30, 30]
+                })
+            }).addTo(map);
+            
+            calculateRoutes();
+        }
+
+        function setArriveePoint(lat, lng, label) {
+            arriveePoint = { lat, lng, label };
+            document.getElementById('arriveeText').innerHTML = label;
+            
+            // Supprimer ancien marqueur
+            if (window.arriveeMarker) map.removeLayer(window.arriveeMarker);
+            
+            // Ajouter nouveau marqueur
+            window.arriveeMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    html: '🔴',
+                    iconSize: [30, 30]
+                })
+            }).addTo(map);
+            
+            calculateRoutes();
+        }
+
+        function setFavorite(type) {
+            const fav = favorites[type];
+            if (searchMode === 'depart') {
+                setDepartPoint(fav.lat, fav.lng, fav.address);
+            } else {
+                setArriveePoint(fav.lat, fav.lng, fav.address);
+            }
+        }
+
+        // ==================== CALCUL D'ITINERAIRES ====================
+        function calculateRoutes() {
+            if (!departPoint || !arriveePoint) return;
+
+            // Supprimer ancien itinéraire
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Afficher le conteneur d'itinéraires
+            document.getElementById('routesContainer').style.display = 'block';
+            document.getElementById('priceBanner').style.display = 'flex';
+            document.getElementById('orderBtn').disabled = false;
+
+            // Calculer itinéraire avec OSRM
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(departPoint.lat, departPoint.lng),
+                    L.latLng(arriveePoint.lat, arriveePoint.lng)
+                ],
+                routeWhileDragging: false,
+                showAlternatives: true,
+                altLineOptions: {
+                    styles: [
+                        { color: '#1877f2', opacity: 0.8, weight: 6 },
+                        { color: '#4caf50', opacity: 0.8, weight: 6 },
+                        { color: '#ff9800', opacity: 0.8, weight: 6 }
+                    ]
+                },
+                router: L.Routing.osrmv1({
+                    serviceUrl: 'https://router.project-osrm.org/route/v1'
+                }),
+                lineOptions: {
+                    styles: [{ color: '#1877f2', opacity: 0.8, weight: 6 }]
+                }
+            }).addTo(map);
+
+            // Quand les itinéraires sont trouvés
+            routingControl.on('routesfound', function(e) {
+                currentRoutes = e.routes;
+                updateRoutesDisplay();
             });
-            document.getElementById('route' + num).classList.add('selected');
-            
-            const prices = ['2500 F', '2800 F', '2300 F'];
-            document.getElementById('totalPrice').innerHTML = prices[num-1];
         }
 
-        // COMMANDER
-        function commander() {
-            if (!departMarker || !arriveeMarker) {
-                alert("Choisissez une destination !");
+        function updateRoutesDisplay() {
+            if (!currentRoutes || currentRoutes.length === 0) return;
+
+            for (let i = 0; i < Math.min(3, currentRoutes.length); i++) {
+                const route = currentRoutes[i];
+                const distance = (route.summary.totalDistance / 1000).toFixed(1);
+                const duration = Math.round(route.summary.totalTime / 60);
+                const price = Math.round(1000 + (distance * 350)); // Base 1000 F + 350 F/km
+
+                // Mettre à jour l'affichage
+                document.getElementById(`routeName${i+1}`).innerHTML = 
+                    i === 0 ? "Route principale" : 
+                    i === 1 ? "Itinéraire alternatif" : 
+                    "Éviter péages";
+                
+                document.getElementById(`routeDetails${i+1}`).innerHTML = 
+                    `${distance} km • ${duration} min`;
+                
+                document.getElementById(`routePrice${i+1}`).innerHTML = 
+                    `${price} F`;
+            }
+
+            // Sélectionner le premier itinéraire par défaut
+            selectRoute(1);
+        }
+
+        function selectRoute(index) {
+            selectedRoute = index;
+            
+            // Mettre à jour les classes
+            document.querySelectorAll('.route-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(`route${index}`).classList.add('selected');
+            
+            // Afficher le prix
+            const price = document.getElementById(`routePrice${index}`).innerHTML;
+            document.getElementById('totalPrice').innerHTML = price;
+            
+            // Afficher l'itinéraire sélectionné sur la carte
+            if (routingControl && currentRoutes[index-1]) {
+                routingControl.showRoute(index-1);
+            }
+        }
+
+        // ==================== COMMANDE DE COURSE ====================
+        async function commanderCourse() {
+            if (!clientId) {
+                alert("Veuillez vous connecter d'abord");
+                openLoginModal();
                 return;
             }
+
+            if (!departPoint || !arriveePoint) {
+                alert("Veuillez choisir une destination");
+                return;
+            }
+
+            const prix = document.getElementById('totalPrice').innerHTML;
             
-            document.getElementById('instructions').classList.add('show');
-            alert("🔍 Recherche de chauffeur en cours...");
+            // Créer la course dans Firebase
+            try {
+                const courseData = {
+                    clientId: clientId,
+                    clientNom: "Client",
+                    clientTel: "77 000 00 00",
+                    depart: departPoint,
+                    arrivee: arriveePoint,
+                    prix: prix,
+                    route: selectedRoute,
+                    status: 'searching', // searching, accepted, started, completed
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: new Date().toISOString()
+                };
+
+                await db.collection("trips").add(courseData);
+                
+                // Afficher les instructions
+                document.getElementById('instructionsPanel').classList.add('show');
+                generateInstructions();
+                
+                showNotification("✅ Course envoyée - Recherche de chauffeur...");
+                
+                // Écouter les changements de statut
+                listenForTripUpdates();
+                
+            } catch (error) {
+                console.error("Erreur:", error);
+                alert("Erreur lors de la commande");
+            }
         }
 
-        // OUVRIR CONNEXION
-        function openLogin() {
+        function generateInstructions() {
+            const instructions = [
+                { icon: '↑', text: 'Continuez tout droit - 800m' },
+                { icon: '↳', text: 'Tournez à droite - 400m' },
+                { icon: '🌊', text: 'Longez le littoral - 2.5km' },
+                { icon: '↱', text: 'Tournez à gauche - 1.2km' },
+                { icon: '📍', text: 'Vous êtes arrivé à destination' }
+            ];
+            
+            let html = '';
+            instructions.forEach(inst => {
+                html += `
+                    <div class="instruction-step">
+                        <span class="instruction-icon">${inst.icon}</span>
+                        <span>${inst.text}</span>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('instructionsList').innerHTML = html;
+        }
+
+        function listenForTripUpdates() {
+            if (unsubscribeTrips) {
+                unsubscribeTrips();
+            }
+
+            unsubscribeTrips = db.collection("trips")
+                .where("clientId", "==", clientId)
+                .orderBy("timestamp", "desc")
+                .limit(1)
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "modified") {
+                            const trip = change.doc.data();
+                            const status = trip.status;
+                            
+                            if (status === 'accepted') {
+                                showNotification("✅ Chauffeur trouvé - En route vers vous");
+                            } else if (status === 'started') {
+                                showNotification("🚗 Chauffeur en route vers la destination");
+                            } else if (status === 'completed') {
+                                showNotification("✅ Course terminée - Merci d'avoir choisi YONOU");
+                            }
+                        }
+                    });
+                });
+        }
+
+        // ==================== UTILITAIRES ====================
+        function togglePanel() {
+            panelOpen = !panelOpen;
+            const panel = document.getElementById('orderPanel');
+            panel.style.transform = panelOpen ? 'translateY(0)' : 'translateY(calc(100% - 100px))';
+        }
+
+        function openLoginModal() {
             document.getElementById('loginModal').style.display = 'flex';
         }
 
-        function envoyerCode() {
-            const phone = document.getElementById('phoneNum').value;
-            if (phone) {
-                alert("Code envoyé au " + phone);
-                document.getElementById('loginModal').style.display = 'none';
-            } else {
-                alert("Entrez votre numéro");
+        function showNotification(message) {
+            const notif = document.getElementById('notification');
+            notif.innerHTML = message;
+            notif.style.display = 'block';
+            
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 3000);
+        }
+
+        // Fermer modal en cliquant dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
             }
         }
     </script>
 </body>
-</html> 
+</html>
