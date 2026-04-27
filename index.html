@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOR-AUTO | Full Control</title>
+    <title>MOR-TAXI | Client</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -28,9 +28,10 @@
             position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
             background: white; border-radius: 24px 24px 0 0; padding: 20px;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto;
+            transition: transform 0.3s;
         }
 
-        .search-group { background: var(--yango-gray); border-radius: 16px; padding: 10px; margin-bottom: 15px; }
+        .search-group { background: var(--yango-gray); border-radius: 16px; padding: 10px; margin-bottom: 15px; position: relative; }
         .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
         input { flex: 1; border: none; background: transparent; padding: 10px; font-size: 15px; outline: none; }
@@ -41,56 +42,162 @@
             max-height: 200px; overflow-y: auto; display: none; z-index: 3000;
         }
         .suggestion-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .suggestion-item:hover { background: #ffcc00; }
 
         /* Page Compte & Favoris */
         #account-page {
             position: fixed; inset: 0; background: white; z-index: 4000;
             padding: 20px; display: none; flex-direction: column;
+            overflow-y: auto;
         }
+
+        /* Section Profil */
+        .profile-section {
+            background: linear-gradient(135deg, #ffcc00, #ff9900);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #111;
+        }
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            background: #111;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .profile-avatar i {
+            font-size: 35px;
+            color: #ffcc00;
+        }
+        .profile-input-group {
+            background: rgba(255,255,255,0.9);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .profile-input-group label {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .profile-input-group input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            padding: 5px 0;
+            outline: none;
+        }
+        .save-profile-btn {
+            background: #111;
+            color: #ffcc00;
+            border: none;
+            padding: 12px;
+            border-radius: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
         .fav-item { 
             display: flex; align-items: center; gap: 15px; padding: 15px; 
             background: var(--yango-gray); border-radius: 12px; margin-bottom: 10px; cursor: pointer;
         }
+        .fav-item:hover { background: #ffcc00; }
 
         .ride-selector { display: flex; gap: 10px; margin: 15px 0; }
         .ride-card { flex: 1; padding: 12px; border-radius: 12px; background: var(--yango-gray); text-align: center; border: 2px solid transparent; cursor: pointer; }
         .ride-card.active { border-color: var(--yango-yellow); background: #fffdf2; }
-        .btn-order { width: 100%; background: var(--yango-yellow); border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-order { width: 100%; background: var(--yango-yellow); border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-order:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Driver Info Modal */
+        .driver-modal {
+            position: fixed; bottom: 0; left: 0; right: 0; background: white;
+            border-radius: 24px 24px 0 0; padding: 24px; z-index: 5000;
+            transform: translateY(100%); transition: transform 0.3s;
+            max-width: 500px; margin: 0 auto;
+        }
+        .driver-modal.active { transform: translateY(0); }
+        .driver-info { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .driver-avatar { width: 60px; height: 60px; background: #ffcc00; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
 
         @media (min-width: 768px) {
             #ui-panel { top: 20px; bottom: auto; left: 80px; border-radius: 20px; margin: 0; }
             #suggestions { top: 100%; bottom: auto; margin-top: 10px; }
+        }
+
+        .status-badge { position: fixed; top: 20px; right: 20px; z-index: 2000; background: #ffcc00; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+
+        /* Info utilisateur dans le header */
+        .user-info-header {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            z-index: 2000;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .user-info-header i {
+            color: #ffcc00;
         }
     </style>
 </head>
 <body>
 
     <div class="menu-trigger" onclick="toggleAccount()"><i class="fas fa-bars"></i></div>
+    <div class="status-badge" id="orderStatus">🟢 Prêt</div>
+    <div class="user-info-header" id="userInfoHeader">
+        <i class="fas fa-user-circle"></i>
+        <span id="headerUserName">Invité</span>
+    </div>
 
     <div id="map"></div>
 
     <div id="account-page">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h2>Mon Compte</h2>
-            <i class="fas fa-times fa-lg" onclick="toggleAccount()"></i>
-        </div>
-        
-        <p style="margin-bottom: 15px; font-weight: bold;">Adresses enregistrées</p>
-        <div id="favorites-list">
-            <div class="fav-item" onclick="useFavorite('Maison', 'Sacré Cœur, Dakar')">
-                <i class="fas fa-home"></i>
-                <div><strong>Maison</strong><br><small>Sacré Cœur, Dakar</small></div>
-            </div>
-            <div class="fav-item" onclick="useFavorite('Bureau', 'Plateau, Dakar')">
-                <i class="fas fa-briefcase"></i>
-                <div><strong>Bureau</strong><br><small>Plateau, Dakar</small></div>
-            </div>
+            <i class="fas fa-times fa-lg" onclick="toggleAccount()" style="cursor:pointer;"></i>
         </div>
 
+        <!-- SECTION PROFIL UTILISATEUR -->
+        <div class="profile-section">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-input-group">
+                <label><i class="fas fa-user"></i> Nom complet</label>
+                <input type="text" id="userName" placeholder="Entrez votre nom">
+            </div>
+            <div class="profile-input-group">
+                <label><i class="fas fa-phone"></i> Numéro de téléphone</label>
+                <input type="tel" id="userPhone" placeholder="+221 77 000 00 00">
+            </div>
+            <button class="save-profile-btn" onclick="saveUserProfile()">
+                <i class="fas fa-save"></i> Enregistrer mon profil
+            </button>
+        </div>
+        
+        <p style="margin-bottom: 15px; font-weight: bold;">📍 Adresses enregistrées</p>
+        <div id="favorites-list"></div>
+
         <div class="search-group" style="margin-top: 20px;">
-            <input type="text" id="newFavName" placeholder="Nom (ex: Sport)">
+            <input type="text" id="newFavName" placeholder="Nom (ex: Maison, Travail)">
             <input type="text" id="newFavAddr" placeholder="Adresse">
-            <button class="btn-order" onclick="addFavorite()" style="margin-top:10px;">Ajouter</button>
+            <button class="btn-order" onclick="addFavorite()" style="margin-top:10px;">Ajouter aux favoris</button>
         </div>
     </div>
 
@@ -110,137 +217,455 @@
         </div>
 
         <div class="ride-selector">
-            <div class="ride-card active" onclick="setActiveRide(this)">
-                <i class="fas fa-car"></i><div class="price" id="priceEco">---</div>
+            <div class="ride-card active" data-vehicle="eco" data-base="500" data-rate="350" onclick="setActiveRide(this)">
+                <i class="fas fa-car"></i>
+                <div>Eco</div>
+                <div class="price" id="priceEco">--- F</div>
             </div>
-            <div class="ride-card" onclick="setActiveRide(this)">
-                <i class="fas fa-motorcycle"></i><div class="price" id="priceComfort">---</div>
+            <div class="ride-card" data-vehicle="comfort" data-base="800" data-rate="550" onclick="setActiveRide(this)">
+                <i class="fas fa-car-side"></i>
+                <div>Confort</div>
+                <div class="price" id="priceComfort">--- F</div>
             </div>
         </div>
 
-        <button class="btn-order" onclick="commander()">COMMANDER MOR-AUTO</button>
+        <button class="btn-order" id="orderBtn" onclick="commander()">COMMANDER MOR-TAXI</button>
+    </div>
+
+    <div class="driver-modal" id="driverModal">
+        <div class="driver-info">
+            <div class="driver-avatar"><i class="fas fa-user"></i></div>
+            <div>
+                <h3 id="driverName">Chauffeur</h3>
+                <div id="driverRating">★★★★★ 4.9</div>
+                <div id="driverCar"></div>
+            </div>
+        </div>
+        <div id="driverPhone"></div>
+        <button class="btn-order" onclick="closeModal()">Fermer</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
     <script>
+        // ==================== FIREBASE CONFIGURATION ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_Cj2crubK08ffhx9DQ1KNr2-dR8zkmsQ",
+            authDomain: "clubsaldia.firebaseapp.com",
+            projectId: "clubsaldia",
+            databaseURL: "https://clubsaldia-default-rtdb.firebaseio.com",
+            storageBucket: "clubsaldia.firebasestorage.app",
+            messagingSenderId: "965460761858",
+            appId: "1:965460761858:web:fdc57522e506f51050b61b"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ==================== GLOBAL VARIABLES ====================
         const map = L.map('map', { zoomControl: false }).setView([14.7167, -17.4677], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
         let startCoords = [14.7167, -17.4677];
         let endCoords = null;
-        let startMarker = L.marker(startCoords, {draggable: true}).addTo(map).bindPopup("Départ (Déplacez-moi)");
-        let endMarker = null;
-        let polyline = null;
+        let startMarker, endMarker, polyline = null;
         let activeInputId = 'startInput';
+        let distance = 0;
+        let selectedVehicle = 'eco';
+        let vehicleBase = 500;
+        let vehicleRate = 350;
+        let currentOrderId = null;
+        let orderListener = null;
+        
+        // Identifiant unique du client
+        let clientId = localStorage.getItem('client_id');
+        if(!clientId) {
+            clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            localStorage.setItem('client_id', clientId);
+        }
+
+        // ==================== GESTION DU PROFIL UTILISATEUR (FIREBASE) ====================
+        
+        // Sauvegarder le profil dans Firebase
+        async function saveUserProfile() {
+            const userName = document.getElementById('userName').value;
+            const userPhone = document.getElementById('userPhone').value;
+            
+            if(!userName && !userPhone) {
+                alert("Veuillez entrer au moins votre nom ou votre téléphone");
+                return;
+            }
+            
+            const profileData = {
+                name: userName,
+                phone: userPhone,
+                updatedAt: Date.now(),
+                clientId: clientId
+            };
+            
+            try {
+                await database.ref('clients/' + clientId).set(profileData);
+                alert("✅ Profil enregistré dans Firebase !");
+                
+                // Mettre à jour l'affichage
+                document.getElementById('headerUserName').innerHTML = userName.split(' ')[0] || "Client";
+                localStorage.setItem('client_name', userName);
+            } catch(error) {
+                console.error("Erreur saveProfile:", error);
+                alert("Erreur lors de l'enregistrement");
+            }
+        }
+        
+        // Charger le profil depuis Firebase
+        async function loadUserProfile() {
+            try {
+                const snapshot = await database.ref('clients/' + clientId).once('value');
+                const profile = snapshot.val();
+                
+                if(profile) {
+                    document.getElementById('userName').value = profile.name || '';
+                    document.getElementById('userPhone').value = profile.phone || '';
+                    if(profile.name) {
+                        document.getElementById('headerUserName').innerHTML = profile.name.split(' ')[0];
+                    }
+                } else {
+                    // Vérifier si y'a des données en localStorage
+                    const savedName = localStorage.getItem('client_name');
+                    if(savedName) {
+                        document.getElementById('userName').value = savedName;
+                        document.getElementById('headerUserName').innerHTML = savedName.split(' ')[0];
+                    }
+                }
+            } catch(error) {
+                console.error("Erreur loadProfile:", error);
+            }
+        }
+
+        // ==================== INITIALISATION DES MARQUEURS ====================
+        startMarker = L.marker(startCoords, {draggable: true}).addTo(map);
+        startMarker.bindPopup("Départ (Déplacez-moi)");
+        
+        startMarker.on('dragend', function(e) {
+            const pos = e.target.getLatLng();
+            updateStart(pos.lat, pos.lng, "Position déplacée");
+        });
 
         // Gérer quel input est actif pour l'autocomplétion
         document.querySelectorAll('input').forEach(inp => {
-            inp.onfocus = () => { if(inp.id !== 'newFavName') activeInputId = inp.id; };
+            inp.onfocus = () => { 
+                if(inp.id !== 'newFavName' && inp.id !== 'newFavAddr' && inp.id !== 'userName' && inp.id !== 'userPhone') {
+                    activeInputId = inp.id; 
+                }
+            };
         });
 
-        // 1. Sélection par clic sur la carte
+        // ==================== SELECTION PAR CLIC SUR LA CARTE ====================
         map.on('click', (e) => {
             if (activeInputId === 'startInput') {
                 updateStart(e.latlng.lat, e.latlng.lng, "Point sur la carte");
-            } else {
+            } else if (activeInputId === 'endInput') {
                 updateEnd(e.latlng.lat, e.latlng.lng, "Point sur la carte");
             }
         });
 
-        // 2. Géolocalisation
+        // ==================== GEOLOCALISATION ====================
         function getCurrentLocation() {
             map.locate({setView: true, maxZoom: 16});
         }
+        
         map.on('locationfound', (e) => {
             updateStart(e.latlng.lat, e.latlng.lng, "Ma position");
         });
 
-        // 3. Autocomplete
+        // ==================== AUTOCOMPLETION NOMINATIM ====================
         const suggestionsBox = document.getElementById('suggestions');
+        
         document.querySelectorAll('#startInput, #endInput').forEach(input => {
             input.addEventListener('input', async (e) => {
                 const query = e.target.value;
-                if (query.length < 3) { suggestionsBox.style.display = 'none'; return; }
-                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}, Dakar&limit=5`);
-                const data = await resp.json();
-                suggestionsBox.innerHTML = '';
-                if(data.length > 0) {
-                    suggestionsBox.style.display = 'block';
-                    data.forEach(place => {
-                        const div = document.createElement('div');
-                        div.className = 'suggestion-item';
-                        div.innerText = place.display_name.split(',')[0];
-                        div.onclick = () => {
-                            if(activeInputId === 'startInput') updateStart(place.lat, place.lon, div.innerText);
-                            else updateEnd(place.lat, place.lon, div.innerText);
-                            suggestionsBox.style.display = 'none';
-                        };
-                        suggestionsBox.appendChild(div);
-                    });
+                if (query.length < 3) { 
+                    suggestionsBox.style.display = 'none'; 
+                    return; 
+                }
+                
+                try {
+                    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, Dakar, Sénégal&limit=5&countrycodes=sn`);
+                    const data = await resp.json();
+                    suggestionsBox.innerHTML = '';
+                    
+                    if(data.length > 0) {
+                        suggestionsBox.style.display = 'block';
+                        data.forEach(place => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerText = place.display_name.split(',')[0];
+                            div.onclick = () => {
+                                if(activeInputId === 'startInput') {
+                                    updateStart(place.lat, place.lon, div.innerText);
+                                } else {
+                                    updateEnd(place.lat, place.lon, div.innerText);
+                                }
+                                suggestionsBox.style.display = 'none';
+                            };
+                            suggestionsBox.appendChild(div);
+                        });
+                    }
+                } catch(error) {
+                    console.error("Erreur de géocodage:", error);
                 }
             });
         });
 
+        // Fermer les suggestions en cliquant ailleurs
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.search-group')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // ==================== UPDATE START POSITION ====================
         function updateStart(lat, lon, name) {
-            startCoords = [lat, lon];
+            startCoords = [parseFloat(lat), parseFloat(lon)];
             document.getElementById('startInput').value = name;
             startMarker.setLatLng(startCoords);
             drawRoute();
         }
 
+        // ==================== UPDATE END POSITION ====================
         function updateEnd(lat, lon, name) {
-            endCoords = [lat, lon];
+            endCoords = [parseFloat(lat), parseFloat(lon)];
             document.getElementById('endInput').value = name;
             if(endMarker) map.removeLayer(endMarker);
-            endMarker = L.marker(endCoords).addTo(map);
+            endMarker = L.marker(endCoords, {draggable: true}).addTo(map);
+            endMarker.bindPopup("Arrivée");
+            endMarker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                updateEnd(pos.lat, pos.lng, "Position déplacée");
+            });
             drawRoute();
         }
 
-        function drawRoute() {
+        // ==================== CALCUL D'ITINERAIRE AVEC OSRM ====================
+        async function drawRoute() {
             if (!startCoords || !endCoords) return;
-            if (polyline) map.removeLayer(polyline);
-            polyline = L.polyline([startCoords, endCoords], {color: '#111', weight: 4, dashArray: '5, 10'}).addTo(map);
-            map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
-            const dist = map.distance(startCoords, endCoords) / 1000;
-            document.getElementById('priceEco').innerText = Math.max(1000, Math.round(500 + dist * 350)) + " F";
-            document.getElementById('priceComfort').innerText = Math.max(1500, Math.round(800 + dist * 550)) + " F";
+            
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                
+                if(data.routes && data.routes[0]) {
+                    const route = data.routes[0];
+                    distance = route.distance / 1000;
+                    
+                    if(polyline) map.removeLayer(polyline);
+                    
+                    polyline = L.geoJSON(route.geometry, {
+                        style: {color: '#111', weight: 4, dashArray: '8,8'}
+                    }).addTo(map);
+                    
+                    const bounds = L.latLngBounds([startCoords, endCoords]);
+                    map.fitBounds(bounds, {padding: [50, 50]});
+                    
+                    updatePrices();
+                }
+            } catch(error) {
+                console.error("Erreur de calcul d'itinéraire:", error);
+                if(polyline) map.removeLayer(polyline);
+                polyline = L.polyline([startCoords, endCoords], {color: '#111', weight: 4, dashArray: '8,8'}).addTo(map);
+                distance = map.distance(L.latLng(startCoords), L.latLng(endCoords)) / 1000;
+                updatePrices();
+            }
         }
 
-        // 4. Favoris
-        function toggleAccount() {
-            const acc = document.getElementById('account-page');
-            acc.style.display = (acc.style.display === 'flex') ? 'none' : 'flex';
+        // ==================== MISE À JOUR DES PRIX ====================
+        function updatePrices() {
+            const ecoPrice = Math.round(500 + (distance * 350));
+            const comfortPrice = Math.round(800 + (distance * 550));
+            document.getElementById('priceEco').innerHTML = ecoPrice + " F";
+            document.getElementById('priceComfort').innerHTML = comfortPrice + " F";
         }
 
-        function addFavorite() {
-            const name = document.getElementById('newFavName').value;
-            const addr = document.getElementById('newFavAddr').value;
-            if(!name || !addr) return;
-            const div = document.createElement('div');
-            div.className = 'fav-item';
-            div.onclick = () => useFavorite(name, addr);
-            div.innerHTML = `<i class="fas fa-star"></i><div><strong>${name}</strong><br><small>${addr}</small></div>`;
-            document.getElementById('favorites-list').appendChild(div);
+        function getCurrentPrice() {
+            if(selectedVehicle === 'eco') {
+                return Math.round(500 + (distance * 350));
+            } else {
+                return Math.round(800 + (distance * 550));
+            }
         }
 
-        function useFavorite(name, addr) {
-            document.getElementById('endInput').value = addr;
-            toggleAccount();
-            // Simuler la recherche de l'adresse
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}, Dakar&limit=1`)
-                .then(r => r.json()).then(data => {
-                    if(data[0]) updateEnd(data[0].lat, data[0].lon, addr);
-                });
-        }
-
+        // ==================== SELECTION DU VÉHICULE ====================
         function setActiveRide(el) {
             document.querySelectorAll('.ride-card').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
+            selectedVehicle = el.dataset.vehicle;
+            vehicleBase = parseInt(el.dataset.base);
+            vehicleRate = parseInt(el.dataset.rate);
         }
 
-        function commander() {
-            alert("🚀 Demande envoyée de " + document.getElementById('startInput').value + " vers " + document.getElementById('endInput').value);
+        // ==================== FAVORIS (LOCALSTORAGE) ====================
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+            const container = document.getElementById('favorites-list');
+            container.innerHTML = '';
+            
+            if(favorites.length === 0) {
+                const defaultFavs = [
+                    { name: "🏠 Maison", address: "Sacré Cœur, Dakar" },
+                    { name: "💼 Travail", address: "Plateau, Dakar" },
+                    { name: "⭐ Saldia Club", address: "Route de l'Aéroport, Dakar" }
+                ];
+                defaultFavs.forEach(fav => {
+                    saveFavoriteToLocal(fav.name, fav.address);
+                });
+            }
+            
+            favorites.forEach((fav, index) => {
+                const div = document.createElement('div');
+                div.className = 'fav-item';
+                div.onclick = () => useFavorite(fav.name, fav.address);
+                div.innerHTML = `<i class="fas fa-location-dot"></i><div><strong>${fav.name}</strong><br><small>${fav.address}</small></div>`;
+                container.appendChild(div);
+            });
         }
+        
+        function saveFavoriteToLocal(name, address) {
+            const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+            favorites.push({ name, address });
+            localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
+        }
+        
+        function addFavorite() {
+            const name = document.getElementById('newFavName').value;
+            const addr = document.getElementById('newFavAddr').value;
+            if(!name || !addr) {
+                alert("Veuillez remplir les deux champs");
+                return;
+            }
+            saveFavoriteToLocal(name, addr);
+            document.getElementById('newFavName').value = '';
+            document.getElementById('newFavAddr').value = '';
+            loadFavorites();
+            alert("Favori ajouté !");
+        }
+        
+        function useFavorite(name, addr) {
+            document.getElementById('endInput').value = addr;
+            toggleAccount();
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + ', Dakar')}&limit=1`)
+                .then(r => r.json())
+                .then(data => {
+                    if(data[0]) {
+                        updateEnd(data[0].lat, data[0].lon, addr);
+                    } else {
+                        alert("Adresse non trouvée");
+                    }
+                });
+        }
+
+        function toggleAccount() {
+            const acc = document.getElementById('account-page');
+            acc.style.display = (acc.style.display === 'flex') ? 'none' : 'flex';
+            if(acc.style.display === 'flex') {
+                loadFavorites();
+                loadUserProfile();
+            }
+        }
+
+        // ==================== COMMANDE VERS FIREBASE ====================
+        async function commander() {
+            if(!startCoords || !endCoords) {
+                alert("Veuillez sélectionner un départ et une destination");
+                return;
+            }
+            
+            // Récupérer les infos du client depuis Firebase
+            let clientProfile = null;
+            try {
+                const snapshot = await database.ref('clients/' + clientId).once('value');
+                clientProfile = snapshot.val();
+            } catch(e) {}
+            
+            const startAddr = document.getElementById('startInput').value || "Départ";
+            const endAddr = document.getElementById('endInput').value || "Destination";
+            const price = getCurrentPrice();
+            const userName = clientProfile?.name || document.getElementById('userName').value || "Client";
+            const userPhone = clientProfile?.phone || document.getElementById('userPhone').value || "Non renseigné";
+            
+            const order = {
+                id: Date.now().toString(),
+                pickup: {
+                    lat: startCoords[0],
+                    lng: startCoords[1],
+                    address: startAddr
+                },
+                destination: {
+                    lat: endCoords[0],
+                    lng: endCoords[1],
+                    address: endAddr
+                },
+                vehicle: selectedVehicle,
+                price: price,
+                distance: distance.toFixed(1),
+                status: 'en_attente',
+                createdAt: Date.now(),
+                clientId: clientId,
+                clientName: userName,
+                clientPhone: userPhone
+            };
+            
+            document.getElementById('orderBtn').disabled = true;
+            document.getElementById('orderStatus').innerHTML = "⏳ Recherche chauffeur...";
+            
+            try {
+                await database.ref('commandes/' + order.id).set(order);
+                currentOrderId = order.id;
+                
+                if(orderListener) orderListener();
+                orderListener = database.ref('commandes/' + order.id).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if(data) {
+                        if(data.status === 'acceptee') {
+                            document.getElementById('orderStatus').innerHTML = "✅ Course acceptée !";
+                            showDriverInfo(data);
+                            database.ref('historique/' + order.id).set(data);
+                        } else if(data.status === 'terminee') {
+                            document.getElementById('orderStatus').innerHTML = "✅ Course terminée";
+                            document.getElementById('orderBtn').disabled = false;
+                        }
+                    }
+                });
+                
+                alert(`🚀 Commande envoyée par ${userName} ! Un chauffeur va vous attribuer.`);
+                
+            } catch(error) {
+                console.error("Erreur Firebase:", error);
+                alert("Erreur lors de l'envoi de la commande");
+                document.getElementById('orderBtn').disabled = false;
+                document.getElementById('orderStatus').innerHTML = "🟢 Prêt";
+            }
+        }
+        
+        function showDriverInfo(order) {
+            const modal = document.getElementById('driverModal');
+            document.getElementById('driverName').innerHTML = order.driverName || 'Chauffeur MOR-TAXI';
+            document.getElementById('driverRating').innerHTML = '★★★★★ ' + (order.driverRating || '4.9');
+            document.getElementById('driverCar').innerHTML = order.driverCar || 'Toyota Corolla';
+            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${order.driverPhone || '+221 78 000 00 00'}`;
+            modal.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('driverModal').classList.remove('active');
+        }
+
+        // ==================== INITIALISATION ====================
+        updateStart(14.7167, -17.4677, "Dakar Centre");
+        loadUserProfile();
+        
+        console.log("🆔 Client ID:", clientId);
     </script>
 </body>
 </html>
