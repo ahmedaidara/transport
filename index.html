@@ -2,1299 +2,245 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>YONOU VTC - Client</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOR-AUTO | Full Control</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        }
-
-        body {
-            height: 100vh;
-            overflow: hidden;
-            background: #f8f9fa;
-        }
-
-        /* HEADER */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 12px 16px;
-            background: white;
-            display: flex;
-            gap: 12px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .search-bar {
-            flex: 1;
-            background: #f1f3f4;
-            border-radius: 30px;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            border: 1px solid #e0e0e0;
-        }
-
-        .search-bar span:first-child {
-            font-size: 20px;
-        }
-
-        .avatar {
-            width: 55px;
-            height: 55px;
-            background: #1877f2;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-        }
-
-        /* CARTE */
-        #map {
-            position: fixed;
-            top: 79px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1;
-        }
-
-        /* PANNEAU PRINCIPAL */
-        .main-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
-            z-index: 2;
-            max-height: 85vh;
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-        }
-
-        .panel-handle {
-            width: 60px;
-            height: 6px;
-            background: #ccc;
-            border-radius: 3px;
-            margin: 15px auto;
-            cursor: pointer;
-        }
-
-        .panel-content {
-            padding: 0 20px 25px;
-        }
-
-        /* ADRESSES */
-        .address-section {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        .address-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 16px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #eaeaea;
-        }
-
-        .address-row:last-child {
-            border-bottom: none;
-        }
-
-        .address-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .address-icon.green {
-            background: #e3f2e5;
-            color: #2e7d32;
-        }
-
-        .address-icon.red {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .address-text {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        /* FAVORIS */
-        .favorites-row {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-
-        .favorite-item {
-            background: #f1f3f4;
-            border-radius: 40px;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-            cursor: pointer;
-            border: 1px solid #ddd;
-        }
-
-        .favorite-item span:first-child {
-            font-size: 22px;
-        }
-
-        /* ITINERAIRES */
-        .routes-section {
-            margin: 25px 0;
-        }
-
-        .route-card {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .route-card.selected {
-            border-color: #1877f2;
-            background: #e3f2fd;
-        }
-
-        .route-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-        }
-
-        .route-color.blue { background: #1877f2; }
-        .route-color.green { background: #4caf50; }
-        .route-color.orange { background: #ff9800; }
-
-        .route-info {
-            flex: 1;
-        }
-
-        .route-name {
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
-
-        .route-details {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .route-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: #2e7d32;
-        }
-
-        /* PRIX */
-        .price-banner {
-            background: linear-gradient(135deg, #2e7d32, #4caf50);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 25px 0;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .price-big {
-            font-size: 36px;
-            font-weight: 700;
-        }
-
-        /* BOUTON COMMANDER */
-        .order-button {
-            background: #1877f2;
-            color: white;
-            border: none;
-            padding: 20px;
-            width: 100%;
-            border-radius: 16px;
-            font-size: 22px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(24,119,242,0.3);
-        }
-
-        .order-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* PANNEAU SUIVI COURSE */
-        .tracking-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
-            z-index: 3;
-            padding: 25px;
-            display: none;
-        }
-
-        .driver-info-card {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 20px;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .driver-photo {
-            width: 80px;
-            height: 80px;
-            background: #1877f2;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 40px;
-        }
-
-        .driver-details h3 {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-
-        .driver-details p {
-            color: #666;
-            margin: 3px 0;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-weight: 600;
-            margin: 10px 0;
-        }
-
-        .status-accepted {
-            background: #fff3e0;
-            color: #e65100;
-        }
-
-        .status-arrived {
-            background: #4caf50;
-            color: white;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #4caf50;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .arrived-message {
-            background: #4caf50;
-            color: white;
-            padding: 20px;
-            border-radius: 16px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-            margin: 20px 0;
-            display: none;
-        }
-
-        /* PAGE RECHERCHE */
-        .search-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .search-header {
-            padding: 20px;
-            display: flex;
-            gap: 15px;
-            background: white;
-            border-bottom: 1px solid #eee;
-        }
-
-        .back-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #f1f3f4;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 16px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 30px;
-            font-size: 16px;
-        }
-
-        .search-options {
-            padding: 15px 20px;
-            display: flex;
-            gap: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .option-btn {
-            flex: 1;
-            padding: 15px;
-            background: #f1f3f4;
-            border: 2px solid #ddd;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .option-btn.active {
-            background: #1877f2;
-            color: white;
-            border-color: #1877f2;
-        }
-
-        .search-results {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .result-item {
-            padding: 18px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-        }
-
-        .result-item.current-location {
-            background: #e3f2fd;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 2px solid #1877f2;
-        }
-
-        /* MODAL */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 30px;
-            width: 100%;
-            max-width: 400px;
-            padding: 30px;
-        }
-
-        .phone-input {
-            display: flex;
-            gap: 10px;
-            margin: 25px 0;
-        }
-
-        .country-code {
-            background: #f1f3f4;
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #ddd;
-        }
-
-        .phone-number {
-            flex: 1;
-            padding: 16px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            font-size: 16px;
-        }
-
-        .modal-btn {
-            background: #1877f2;
-            color: white;
-            border: none;
-            padding: 18px;
-            width: 100%;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* HISTORIQUE */
-        .history-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .history-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .history-item {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-        }
-
-        .history-date {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .history-route {
-            font-weight: 600;
-            margin: 10px 0;
-        }
-
-        .history-price {
-            color: #2e7d32;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        /* NOTIFICATION */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            background: #323232;
-            color: white;
-            padding: 16px 20px;
-            border-radius: 12px;
-            z-index: 4000;
-            display: none;
-            animation: slideDown 0.3s;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
+        :root { --yango-yellow: #ffcc00; --yango-black: #111; --yango-gray: #f2f2f2; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { height: 100vh; display: flex; flex-direction: column; background: var(--yango-gray); overflow: hidden; }
+
+        #map { flex-grow: 1; z-index: 1; cursor: crosshair; }
+
+        /* Bouton Menu Haut Gauche */
+        .menu-trigger {
+            position: absolute; top: 20px; left: 20px; z-index: 2000;
+            width: 50px; height: 50px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;
+        }
+
+        /* Panel UI */
+        #ui-panel {
+            position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+            background: white; border-radius: 24px 24px 0 0; padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto;
+        }
+
+        .search-group { background: var(--yango-gray); border-radius: 16px; padding: 10px; margin-bottom: 15px; }
+        .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        input { flex: 1; border: none; background: transparent; padding: 10px; font-size: 15px; outline: none; }
+        
+        #suggestions {
+            position: absolute; bottom: 100%; left: 0; right: 0; background: white;
+            border-radius: 12px; margin-bottom: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            max-height: 200px; overflow-y: auto; display: none; z-index: 3000;
+        }
+        .suggestion-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+
+        /* Page Compte & Favoris */
+        #account-page {
+            position: fixed; inset: 0; background: white; z-index: 4000;
+            padding: 20px; display: none; flex-direction: column;
+        }
+        .fav-item { 
+            display: flex; align-items: center; gap: 15px; padding: 15px; 
+            background: var(--yango-gray); border-radius: 12px; margin-bottom: 10px; cursor: pointer;
+        }
+
+        .ride-selector { display: flex; gap: 10px; margin: 15px 0; }
+        .ride-card { flex: 1; padding: 12px; border-radius: 12px; background: var(--yango-gray); text-align: center; border: 2px solid transparent; cursor: pointer; }
+        .ride-card.active { border-color: var(--yango-yellow); background: #fffdf2; }
+        .btn-order { width: 100%; background: var(--yango-yellow); border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        @media (min-width: 768px) {
+            #ui-panel { top: 20px; bottom: auto; left: 80px; border-radius: 20px; margin: 0; }
+            #suggestions { top: 100%; bottom: auto; margin-top: 10px; }
         }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
-    <div class="header">
-        <div class="search-bar" onclick="openSearch()">
-            <span>🔍</span>
-            <span>Où allez-vous ?</span>
-        </div>
-        <div class="avatar" onclick="openHistory()">👤</div>
-    </div>
 
-    <!-- CARTE -->
+    <div class="menu-trigger" onclick="toggleAccount()"><i class="fas fa-bars"></i></div>
+
     <div id="map"></div>
 
-    <!-- PANNEAU PRINCIPAL -->
-    <div class="main-panel" id="mainPanel">
-        <div class="panel-handle" onclick="togglePanel()"></div>
-        <div class="panel-content">
-            <!-- ADRESSES -->
-            <div class="address-section">
-                <div class="address-row" onclick="openSearch('depart')">
-                    <div class="address-icon green">🟢</div>
-                    <div class="address-text" id="departText">Choisir lieu de départ</div>
-                </div>
-                <div class="address-row" onclick="openSearch('arrivee')">
-                    <div class="address-icon red">🔴</div>
-                    <div class="address-text" id="arriveeText">Choisir destination</div>
-                </div>
-            </div>
-
-            <!-- FAVORIS -->
-            <div class="favorites-row">
-                <div class="favorite-item" onclick="setFavorite('maison')">
-                    <span>🏠</span>
-                    <span>Maison</span>
-                </div>
-                <div class="favorite-item" onclick="setFavorite('travail')">
-                    <span>💼</span>
-                    <span>Travail</span>
-                </div>
-                <div class="favorite-item" onclick="setFavorite('aeroport')">
-                    <span>✈️</span>
-                    <span>Aéroport</span>
-                </div>
-            </div>
-
-            <!-- ITINERAIRES -->
-            <div class="routes-section" id="routesSection" style="display: none;">
-                <h3 style="margin-bottom: 15px;">🛣️ Itinéraires disponibles</h3>
-                
-                <div class="route-card selected" id="route1" onclick="selectRoute(1)">
-                    <div class="route-color blue"></div>
-                    <div class="route-info">
-                        <div class="route-name" id="routeName1">Route principale</div>
-                        <div class="route-details" id="routeDetails1">Calcul...</div>
-                    </div>
-                    <div class="route-price" id="routePrice1">-</div>
-                </div>
-
-                <div class="route-card" id="route2" onclick="selectRoute(2)">
-                    <div class="route-color green"></div>
-                    <div class="route-info">
-                        <div class="route-name" id="routeName2">Itinéraire alternatif</div>
-                        <div class="route-details" id="routeDetails2">Calcul...</div>
-                    </div>
-                    <div class="route-price" id="routePrice2">-</div>
-                </div>
-
-                <div class="route-card" id="route3" onclick="selectRoute(3)">
-                    <div class="route-color orange"></div>
-                    <div class="route-info">
-                        <div class="route-name" id="routeName3">Éviter péages</div>
-                        <div class="route-details" id="routeDetails3">Calcul...</div>
-                    </div>
-                    <div class="route-price" id="routePrice3">-</div>
-                </div>
-            </div>
-
-            <!-- PRIX -->
-            <div class="price-banner" id="priceBanner" style="display: none;">
-                <div>
-                    <div style="font-size: 16px; opacity: 0.9;">Prix total</div>
-                    <div class="price-big" id="totalPrice">0 F</div>
-                </div>
-                <div style="text-align: right;">
-                    <div>💰 Espèces/OM</div>
-                    <div style="font-size: 14px;">Course sécurisée</div>
-                </div>
-            </div>
-
-            <!-- BOUTON COMMANDER -->
-            <button class="order-button" id="orderBtn" onclick="commanderCourse()" disabled>
-                <span>🚗</span> COMMANDER
-            </button>
-        </div>
-    </div>
-
-    <!-- PANNEAU SUIVI COURSE -->
-    <div class="tracking-panel" id="trackingPanel">
-        <h2 style="margin-bottom: 20px;">🚗 Votre course</h2>
-        
-        <div class="driver-info-card">
-            <div class="driver-photo" id="driverPhoto">👨‍✈️</div>
-            <div class="driver-details">
-                <h3 id="driverName">Chauffeur</h3>
-                <p id="driverPhone">-</p>
-                <p id="driverVehicle">-</p>
-                <p id="driverPlate">-</p>
-            </div>
-        </div>
-
-        <div id="statusContainer">
-            <div class="status-badge status-accepted" id="statusText">
-                🔍 Recherche de chauffeur...
-            </div>
-        </div>
-
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-
-        <div id="distanceInfo" style="text-align: center; margin: 15px 0; color: #666;">
-            Distance du chauffeur: <span id="driverDistance">-</span>
-        </div>
-
-        <div class="arrived-message" id="arrivedMessage">
-            🎉 VOTRE CHAUFFEUR EST ARRIVÉ !
-        </div>
-    </div>
-
-    <!-- PAGE RECHERCHE -->
-    <div class="search-page" id="searchPage">
-        <div class="search-header">
-            <button class="back-btn" onclick="closeSearch()">←</button>
-            <input type="text" class="search-input" id="searchInput" 
-                   placeholder="Rechercher une adresse..." 
-                   onkeyup="searchAddresses()">
+    <div id="account-page">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2>Mon Compte</h2>
+            <i class="fas fa-times fa-lg" onclick="toggleAccount()"></i>
         </div>
         
-        <div class="search-options">
-            <div class="option-btn active" id="optionDepart" onclick="setSearchMode('depart')">🟢 Départ</div>
-            <div class="option-btn" id="optionArrivee" onclick="setSearchMode('arrivee')">🔴 Arrivée</div>
+        <p style="margin-bottom: 15px; font-weight: bold;">Adresses enregistrées</p>
+        <div id="favorites-list">
+            <div class="fav-item" onclick="useFavorite('Maison', 'Sacré Cœur, Dakar')">
+                <i class="fas fa-home"></i>
+                <div><strong>Maison</strong><br><small>Sacré Cœur, Dakar</small></div>
+            </div>
+            <div class="fav-item" onclick="useFavorite('Bureau', 'Plateau, Dakar')">
+                <i class="fas fa-briefcase"></i>
+                <div><strong>Bureau</strong><br><small>Plateau, Dakar</small></div>
+            </div>
         </div>
 
-        <div class="search-results" id="searchResults">
-            <!-- Position actuelle -->
-            <div class="result-item current-location" onclick="selectCurrentLocation()">
-                <span style="font-size: 24px;">📍</span>
-                <div>
-                    <div style="font-weight: 600;">Ma position actuelle</div>
-                    <div style="color: #666;">Utiliser la géolocalisation</div>
-                </div>
-            </div>
-
-            <!-- Sélection sur carte -->
-            <div class="result-item" onclick="selectOnMap()">
-                <span style="font-size: 24px;">🗺️</span>
-                <div>
-                    <div style="font-weight: 600;">Sélectionner sur la carte</div>
-                    <div style="color: #666;">Touchez un point sur la carte</div>
-                </div>
-            </div>
-
-            <div id="addressResults"></div>
+        <div class="search-group" style="margin-top: 20px;">
+            <input type="text" id="newFavName" placeholder="Nom (ex: Sport)">
+            <input type="text" id="newFavAddr" placeholder="Adresse">
+            <button class="btn-order" onclick="addFavorite()" style="margin-top:10px;">Ajouter</button>
         </div>
     </div>
 
-    <!-- PAGE HISTORIQUE -->
-    <div class="history-page" id="historyPage">
-        <div class="search-header">
-            <button class="back-btn" onclick="closeHistory()">←</button>
-            <h2 style="flex:1;">📋 Historique</h2>
-        </div>
-        <div class="history-list" id="historyList">
-            <!-- L'historique sera chargé ici -->
-        </div>
-    </div>
-
-    <!-- MODAL CONNEXION -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <div style="font-size: 60px; text-align: center; margin-bottom: 20px;">📱</div>
-            <h2 style="text-align: center; margin-bottom: 10px;">YONOU VTC</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 25px;">Connectez-vous pour commander</p>
-            
-            <div class="phone-input">
-                <div class="country-code">+221</div>
-                <input type="tel" class="phone-number" id="phoneNumber" placeholder="77 000 00 00">
+    <div id="ui-panel">
+        <div class="search-group">
+            <div class="input-row">
+                <div class="dot" style="background: #2ecc71;"></div>
+                <input type="text" id="startInput" placeholder="Lieu de départ" autocomplete="off">
+                <i class="fas fa-location-crosshairs" onclick="getCurrentLocation()" style="cursor:pointer; color: #666;"></i>
             </div>
-            
-            <button class="modal-btn" onclick="connecterClient()">SE CONNECTER</button>
+            <div style="height: 1px; background: #ddd; margin: 5px 0;"></div>
+            <div class="input-row">
+                <div class="dot" style="background: #e74c3c;"></div>
+                <input type="text" id="endInput" placeholder="Où allez-vous ?" autocomplete="off">
+            </div>
+            <div id="suggestions"></div>
         </div>
+
+        <div class="ride-selector">
+            <div class="ride-card active" onclick="setActiveRide(this)">
+                <i class="fas fa-car"></i><div class="price" id="priceEco">---</div>
+            </div>
+            <div class="ride-card" onclick="setActiveRide(this)">
+                <i class="fas fa-motorcycle"></i><div class="price" id="priceComfort">---</div>
+            </div>
+        </div>
+
+        <button class="btn-order" onclick="commander()">COMMANDER MOR-AUTO</button>
     </div>
 
-    <!-- NOTIFICATION -->
-    <div class="notification" id="notification"></div>
-
-    <!-- FIREBASE SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
-    <!-- LEAFLET -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
     <script>
-        // ==================== CONFIGURATION FIREBASE ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmLwdTDiT6XP9iB3aNbSWRdQ6njw3TlLc",
-            authDomain: "saldiaemploidutemps.firebaseapp.com",
-            projectId: "saldiaemploidutemps",
-            storageBucket: "saldiaemploidutemps.firebasestorage.app",
-            messagingSenderId: "666378499509",
-            appId: "1:666378499509:web:ae26cdaa2d2b0a67d255fc"
-        };
+        const map = L.map('map', { zoomControl: false }).setView([14.7167, -17.4677], 13);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let startCoords = [14.7167, -17.4677];
+        let endCoords = null;
+        let startMarker = L.marker(startCoords, {draggable: true}).addTo(map).bindPopup("Départ (Déplacez-moi)");
+        let endMarker = null;
+        let polyline = null;
+        let activeInputId = 'startInput';
 
-        // ==================== VARIABLES GLOBALES ====================
-        let map;
-        let routingControl = null;
-        let userMarker = null;
-        let departMarker = null;
-        let arriveeMarker = null;
-        let driverMarker = null;
-        let departPoint = null;
-        let arriveePoint = null;
-        let searchMode = 'depart';
-        let clientId = localStorage.getItem('clientId') || 'client_' + Date.now();
-        let currentTripId = null;
-        let selectedRoute = 1;
-        let currentRoutes = [];
+        // Gérer quel input est actif pour l'autocomplétion
+        document.querySelectorAll('input').forEach(inp => {
+            inp.onfocus = () => { if(inp.id !== 'newFavName') activeInputId = inp.id; };
+        });
 
-        // Adresses Dakar
-        const addresses = [
-            { name: "Plateau", address: "Plateau, Dakar", lat: 14.6928, lng: -17.4464 },
-            { name: "Almadies", address: "Almadies, Dakar", lat: 14.7441, lng: -17.5208 },
-            { name: "Mermoz", address: "Mermoz, Dakar", lat: 14.7065, lng: -17.4873 },
-            { name: "Fann", address: "Fann, Dakar", lat: 14.6868, lng: -17.4692 },
-            { name: "Ouakam", address: "Ouakam, Dakar", lat: 14.7205, lng: -17.4936 },
-            { name: "Yoff", address: "Yoff, Dakar", lat: 14.7569, lng: -17.4757 },
-            { name: "Aéroport", address: "AIBD, Diass", lat: 14.6700, lng: -17.0733 },
-            { name: "UCAD", address: "Université, Dakar", lat: 14.6873, lng: -17.4670 }
-        ];
-
-        // Favoris
-        const favorites = {
-            maison: { address: "Almadies - Villa 123", lat: 14.7441, lng: -17.5208 },
-            travail: { address: "Plateau - Immeuble Kébé", lat: 14.6928, lng: -17.4464 },
-            aeroport: { address: "AIBD - Diass", lat: 14.6700, lng: -17.0733 }
-        };
-
-        // ==================== INITIALISATION ====================
-        window.onload = function() {
-            initMap();
-            loadHistory();
-            checkExistingTrip();
-            
-            // Sauvegarder clientId
-            localStorage.setItem('clientId', clientId);
-        };
-
-        function initMap() {
-            map = L.map('map').setView([14.7167, -17.4677], 13);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            // Géolocalisation
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        if (userMarker) {
-                            userMarker.setLatLng([lat, lng]);
-                        } else {
-                            userMarker = L.marker([lat, lng], {
-                                icon: L.divIcon({
-                                    html: '📍',
-                                    iconSize: [30, 30]
-                                })
-                            }).addTo(map);
-                        }
-                    }
-                );
+        // 1. Sélection par clic sur la carte
+        map.on('click', (e) => {
+            if (activeInputId === 'startInput') {
+                updateStart(e.latlng.lat, e.latlng.lng, "Point sur la carte");
+            } else {
+                updateEnd(e.latlng.lat, e.latlng.lng, "Point sur la carte");
             }
+        });
 
-            // Clic sur carte
-            map.on('click', function(e) {
-                if (document.getElementById('searchPage').style.display === 'flex') {
-                    const lat = e.latlng.lat;
-                    const lng = e.latlng.lng;
-                    
-                    if (searchMode === 'depart') {
-                        setDepartPoint(lat, lng, "Point sur carte");
-                    } else {
-                        setArriveePoint(lat, lng, "Point sur carte");
-                    }
-                    closeSearch();
+        // 2. Géolocalisation
+        function getCurrentLocation() {
+            map.locate({setView: true, maxZoom: 16});
+        }
+        map.on('locationfound', (e) => {
+            updateStart(e.latlng.lat, e.latlng.lng, "Ma position");
+        });
+
+        // 3. Autocomplete
+        const suggestionsBox = document.getElementById('suggestions');
+        document.querySelectorAll('#startInput, #endInput').forEach(input => {
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value;
+                if (query.length < 3) { suggestionsBox.style.display = 'none'; return; }
+                const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}, Dakar&limit=5`);
+                const data = await resp.json();
+                suggestionsBox.innerHTML = '';
+                if(data.length > 0) {
+                    suggestionsBox.style.display = 'block';
+                    data.forEach(place => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.innerText = place.display_name.split(',')[0];
+                        div.onclick = () => {
+                            if(activeInputId === 'startInput') updateStart(place.lat, place.lon, div.innerText);
+                            else updateEnd(place.lat, place.lon, div.innerText);
+                            suggestionsBox.style.display = 'none';
+                        };
+                        suggestionsBox.appendChild(div);
+                    });
                 }
             });
+        });
+
+        function updateStart(lat, lon, name) {
+            startCoords = [lat, lon];
+            document.getElementById('startInput').value = name;
+            startMarker.setLatLng(startCoords);
+            drawRoute();
         }
 
-        // ==================== GESTION RECHERCHE ====================
-        function openSearch(mode = 'depart') {
-            searchMode = mode;
-            document.getElementById('searchPage').style.display = 'flex';
-            document.getElementById('searchInput').focus();
-            
-            // Mettre à jour les boutons
-            document.getElementById('optionDepart').classList.toggle('active', mode === 'depart');
-            document.getElementById('optionArrivee').classList.toggle('active', mode === 'arrivee');
+        function updateEnd(lat, lon, name) {
+            endCoords = [lat, lon];
+            document.getElementById('endInput').value = name;
+            if(endMarker) map.removeLayer(endMarker);
+            endMarker = L.marker(endCoords).addTo(map);
+            drawRoute();
         }
 
-        function closeSearch() {
-            document.getElementById('searchPage').style.display = 'none';
+        function drawRoute() {
+            if (!startCoords || !endCoords) return;
+            if (polyline) map.removeLayer(polyline);
+            polyline = L.polyline([startCoords, endCoords], {color: '#111', weight: 4, dashArray: '5, 10'}).addTo(map);
+            map.fitBounds(polyline.getBounds(), {padding: [50, 50]});
+            const dist = map.distance(startCoords, endCoords) / 1000;
+            document.getElementById('priceEco').innerText = Math.max(1000, Math.round(500 + dist * 350)) + " F";
+            document.getElementById('priceComfort').innerText = Math.max(1500, Math.round(800 + dist * 550)) + " F";
         }
 
-        function setSearchMode(mode) {
-            searchMode = mode;
-            document.getElementById('optionDepart').classList.toggle('active', mode === 'depart');
-            document.getElementById('optionArrivee').classList.toggle('active', mode === 'arrivee');
+        // 4. Favoris
+        function toggleAccount() {
+            const acc = document.getElementById('account-page');
+            acc.style.display = (acc.style.display === 'flex') ? 'none' : 'flex';
         }
 
-        function searchAddresses() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const resultsDiv = document.getElementById('addressResults');
-            
-            if (term.length < 2) {
-                resultsDiv.innerHTML = '';
-                return;
-            }
-
-            const filtered = addresses.filter(addr => 
-                addr.name.toLowerCase().includes(term) || 
-                addr.address.toLowerCase().includes(term)
-            );
-
-            let html = '';
-            filtered.forEach(addr => {
-                html += `
-                    <div class="result-item" onclick="selectAddress('${addr.address}', ${addr.lat}, ${addr.lng})">
-                        <span style="font-size: 20px;">📍</span>
-                        <div>
-                            <div style="font-weight: 600;">${addr.name}</div>
-                            <div style="color: #666;">${addr.address}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            resultsDiv.innerHTML = html;
+        function addFavorite() {
+            const name = document.getElementById('newFavName').value;
+            const addr = document.getElementById('newFavAddr').value;
+            if(!name || !addr) return;
+            const div = document.createElement('div');
+            div.className = 'fav-item';
+            div.onclick = () => useFavorite(name, addr);
+            div.innerHTML = `<i class="fas fa-star"></i><div><strong>${name}</strong><br><small>${addr}</small></div>`;
+            document.getElementById('favorites-list').appendChild(div);
         }
 
-        function selectCurrentLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    
-                    if (searchMode === 'depart') {
-                        setDepartPoint(lat, lng, "Ma position");
-                    } else {
-                        setArriveePoint(lat, lng, "Ma position");
-                    }
-                    closeSearch();
-                    
-                    // Retour à la page principale
-                    document.getElementById('mainPanel').style.display = 'block';
+        function useFavorite(name, addr) {
+            document.getElementById('endInput').value = addr;
+            toggleAccount();
+            // Simuler la recherche de l'adresse
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}, Dakar&limit=1`)
+                .then(r => r.json()).then(data => {
+                    if(data[0]) updateEnd(data[0].lat, data[0].lon, addr);
                 });
-            }
         }
 
-        function selectOnMap() {
-            closeSearch();
-            showNotification("Touchez sur la carte pour choisir le point");
+        function setActiveRide(el) {
+            document.querySelectorAll('.ride-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        function selectAddress(address, lat, lng) {
-            if (searchMode === 'depart') {
-                setDepartPoint(lat, lng, address);
-            } else {
-                setArriveePoint(lat, lng, address);
-            }
-            closeSearch();
-        }
-
-        function setFavorite(type) {
-            const fav = favorites[type];
-            if (searchMode === 'depart') {
-                setDepartPoint(fav.lat, fav.lng, fav.address);
-            } else {
-                setArriveePoint(fav.lat, fav.lng, fav.address);
-            }
-        }
-
-        // ==================== GESTION POINTS ====================
-        function setDepartPoint(lat, lng, label) {
-            departPoint = { lat, lng, label };
-            document.getElementById('departText').innerHTML = label;
-            
-            if (departMarker) map.removeLayer(departMarker);
-            departMarker = L.marker([lat, lng], {
-                icon: L.divIcon({ html: '🟢', iconSize: [30, 30] })
-            }).addTo(map);
-            
-            checkAndCalculate();
-        }
-
-        function setArriveePoint(lat, lng, label) {
-            arriveePoint = { lat, lng, label };
-            document.getElementById('arriveeText').innerHTML = label;
-            
-            if (arriveeMarker) map.removeLayer(arriveeMarker);
-            arriveeMarker = L.marker([lat, lng], {
-                icon: L.divIcon({ html: '🔴', iconSize: [30, 30] })
-            }).addTo(map);
-            
-            checkAndCalculate();
-        }
-
-        function checkAndCalculate() {
-            if (departPoint && arriveePoint) {
-                calculateRoutes();
-            }
-        }
-
-        // ==================== CALCUL ITINERAIRES ====================
-        function calculateRoutes() {
-            if (routingControl) {
-                map.removeControl(routingControl);
-            }
-
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(departPoint.lat, departPoint.lng),
-                    L.latLng(arriveePoint.lat, arriveePoint.lng)
-                ],
-                routeWhileDragging: false,
-                showAlternatives: true,
-                lineOptions: { styles: [{ color: '#1877f2', weight: 6 }] }
-            }).addTo(map);
-
-            routingControl.on('routesfound', function(e) {
-                currentRoutes = e.routes;
-                updateRoutesDisplay();
-            });
-
-            document.getElementById('routesSection').style.display = 'block';
-            document.getElementById('priceBanner').style.display = 'flex';
-            document.getElementById('orderBtn').disabled = false;
-        }
-
-        function updateRoutesDisplay() {
-            for (let i = 0; i < Math.min(3, currentRoutes.length); i++) {
-                const route = currentRoutes[i];
-                const distance = (route.summary.totalDistance / 1000).toFixed(1);
-                const duration = Math.round(route.summary.totalTime / 60);
-                const price = Math.round(1000 + (distance * 350));
-
-                document.getElementById(`routeName${i+1}`).innerHTML = 
-                    i === 0 ? "Route principale" : i === 1 ? "Littoral" : "Sans péage";
-                document.getElementById(`routeDetails${i+1}`).innerHTML = `${distance} km • ${duration} min`;
-                document.getElementById(`routePrice${i+1}`).innerHTML = `${price} F`;
-            }
-            selectRoute(1);
-        }
-
-        function selectRoute(index) {
-            selectedRoute = index;
-            document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
-            document.getElementById(`route${index}`).classList.add('selected');
-            
-            const price = document.getElementById(`routePrice${index}`).innerHTML;
-            document.getElementById('totalPrice').innerHTML = price;
-            
-            if (routingControl && currentRoutes[index-1]) {
-                routingControl.showRoute(index-1);
-            }
-        }
-
-        // ==================== COMMANDE ====================
-        async function commanderCourse() {
-            if (!departPoint || !arriveePoint) {
-                showNotification("Choisissez une destination");
-                return;
-            }
-
-            const prix = document.getElementById('totalPrice').innerHTML;
-            
-            try {
-                const courseData = {
-                    clientId: clientId,
-                    depart: departPoint,
-                    arrivee: arriveePoint,
-                    prix: prix,
-                    route: selectedRoute,
-                    status: 'searching',
-                    timestamp: new Date().toISOString()
-                };
-
-                const docRef = await db.collection("trips").add(courseData);
-                currentTripId = docRef.id;
-                
-                // Cacher panneau principal, afficher suivi
-                document.getElementById('mainPanel').style.display = 'none';
-                document.getElementById('trackingPanel').style.display = 'block';
-                
-                showNotification("✅ Course envoyée - Recherche de chauffeur...");
-                
-                // Écouter les changements
-                listenForTripUpdates(currentTripId);
-                
-            } catch (error) {
-                console.error("Erreur:", error);
-                showNotification("Erreur lors de la commande");
-            }
-        }
-
-        // ==================== SUIVI COURSE ====================
-        function listenForTripUpdates(tripId) {
-            db.collection("trips").doc(tripId).onSnapshot((doc) => {
-                const trip = doc.data();
-                if (!trip) return;
-
-                switch(trip.status) {
-                    case 'accepted':
-                        document.getElementById('statusText').innerHTML = '✅ Chauffeur trouvé - En route vers vous';
-                        document.getElementById('statusText').className = 'status-badge status-accepted';
-                        
-                        // Afficher infos chauffeur
-                        if (trip.driverInfo) {
-                            document.getElementById('driverName').innerHTML = trip.driverInfo.name;
-                            document.getElementById('driverPhone').innerHTML = trip.driverInfo.phone;
-                            document.getElementById('driverVehicle').innerHTML = trip.driverInfo.vehicle;
-                            document.getElementById('driverPlate').innerHTML = trip.driverInfo.plate;
-                        }
-                        
-                        // Commencer à suivre le chauffeur
-                        if (trip.driverId) {
-                            trackDriverLocation(trip.driverId);
-                        }
-                        break;
-                        
-                    case 'arrived':
-                        document.getElementById('arrivedMessage').style.display = 'block';
-                        document.getElementById('statusText').innerHTML = '🚗 Le chauffeur est arrivé !';
-                        break;
-                        
-                    case 'started':
-                        document.getElementById('statusText').innerHTML = '🚗 En route vers destination';
-                        document.getElementById('arrivedMessage').style.display = 'none';
-                        break;
-                        
-                    case 'completed':
-                        showNotification('✅ Course terminée !');
-                        saveToHistory(trip);
-                        setTimeout(() => {
-                            document.getElementById('trackingPanel').style.display = 'none';
-                            document.getElementById('mainPanel').style.display = 'block';
-                            resetTrip();
-                        }, 3000);
-                        break;
-                }
-            });
-        }
-
-        function trackDriverLocation(driverId) {
-            db.collection("drivers").doc(driverId).onSnapshot((doc) => {
-                const driver = doc.data();
-                if (driver && driver.location) {
-                    updateDriverPosition(driver.location);
-                    calculateDriverDistance(driver.location);
-                }
-            });
-        }
-
-        function updateDriverPosition(location) {
-            if (driverMarker) {
-                driverMarker.setLatLng([location.lat, location.lng]);
-            } else {
-                driverMarker = L.marker([location.lat, location.lng], {
-                    icon: L.divIcon({ html: '🚗', iconSize: [30, 30] })
-                }).addTo(map);
-            }
-        }
-
-        function calculateDriverDistance(driverLoc) {
-            if (!departPoint) return;
-            
-            const distance = getDistance(
-                driverLoc.lat, driverLoc.lng,
-                departPoint.lat, departPoint.lng
-            );
-            
-            document.getElementById('driverDistance').innerHTML = distance.toFixed(1) + ' km';
-            
-            // Mettre à jour progression
-            const progress = Math.min(100, (1 - distance/10) * 100);
-            document.getElementById('progressFill').style.width = progress + '%';
-            
-            // Vérifier si arrivé (moins de 10 mètres)
-            if (distance < 0.01) { // 10 mètres = 0.01 km
-                updateTripStatus('arrived');
-            }
-        }
-
-        async function updateTripStatus(status) {
-            if (currentTripId) {
-                await db.collection("trips").doc(currentTripId).update({
-                    status: status
-                });
-            }
-        }
-
-        // ==================== HISTORIQUE ====================
-        function saveToHistory(trip) {
-            let history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
-            
-            history.unshift({
-                date: new Date().toLocaleDateString('fr-FR'),
-                depart: trip.depart.label,
-                arrivee: trip.arrivee.label,
-                prix: trip.prix,
-                driver: trip.driverInfo?.name || 'Chauffeur'
-            });
-            
-            // Garder seulement les 20 dernières courses
-            if (history.length > 20) history = history.slice(0, 20);
-            
-            localStorage.setItem('tripHistory', JSON.stringify(history));
-        }
-
-        function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('tripHistory') || '[]');
-            const list = document.getElementById('historyList');
-            
-            if (history.length === 0) {
-                list.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">Aucune course pour le moment</div>';
-                return;
-            }
-            
-            let html = '';
-            history.forEach(item => {
-                html += `
-                    <div class="history-item">
-                        <div class="history-date">📅 ${item.date}</div>
-                        <div class="history-route">${item.depart} → ${item.arrivee}</div>
-                        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-                            <span>👤 ${item.driver}</span>
-                            <span class="history-price">${item.prix}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            list.innerHTML = html;
-        }
-
-        function openHistory() {
-            loadHistory();
-            document.getElementById('historyPage').style.display = 'flex';
-        }
-
-        function closeHistory() {
-            document.getElementById('historyPage').style.display = 'none';
-        }
-
-        // ==================== UTILITAIRES ====================
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function togglePanel() {
-            const panel = document.getElementById('mainPanel');
-            panel.style.transform = panel.style.transform === 'translateY(calc(100% - 100px))' 
-                ? 'translateY(0)' 
-                : 'translateY(calc(100% - 100px))';
-        }
-
-        function showNotification(msg) {
-            const notif = document.getElementById('notification');
-            notif.innerHTML = msg;
-            notif.style.display = 'block';
-            setTimeout(() => notif.style.display = 'none', 3000);
-        }
-
-        function connecterClient() {
-            const phone = document.getElementById('phoneNumber').value;
-            if (phone) {
-                document.getElementById('loginModal').style.display = 'none';
-                showNotification("Connecté avec succès");
-            }
-        }
-
-        function checkExistingTrip() {
-            // Vérifier si une course est en cours
-        }
-
-        function resetTrip() {
-            departPoint = null;
-            arriveePoint = null;
-            currentTripId = null;
-            document.getElementById('departText').innerHTML = 'Choisir lieu de départ';
-            document.getElementById('arriveeText').innerHTML = 'Choisir destination';
-            document.getElementById('routesSection').style.display = 'none';
-            document.getElementById('priceBanner').style.display = 'none';
-            document.getElementById('orderBtn').disabled = true;
-            
-            if (departMarker) map.removeLayer(departMarker);
-            if (arriveeMarker) map.removeLayer(arriveeMarker);
-            if (driverMarker) map.removeLayer(driverMarker);
+        function commander() {
+            alert("🚀 Demande envoyée de " + document.getElementById('startInput').value + " vers " + document.getElementById('endInput').value);
         }
     </script>
-</body> 
+</body>
 </html>
