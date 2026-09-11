@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gnu Dém — Le VTC 100% Sénégalais</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============ RESET & BASE ============ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --vert: #0B6E4F;
+    --vert-clair: #14A06B;
+    --jaune: #F2C14E;
+    --orange: #E76F51;
+    --bleu: #1D3557;
+    --noir: #0A0A0A;
+    --gris-fonce: #1A1A1A;
+    --gris: #2A2A2A;
+    --gris-clair: #F5F5F5;
+    --blanc: #FFFFFF;
+    --texte-doux: #B8B8B8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--noir);
+    color: var(--blanc);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ============ NAVBAR ============ */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 16px 0;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.3s ease;
+  }
+
+  nav.scrolled { padding: 10px 0; background: rgba(10,10,10,0.98); }
+
+  .nav-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--jaune); }
+
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--texte-doux);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--jaune); }
+
+  .burger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+  .burger span {
+    width: 26px; height: 3px;
+    background: var(--blanc);
+    border-radius: 2px;
+    transition: 0.3s;
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 120px 0 80px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(11,110,79,0.35) 0%, transparent 55%),
+      radial-gradient(circle at 80% 70%, rgba(231,111,81,0.25) 0%, transparent 55%),
+      var(--noir);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 850px;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 8px 18px;
+    border: 1px solid var(--vert-clair);
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--vert-clair);
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .accent {
+    background: linear-gradient(120deg, var(--jaune), var(--orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--texte-doux);
+    max-width: 620px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .slogan-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .slogan-bar span {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .slogan-bar span:nth-child(1) { color: var(--vert-clair); }
+  .slogan-bar span:nth-child(2) { color: var(--jaune); }
+  .slogan-bar span:nth-child(3) { color: var(--orange); }
+
+  .price-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(20, 160, 107, 0.12);
+    border: 1px solid rgba(20, 160, 107, 0.4);
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .pulse-dot {
+    width: 10px; height: 10px;
+    background: var(--vert-clair);
+    border-radius: 50%;
+    position: relative;
+  }
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: var(--vert-clair);
+    opacity: 0.4;
+    animation: pulse 1.8s infinite;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    animation: fadeUp 0.6s 0.5s ease both;
+  }
+
+  /* ============ BOUTONS ============ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(120deg, var(--vert), var(--vert-clair));
+    color: var(--blanc);
+    box-shadow: 0 8px 24px rgba(20, 160, 107, 0.3);
+  }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(20, 160, 107, 0.45);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--blanc);
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .btn-outline:hover {
+    border-color: var(--jaune);
+    color: var(--jaune);
+    transform: translateY(-3px);
+  }
+
+  .btn-jaune {
+    background: linear-gradient(120deg, var(--jaune), var(--orange));
+    color: var(--noir);
+    box-shadow: 0 8px 24px rgba(242, 193, 78, 0.3);
+  }
+  .btn-jaune:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(242, 193, 78, 0.45);
+  }
+
+  /* ============ SECTIONS ============ */
+  section {
+    padding: 110px 0;
+    position: relative;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -1.2px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  .section-title .accent {
+    background: linear-gradient(120deg, var(--vert-clair), var(--jaune));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--texte-doux);
+    max-width: 680px;
+    margin-bottom: 50px;
+  }
+
+  /* ============ REVEAL ANIMATION ============ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ============ HISTOIRE / TIMELINE ============ */
+  #histoire { background: var(--gris-fonce); }
+
+  .constat-box {
+    background: linear-gradient(135deg, rgba(231,111,81,0.1), rgba(11,110,79,0.1));
+    border-left: 4px solid var(--orange);
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 60px;
+    font-size: 1.05rem;
+    color: var(--blanc);
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--vert-clair), var(--jaune), var(--orange));
+    border-radius: 2px;
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 42px;
+  }
+  .timeline-item:last-child { padding-bottom: 0; }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -40px;
+    top: 4px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--noir);
+    border: 3px solid var(--vert-clair);
+    z-index: 2;
+  }
+
+  .timeline-item:nth-child(2)::before { border-color: var(--vert-clair); }
+  .timeline-item:nth-child(3)::before { border-color: var(--jaune); }
+  .timeline-item:nth-child(4)::before { border-color: var(--orange); }
+
+  .timeline-year {
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: var(--jaune);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .timeline-text {
+    color: var(--texte-doux);
+    font-size: 0.98rem;
+  }
+
+  /* ============ MISSION / PILIERS ============ */
+  .piliers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .pilier {
+    background: var(--gris-fonce);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    padding: 36px 30px;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pilier::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--vert-clair);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+  .pilier:hover::before { transform: scaleX(1); }
+
+  .pilier:nth-child(2)::before { background: var(--jaune); }
+  .pilier:nth-child(3)::before { background: var(--orange); }
+
+  .pilier:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .pilier-icon {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .pilier h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+
+  .pilier p {
+    color: var(--texte-doux);
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  .pilier ul {
+    list-style: none;
+    padding: 0;
+  }
+  .pilier ul li {
+    color: var(--texte-doux);
+    font-size: 0.9rem;
+    padding: 6px 0 6px 24px;
+    position: relative;
+  }
+  .pilier ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--vert-clair);
+    font-weight: 700;
+  }
+
+  /* ============ CONFIDENTIALITÉ ============ */
+  #confidentialite { background: var(--gris-fonce); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 50px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+  }
+
+  thead {
+    background: rgba(11,110,79,0.2);
+  }
+
+  th {
+    text-align: left;
+    padding: 20px 24px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--vert-clair);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  td {
+    padding: 20px 24px;
+    font-size: 0.92rem;
+    color: var(--texte-doux);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  tbody tr {
+    transition: background 0.2s;
+  }
+  tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .engagements {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .engagement {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 22px 24px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .engagement:hover {
+    border-color: var(--vert-clair);
+    transform: translateY(-3px);
+  }
+
+  .engagement .check {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(120deg, var(--vert), var(--vert-clair));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: var(--blanc);
+  }
+
+  .engagement p {
+    font-size: 0.92rem;
+    color: var(--blanc);
+    font-weight: 500;
+  }
+
+  /* ============ PRIX ============ */
+  .formule {
+    background: linear-gradient(135deg, rgba(11,110,79,0.15), rgba(242,193,78,0.08));
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 40px;
+    margin-bottom: 50px;
+  }
+
+  .formule-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--jaune);
+    margin-bottom: 24px;
+  }
+
+  .formule-ligne {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .formule-part {
+    background: rgba(255,255,255,0.06);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .formule-op {
+    color: var(--jaune);
+    font-weight: 900;
+    font-size: 1.3rem;
+  }
+
+  .formule-total {
+    background: linear-gradient(120deg, var(--vert), var(--vert-clair));
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+  }
+
+  .avantages {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .avantage-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--texte-doux);
+  }
+
+  .avantage-item .icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .avantage-item.positif { color: var(--blanc); }
+
+  /* ============ CTA FINAL ============ */
+  #cta {
+    background:
+      radial-gradient(circle at 30% 40%, rgba(11,110,79,0.3) 0%, transparent 60%),
+      radial-gradient(circle at 70% 60%, rgba(231,111,81,0.2) 0%, transparent 60%),
+      var(--noir);
+    text-align: center;
+  }
+
+  #cta .section-title {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+  }
+
+  .cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .chauffeur-link {
+    display: inline-block;
+    margin-bottom: 60px;
+    color: var(--jaune);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1rem;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  .chauffeur-link:hover { border-color: var(--jaune); }
+
+  .closing {
+    font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -0.5px;
+    background: linear-gradient(120deg, var(--vert-clair), var(--jaune), var(--orange));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* ============ FOOTER ============ */
+  footer {
+    padding: 50px 0 30px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+  }
+
+  .footer-slogan {
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: var(--blanc);
+  }
+
+  .footer-sub {
+    font-size: 0.85rem;
+    color: var(--texte-doux);
+  }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    70% { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .nav-links {
+      position: fixed;
+      top: 60px; left: 0; right: 0;
+      flex-direction: column;
+      background: rgba(10,10,10,0.98);
+      padding: 30px;
+      gap: 20px;
+      transform: translateY(-150%);
+      transition: transform 0.3s ease;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-links.open { transform: translateY(0); }
+    .burger { display: flex; }
+
+    section { padding: 80px 0; }
+    .formule { padding: 26px 20px; }
+    .formule-ligne { font-size: 0.9rem; }
+    .formule-part { padding: 10px 14px; font-size: 0.85rem; }
+    .hero-cta .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<nav id="navbar">
+  <div class="container nav-inner">
+    <div class="logo">GNU<span>DÉM</span></div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#histoire">Notre Histoire</a></li>
+      <li><a href="#mission">Notre Mission</a></li>
+      <li><a href="#confidentialite">Confidentialité</a></li>
+      <li><a href="#prix">Prix</a></li>
+      <li><a href="#cta">Télécharger</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <span class="badge-pill">VTC 100% Sénégalais</span>
+      <h1>Gnu Dém — Roulez chez vous, <span class="accent">en toute liberté.</span></h1>
+      <p class="hero-sub">
+        Le premier VTC 100% sénégalais conçu pour redéfinir la mobilité urbaine à Dakar et partout au pays.
+        Fait par nous, pour nous.
+      </p>
+
+      <div class="slogan-bar">
+        <span>Souveraineté</span>
+        <span>Sécurité</span>
+        <span>Proximité</span>
+      </div>
+
+      <div class="price-indicator">
+        <span class="pulse-dot"></span>
+        Prix transparent affiché avant chaque course — Zéro surprise.
+      </div>
+
+      <div class="hero-cta">
+        <a href="#cta" class="btn btn-primary">📱 Télécharger l'application</a>
+        <a href="#cta" class="btn btn-outline">🚗 Devenir Chauffeur Partenaire</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HISTOIRE ============ -->
+<section id="histoire">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Notre Genèse</span>
+      <h2 class="section-title">Pourquoi <span class="accent">Gnu Dém</span> ?</h2>
+      <p class="section-desc">L'histoire d'un mouvement né d'un constat simple et d'une ambition démesurée.</p>
+    </div>
+
+    <div class="constat-box reveal">
+      <strong>Le constat qui a tout déclenché :</strong> Les géants internationaux du VTC ne comprennent pas nos réalités.
+      Leurs algorithmes ignorent la circulation dakaroise, leurs commissions étouffent nos chauffeurs,
+      et leurs promesses de sécurité restent déconnectées du terrain.
+      <br><br>
+      <strong>Il fallait une alternative. Locale. Éthique. Audacieuse.</strong>
+    </div>
+
+    <div class="timeline reveal">
+      <div class="timeline-item">
+        <div class="timeline-year">2022</div>
+        <p class="timeline-text">L'idée germe dans un grin à Dakar. Un constat simple : nos chauffeurs méritent mieux, nos passagers aussi.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2023</div>
+        <p class="timeline-text">Premiers prototypes. Tests terrain avec des chauffeurs partenaires sur les axes VDN, Corniche et Autoroute.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">2024</div>
+        <p class="timeline-text">Lancement officiel de Gnu Dém. Déploiement progressif de la flotte intelligente.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-year">Aujourd'hui</div>
+        <p class="timeline-text">Un mouvement qui grandit. Des milliers de courses. Une communauté qui reprend le contrôle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MISSION ============ -->
+<section id="mission">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Notre Rôle</span>
+      <h2 class="section-title">Plus qu'une course, <span class="accent">un impact.</span></h2>
+      <p class="section-desc">Trois piliers fondent notre modèle et guident chacune de nos décisions.</p>
+    </div>
+
+    <div class="piliers">
+      <div class="pilier reveal">
+        <span class="pilier-icon">🟢</span>
+        <h3>Équité Économique</h3>
+        <p>Des commissions justes pour que les chauffeurs vivent enfin dignement de leur sueur.</p>
+        <ul>
+          <li>Pas de ponction cachée</li>
+          <li>Pas de course à vide non compensée</li>
+          <li>Revenus stables et prévisibles</li>
+        </ul>
+      </div>
+
+      <div class="pilier reveal">
+        <span class="pilier-icon">🟠</span>
+        <h3>Ancrage Local</h3>
+        <p>Intégration native des habitudes sénégalaises pour une expérience vraiment adaptée.</p>
+        <ul>
+          <li>Points de repère précis à Dakar</li>
+          <li>Axes stratégiques : VDN, Corniche, Autoroute</li>
+          <li>Support en Wolof, Français, Anglais</li>
+        </ul>
+      </div>
+
+      <div class="pilier reveal">
+        <span class="pilier-icon">🔵</span>
+        <h3>Sécurité et Confiance</h3>
+        <p>Chauffeurs rigoureusement formés et identifiés, traçabilité des trajets en temps réel.</p>
+        <ul>
+          <li>Bouton d'urgence intégré et réactif</li>
+          <li>Partage de course avec vos proches</li>
+          <li>Vérification rigoureuse des chauffeurs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONFIDENTIALITÉ ============ -->
+<section id="confidentialite">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Vos Comptes</span>
+      <h2 class="section-title">Zéro compromis <span class="accent">sur vos données.</span></h2>
+      <p class="section-desc">Transparence absolue sur le traitement de vos informations personnelles.</p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Type de Donnée</th>
+            <th>Utilisation</th>
+            <th>Vos Droits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Géolocalisation</strong></td>
+            <td>Calcul d'itinéraire, mise en relation chauffeur-passager</td>
+            <td>Jamais vendue. Supprimée sur demande.</td>
+          </tr>
+          <tr>
+            <td><strong>Historique des courses</strong></td>
+            <td>Reçus, support client, amélioration du service</td>
+            <td>Accessible à tout moment. Effaçable.</td>
+          </tr>
+          <tr>
+            <td><strong>Contacts</strong></td>
+            <td>Partage de course uniquement</td>
+            <td>Jamais utilisés à des fins publicitaires.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="engagements">
+      <div class="engagement reveal">
+        <div class="check">✓</div>
+        <p>Vos données restent au Sénégal / protégées par les normes en vigueur</p>
+      </div>
+      <div class="engagement reveal">
+        <div class="check">✓</div>
+        <p>Aucune revente à des tiers publicitaires louches</p>
+      </div>
+      <div class="engagement reveal">
+        <div class="check">✓</div>
+        <p>Suppression de compte et des données en 1 clic</p>
+      </div>
+      <div class="engagement reveal">
+        <div class="check">✓</div>
+        <p>Politique de confidentialité rédigée en clair — pas de jargon illisible</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRIX ============ -->
+<section id="prix">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Transparence Tarifaire</span>
+      <h2 class="section-title">Le prix affiché est <span class="accent">le prix payé.</span></h2>
+      <p class="section-desc">Fin des hausses incompréhensibles aux heures de pointe. Chez Gnu Dém, c'est clair, net, précis.</p>
+    </div>
+
+    <div class="formule reveal">
+      <div class="formule-title">Comment le prix est calculé</div>
+      <div class="formule-ligne">
+        <span class="formule-part">Prix de base (prise en charge)</span>
+        <span class="formule-op">+</span>
+        <span class="formule-part">Tarif au kilomètre</span>
+        <span class="formule-op">+</span>
+        <span class="formule-part">Tarif à la minute (congestion intelligente)</span>
+        <span class="formule-op">=</span>
+        <span class="formule-total">Prix total affiché AVANT validation</span>
+      </div>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr>
+            <th>Trajet</th>
+            <th>Distance</th>
+            <th>Durée</th>
+            <th>Prix Gnu Dém (XOF)</th>
+            <th>Équivalent (EUR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Plateau → Almadies</td>
+            <td>12 km</td>
+            <td>25 min</td>
+            <td><strong>3 500 FCFA</strong></td>
+            <td>~5,35 €</td>
+          </tr>
+          <tr>
+            <td>Médina → Parcelles Assainies</td>
+            <td>8 km</td>
+            <td>20 min</td>
+            <td><strong>2 800 FCFA</strong></td>
+            <td>~4,25 €</td>
+          </tr>
+          <tr>
+            <td>Ouakam → Yoff</td>
+            <td>6 km</td>
+            <td>15 min</td>
+            <td><strong>2 200 FCFA</strong></td>
+            <td>~3,35 €</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="reveal" style="color: var(--texte-doux); font-size: 0.85rem; margin-top: -30px; margin-bottom: 40px;">
+      Taux indicatif : 1 EUR ≈ 655,957 XOF. Montant affiché en Francs CFA, équivalent EUR fourni pour la diaspora et les partenaires internationaux.
+    </p>
+
+    <div class="avantages reveal">
+      <div class="avantage-item">
+        <span class="icon">🚫</span>
+        <span>Pas de frais cachés</span>
+      </div>
+      <div class="avantage-item">
+        <span class="icon">🚫</span>
+        <span>Pas de surge pricing abusif</span>
+      </div>
+      <div class="avantage-item positif">
+        <span class="icon">✅</span>
+        <span>Commission transparente pour le chauffeur</span>
+      </div>
+      <div class="avantage-item positif">
+        <span class="icon">✅</span>
+        <span>Reçu détaillé après chaque course</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA FINAL ============ -->
+<section id="cta">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-tag">Rejoins le mouvement</span>
+      <h2 class="section-title">Téléchargez <span class="accent">Gnu Dém</span> dès maintenant.</h2>
+    </div>
+
+    <div class="cta-buttons reveal">
+      <a href="#" class="btn btn-primary">📲 Télécharger sur Android</a>
+      <a href="#" class="btn btn-jaune">📲 Télécharger sur iOS</a>
+    </div>
+
+    <div class="reveal">
+      <a href="#" class="chauffeur-link">🚗 Devenir Chauffeur Partenaire →</a>
+    </div>
+
+    <p class="closing reveal">
+      « Rejoins le mouvement Gnu Dém et reprenons le contrôle de nos trajets. »
+    </p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <p class="footer-slogan">GNU DÉM — Souveraineté, Sécurité, Proximité.</p>
+    <p class="footer-sub">100% Sénégalais. 100% Transparent. 100% Pour Nous.</p>
+  </div>
+</footer>
+
+<script>
+  // ============ NAVBAR SCROLL ============
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ============ BURGER MENU ============
+  const burger = document.getElementById('burger');
+  const navLinks = document.getElementById('navLinks');
+
+  burger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+  });
+
+  // Fermer le menu au clic sur un lien
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => navLinks.classList.remove('open'));
+  });
+
+  // ============ SCROLL REVEAL ============
+  const revealElements = document.querySelectorAll('.reveal');
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -50px 0px'
+  });
+
+  revealElements.forEach(el => revealObserver.observe(el));
+</script>
+
+</body>
+</html>
