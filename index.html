@@ -75,29 +75,40 @@
             text-align: center;
         }
 
-        /* --- CONTENEUR D'IMAGE SANS FOND --- */
+        /* --- CONTENEUR D'IMAGE AVEC CONTOURS ARRONDIS --- */
         .image-container {
             width: 100%;
-            background-color: transparent; /* PLUS DE FOND GRIS */
+            background-color: transparent;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
             margin-bottom: 10px;
             transition: transform 0.2s;
+            
+            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .image-container:hover {
             transform: scale(1.02);
+            border-color: #1a7a4c;
+            box-shadow: 0 4px 12px rgba(26, 122, 76, 0.15);
         }
 
         /* --- IMAGE QUI REMPLIT SANS COUPER --- */
         .image-container img {
             width: 100%;
             height: auto;
-            max-height: 250px; /* Limite la hauteur pour ne pas être géant */
-            object-fit: contain; /* L'IMAGE ENTIÈRE SANS COUPURE */
+            max-height: 220px;
+            object-fit: contain;
             display: block;
+            
+            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
+            border-radius: 14px;
         }
 
         .service-title {
@@ -122,25 +133,36 @@
 
         .banner-image-box {
             width: 100%;
-            background-color: transparent; /* PLUS DE FOND GRIS */
+            background-color: transparent;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             transition: transform 0.2s;
+            
+            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .banner-image-box:hover {
             transform: scale(1.01);
+            border-color: #1a7a4c;
+            box-shadow: 0 4px 12px rgba(26, 122, 76, 0.15);
         }
 
         /* --- IMAGE BANNIÈRE ENTIÈRE --- */
         .banner-image-box img {
             width: 100%;
             height: auto;
-            max-height: 200px;
-            object-fit: contain; /* L'IMAGE ENTIÈRE SANS COUPURE */
+            max-height: 180px;
+            object-fit: contain;
             display: block;
+            
+            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
+            border-radius: 14px;
         }
 
         /* --- BAS DE PAGE (2 CARTES) --- */
@@ -161,21 +183,30 @@
             background-color: #fff;
         }
 
-        /* --- IMAGE DE CARTE SANS FOND --- */
+        /* --- IMAGE DE CARTE AVEC CONTOURS --- */
         .card-img-box {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 15px;
-            background-color: transparent; /* PLUS DE FOND */
+            background-color: transparent;
+            
+            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         .card-img-box img {
             max-width: 100%;
-            max-height: 120px;
-            object-fit: contain; /* L'IMAGE ENTIÈRE */
+            max-height: 110px;
+            object-fit: contain;
             display: block;
+            
+            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
+            border-radius: 10px;
         }
 
         .info-card h3 {
@@ -233,7 +264,9 @@
             .services-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .service-title { font-size: 13px; }
             .bottom-cards { grid-template-columns: 1fr; }
-            .image-container img { max-height: 150px; }
+            .image-container img { max-height: 140px; }
+            .image-container { border-radius: 16px; padding: 6px; }
+            .banner-image-box { border-radius: 16px; padding: 6px; }
         }
     </style>
 </head>
