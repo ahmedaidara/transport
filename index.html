@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gnu dém - Accueil</title>
+    <style>
+        /* --- RESET ET POLICES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* --- FOND TRANSPARENT ET ADAPTATIF --- */
+        body {
+            background-color: transparent;
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* --- CONTENEUR PRINCIPAL FLUIDE --- */
+        .app-container {
+            width: 100%; /* Prend toute la largeur disponible */
+            max-width: 1200px; /* Limite large pour les grands écrans */
+            background-color: transparent;
+            padding: 20px;
+        }
+
+        /* --- EN-TÊTE --- */
+        header {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .logo-title {
+            color: #1a7a4c;
+            font-size: 40px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .location-header {
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .location-header svg {
+            width: 18px;
+            height: 18px;
+            fill: #1a7a4c;
+            margin-right: 5px;
+        }
+
+        /* --- GRILLE DES SERVICES (ADAPTATIVE) --- */
+        .services-grid {
+            display: grid;
+            /* Crée automatiquement des colonnes de 250px minimum, et remplit l'espace */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .service-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            text-align: center;
+        }
+
+        .image-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #f0f0f0;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .image-container:hover {
+            transform: scale(1.02);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 15px;
+        }
+
+        .service-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .eta-text {
+            font-size: 13px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        /* --- BANNIÈRE RECTANGLE CLIQUABLE (PLEINE LARGEUR) --- */
+        .banner-link {
+            display: block;
+            width: 100%;
+            margin-bottom: 35px;
+            text-decoration: none;
+        }
+
+        .banner-image-box {
+            width: 100%;
+            height: 150px; /* Plus haute sur grand écran */
+            background-color: #f0f0f0;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1.5px solid #ddd;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .banner-image-box:hover {
+            transform: scale(1.01);
+            border-color: #1a7a4c;
+        }
+
+        .banner-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- BAS DE PAGE (2 CARTES ADAPTATIVES) --- */
+        .bottom-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .info-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background-color: #fff;
+        }
+
+        .card-img-box {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-img-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: #111;
+        }
+
+        .info-card p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+
+        .btn-phone {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 6px 15px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            color: #111;
+        }
+
+        .btn-join {
+            background-color: #fcd34d;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 0;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #111;
+            transition: background-color 0.2s;
+        }
+
+        .btn-join:hover {
+            background-color: #fbbf24;
+        }
+
+        /* --- AJUSTEMENTS POUR MOBILES --- */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .logo-title { font-size: 30px; }
+            .services-grid { grid-template-columns: 1fr 1fr; gap: 10px; } /* 2 colonnes sur mobile */
+            .banner-image-box { height: 100px; }
+            .service-title { font-size: 13px; }
+            .bottom-cards { grid-template-columns: 1fr; } /* 1 colonne pour les cartes du bas */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="logo-title">Gnu dém</div>
+            <div class="location-header">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                Point de départ : Votre position actuelle
+            </div>
+        </header>
+
+        <div class="services-grid">
+            <a href="tiak-tiak.html" class="service-card">
+                <div class="image-container">
+                    <img src="image1.png" alt="Tiak-Tiak">
+                </div>
+                <div class="service-title">Tiak-Tiak</div>
+            </a>
+
+            <a href="food.html" class="service-card">
+                <div class="image-container">
+                    <img src="image2.png" alt="Food">
+                </div>
+                <div class="service-title">Food</div>
+            </a>
+
+            <a href="course.html" class="service-card">
+                <div class="image-container">
+                    <img src="image4.png" alt="Courses en Car Rapide">
+                </div>
+                <div class="service-title">Courses en Car Rapide</div>
+                <div class="eta-text">ETA à partir de 3 min<br>ET à partir de 3 min</div>
+            </a>
+        </div>
+
+        <a href="course.html" class="banner-link">
+            <div class="banner-image-box">
+                <img src="banniere.png" alt="Bannière">
+            </div>
+        </a>
+
+        <div class="bottom-cards">
+            <div class="info-card">
+                <div class="card-img-box">
+                    <img src="image5.png" alt="Sécurité">
+                </div>
+                <h3>Sécurité en voyage</h3>
+                <p>Votre sécurité est primordiale. Contactez les services d'urgence ou des contacts de confiance en un clic.</p>
+                <a href="tel:151" class="btn-phone">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    151
+                </a>
+            </div>
+
+            <div class="info-card">
+                <div class="card-img-box">
+                    <img src="image6.png" alt="Chauffeur">
+                </div>
+                <h3>Devenez Chauffeur</h3>
+                <p>Rejoignez la famille Gnu dém Pro. Des revenus garantis et des avantages sociaux.</p>
+                <button class="btn-join">Rejoindre</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const joinBtn = document.querySelector('.btn-join');
+            if(joinBtn) {
+                joinBtn.addEventListener('click', () => {
+                    alert("Redirection vers le formulaire d'inscription Chauffeur...");
+                });
+            }
+        });
+    </script>
+</body>
+</html>
