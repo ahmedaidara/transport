@@ -1,671 +1,1378 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOR-TAXI | Client</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
-    <style>
-        :root { --yango-yellow: #ffcc00; --yango-black: #111; --yango-gray: #f2f2f2; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { height: 100vh; display: flex; flex-direction: column; background: var(--yango-gray); overflow: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MOR-TAXI</title>
 
-        #map { flex-grow: 1; z-index: 1; cursor: crosshair; }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-        /* Bouton Menu Haut Gauche */
-        .menu-trigger {
-            position: absolute; top: 20px; left: 20px; z-index: 2000;
-            width: 50px; height: 50px; background: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer;
-        }
+<style>
+:root{
+  --ink:#0A0A0B;
+  --muted:#6E6E73;
+  --faint:#A6A6AB;
+  --line:#E7E7E9;
+  --surface:#F3F3F4;
+  --bg:#FFFFFF;
+  --accent:#C8FA3E;
+  --accent-ink:#173300;
+  --danger:#E5484D;
+  --r-lg:26px;
+  --r-md:16px;
+  --r-sm:10px;
+  --shadow-sheet: 0 -12px 34px rgba(10,10,11,0.14);
+  --shadow-float: 0 6px 20px rgba(10,10,11,0.16);
+  --font-body:'Inter', system-ui, -apple-system, sans-serif;
+  --font-display:'Space Grotesk', 'Inter', sans-serif;
+}
 
-        /* Panel UI */
-        #ui-panel {
-            position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
-            background: white; border-radius: 24px 24px 0 0; padding: 20px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto;
-            transition: transform 0.3s;
-        }
+*{ margin:0; padding:0; box-sizing:border-box; }
+html, body{ height:100%; }
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:var(--surface);
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+button{ font-family:inherit; border:none; background:none; cursor:pointer; color:inherit; }
+input{ font-family:inherit; border:none; outline:none; background:transparent; color:var(--ink); }
+button:focus-visible, input:focus-visible, a:focus-visible{
+  outline:2px solid var(--ink); outline-offset:2px;
+}
 
-        .search-group { background: var(--yango-gray); border-radius: 16px; padding: 10px; margin-bottom: 15px; position: relative; }
-        .input-row { display: flex; align-items: center; gap: 10px; position: relative; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        input { flex: 1; border: none; background: transparent; padding: 10px; font-size: 15px; outline: none; }
-        
-        #suggestions {
-            position: absolute; bottom: 100%; left: 0; right: 0; background: white;
-            border-radius: 12px; margin-bottom: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-            max-height: 200px; overflow-y: auto; display: none; z-index: 3000;
-        }
-        .suggestion-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .suggestion-item:hover { background: #ffcc00; }
+#map{ position:fixed; inset:0; z-index:1; }
+.leaflet-control-attribution{ font-size:9px !important; opacity:0.6; }
 
-        /* Page Compte & Favoris */
-        #account-page {
-            position: fixed; inset: 0; background: white; z-index: 4000;
-            padding: 20px; display: none; flex-direction: column;
-            overflow-y: auto;
-        }
+/* ---------- Top floating bar ---------- */
+.top-bar{
+  position:fixed; top:0; left:0; right:0; z-index:1200;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  pointer-events:none;
+}
+.top-bar > *{ pointer-events:auto; }
 
-        /* Section Profil */
-        .profile-section {
-            background: linear-gradient(135deg, #ffcc00, #ff9900);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 20px;
-            color: #111;
-        }
-        .profile-avatar {
-            width: 70px;
-            height: 70px;
-            background: #111;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-        .profile-avatar i {
-            font-size: 35px;
-            color: #ffcc00;
-        }
-        .profile-input-group {
-            background: rgba(255,255,255,0.9);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .profile-input-group label {
-            font-size: 12px;
-            color: #666;
-            display: block;
-            margin-bottom: 5px;
-        }
-        .profile-input-group input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            padding: 5px 0;
-            outline: none;
-        }
-        .save-profile-btn {
-            background: #111;
-            color: #ffcc00;
-            border: none;
-            padding: 12px;
-            border-radius: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
+.icon-btn{
+  width:46px; height:46px; border-radius:50%;
+  background:var(--bg); box-shadow:var(--shadow-float);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+}
+.icon-btn:active{ transform:scale(0.94); }
 
-        .fav-item { 
-            display: flex; align-items: center; gap: 15px; padding: 15px; 
-            background: var(--yango-gray); border-radius: 12px; margin-bottom: 10px; cursor: pointer;
-        }
-        .fav-item:hover { background: #ffcc00; }
+.status-pill{
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg); box-shadow:var(--shadow-float);
+  border-radius:999px; padding:11px 18px 11px 14px;
+  font-size:13px; font-weight:600;
+}
+.status-pill .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); }
+.status-pill.busy .dot{ background:#F5A623; }
+.status-pill.ok .dot{ background:var(--accent); }
+.status-pill.done .dot{ background:#3DDC84; }
 
-        .ride-selector { display: flex; gap: 10px; margin: 15px 0; }
-        .ride-card { flex: 1; padding: 12px; border-radius: 12px; background: var(--yango-gray); text-align: center; border: 2px solid transparent; cursor: pointer; }
-        .ride-card.active { border-color: var(--yango-yellow); background: #fffdf2; }
-        .btn-order { width: 100%; background: var(--yango-yellow); border: none; padding: 16px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-order:disabled { opacity: 0.5; cursor: not-allowed; }
+.avatar-btn{
+  width:46px; height:46px; border-radius:50%;
+  background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:15px; box-shadow:var(--shadow-float);
+  font-family:var(--font-display);
+}
+.avatar-btn:active{ transform:scale(0.94); }
 
-        /* Driver Info Modal */
-        .driver-modal {
-            position: fixed; bottom: 0; left: 0; right: 0; background: white;
-            border-radius: 24px 24px 0 0; padding: 24px; z-index: 5000;
-            transform: translateY(100%); transition: transform 0.3s;
-            max-width: 500px; margin: 0 auto;
-        }
-        .driver-modal.active { transform: translateY(0); }
-        .driver-info { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-        .driver-avatar { width: 60px; height: 60px; background: #ffcc00; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+/* ---------- Locate-me button ---------- */
+.locate-btn{
+  position:fixed; right:16px; z-index:1100;
+  width:48px; height:48px; border-radius:50%;
+  background:var(--bg); box-shadow:var(--shadow-float);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:var(--ink);
+  transition:bottom 0.35s cubic-bezier(.2,.8,.2,1);
+}
+.locate-btn:active{ transform:scale(0.94); }
 
-        @media (min-width: 768px) {
-            #ui-panel { top: 20px; bottom: auto; left: 80px; border-radius: 20px; margin: 0; }
-            #suggestions { top: 100%; bottom: auto; margin-top: 10px; }
-        }
+/* ---------- Bottom sheet ---------- */
+.sheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:1000;
+  max-width:520px; margin:0 auto;
+  background:var(--bg);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  box-shadow:var(--shadow-sheet);
+  padding:10px 20px calc(20px + env(safe-area-inset-bottom));
+  animation:sheet-in 0.5s cubic-bezier(.2,.8,.2,1) both;
+  max-height:88vh; overflow-y:auto;
+}
+@keyframes sheet-in{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
 
-        .status-badge { position: fixed; top: 20px; right: 20px; z-index: 2000; background: #ffcc00; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.sheet-handle{
+  width:36px; height:4px; border-radius:2px; background:var(--line);
+  margin:2px auto 16px;
+}
 
-        /* Info utilisateur dans le header */
-        .user-info-header {
-            position: fixed;
-            top: 20px;
-            right: 80px;
-            z-index: 2000;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .user-info-header i {
-            color: #ffcc00;
-        }
-    </style>
+.where-to{
+  width:100%; display:flex; align-items:center; gap:12px;
+  background:var(--surface); border-radius:var(--r-md);
+  padding:16px 16px; text-align:left;
+}
+.where-to i{ color:var(--muted); font-size:15px; }
+.where-to span{ font-weight:600; color:var(--muted); font-size:15.5px; }
+
+.greeting{ font-size:19px; font-weight:700; text-align:center; margin:6px 2px 16px; }
+
+.where-to-row{ display:flex; align-items:stretch; gap:10px; }
+.where-to-row .where-to{ flex:1; }
+.schedule-pill{
+  display:flex; align-items:center; gap:7px; flex:0 0 auto;
+  background:var(--surface); border-radius:var(--r-md);
+  padding:0 14px; font-size:13px; font-weight:700; white-space:nowrap;
+  cursor:pointer;
+}
+
+.home-quick-list{ margin-top:14px; }
+
+#sheetHome.expanded .greeting,
+#sheetHome.expanded .where-to-row,
+#sheetHome.expanded .home-quick-list{ display:none; }
+
+.search-form{ display:none; }
+.search-form.open{ display:block; }
+
+.top-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.top-row h2{ font-size:16px; font-weight:700; }
+
+.field-stack{ position:relative; background:var(--surface); border-radius:var(--r-md); overflow:hidden; }
+.field{ display:flex; align-items:center; gap:14px; padding:14px 16px; position:relative; }
+.field + .field{ border-top:1px solid var(--line); }
+.field input{ flex:1; font-size:15.5px; font-weight:500; }
+.field input::placeholder{ color:var(--faint); font-weight:500; }
+
+.field-dot{ width:10px; height:10px; flex:0 0 auto; }
+.dot-start{ border-radius:50%; background:var(--accent); border:2px solid var(--ink); }
+.dot-end{ border-radius:2px; background:var(--ink); }
+
+.field-clear{ color:var(--faint); font-size:14px; padding:4px; }
+
+.suggestions{
+  display:none; margin-top:8px; background:var(--bg);
+  border-radius:var(--r-md); box-shadow:var(--shadow-float);
+  max-height:220px; overflow-y:auto;
+}
+.suggestion-item{
+  padding:14px 16px; font-size:14.5px; font-weight:500;
+  border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px;
+}
+.suggestion-item:last-child{ border-bottom:none; }
+.suggestion-item i{ color:var(--faint); font-size:13px; }
+.suggestion-item:active{ background:var(--surface); }
+
+/* ---------- Ride list ---------- */
+.ride-list{ display:none; margin-top:18px; }
+.ride-list.show{ display:block; animation:rise-in 0.4s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise-in{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:translateY(0);} }
+
+.ride-row{
+  display:flex; align-items:center; gap:14px;
+  padding:12px 10px; border-radius:var(--r-md);
+  border:1.5px solid transparent;
+}
+.ride-row + .ride-row{ margin-top:6px; }
+.ride-row.active{ border-color:var(--ink); background:var(--surface); }
+
+.ride-icon{
+  width:46px; height:46px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:19px;
+  flex:0 0 auto;
+}
+.ride-row.active .ride-icon{ background:var(--bg); }
+
+.ride-meta{ flex:1; min-width:0; }
+.ride-name{ font-weight:700; font-size:15px; }
+.ride-sub{ font-size:12.5px; color:var(--muted); margin-top:1px; }
+
+.ride-price{ font-family:var(--font-display); font-weight:700; font-size:16px; white-space:nowrap; }
+
+.cta-btn{
+  width:100%; background:var(--ink); color:#fff;
+  padding:18px; border-radius:var(--r-md);
+  font-weight:700; font-size:16px; margin-top:16px;
+  display:none; align-items:center; justify-content:center; gap:10px;
+}
+.cta-btn.show{ display:flex; }
+.cta-btn:active{ transform:scale(0.98); }
+.cta-btn:disabled{ opacity:0.45; }
+.cta-btn.secondary{ background:var(--surface); color:var(--ink); }
+
+/* ---------- Searching state ---------- */
+#sheetSearching{ display:none; padding:6px 0 4px; }
+#sheetSearching.show{ display:block; }
+
+.spinner-ring{
+  width:52px; height:52px; margin:6px auto 18px; border-radius:50%;
+  border:4px solid var(--surface); border-top-color:var(--ink);
+  animation:spin 0.9s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.searching-title{ text-align:center; font-size:16.5px; font-weight:700; margin-bottom:4px; }
+.searching-sub{ text-align:center; font-size:13px; color:var(--muted); margin-bottom:18px; }
+
+.trip-summary{ background:var(--surface); border-radius:var(--r-md); padding:14px 16px; margin-bottom:16px; }
+.trip-summary-row{ display:flex; align-items:center; gap:12px; font-size:13.5px; font-weight:500; }
+.trip-summary-row + .trip-summary-row{ margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+.trip-summary-row span.dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+.trip-summary-row span.addr{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.trip-summary-price{ display:flex; justify-content:space-between; align-items:center; margin-top:4px; padding-top:10px; border-top:1px solid var(--line); font-size:13.5px; }
+.trip-summary-price b{ font-family:var(--font-display); font-size:16px; }
+
+/* ---------- Trip state (driver assigned) ---------- */
+#sheetTrip{ display:none; }
+#sheetTrip.show{ display:block; animation:rise-in 0.4s cubic-bezier(.2,.8,.2,1) both; }
+.trip-status-label{ font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:10px; }
+
+/* ---------- Full-screen pages / modals ---------- */
+.page{
+  position:fixed; inset:0; z-index:3000; background:var(--bg);
+  transform:translateY(100%); transition:transform 0.35s cubic-bezier(.2,.8,.2,1);
+  display:flex; flex-direction:column;
+}
+.page.open{ transform:translateY(0); }
+
+.page-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+  border-bottom:1px solid var(--line); flex:0 0 auto;
+}
+.page-header h1{ font-size:17px; font-weight:700; }
+.page-body{ flex:1; overflow-y:auto; padding:20px; }
+
+.profile-card{ background:var(--surface); border-radius:var(--r-lg); padding:20px; margin-bottom:28px; }
+.profile-top{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.profile-avatar-lg{
+  width:56px; height:56px; border-radius:50%; background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  font-family:var(--font-display); font-weight:700; flex:0 0 auto;
+}
+.profile-top h3{ font-size:16px; font-weight:700; }
+.profile-top p{ font-size:13px; color:var(--muted); margin-top:2px; }
+
+.input-group{ background:var(--bg); border-radius:var(--r-md); padding:12px 14px; margin-bottom:10px; }
+.input-group label{ font-size:11.5px; color:var(--muted); font-weight:600; display:block; margin-bottom:4px; }
+.input-group input{ width:100%; font-size:15.5px; font-weight:600; }
+
+.section-title{ font-size:13px; font-weight:700; color:var(--muted); text-transform:none; margin-bottom:12px; letter-spacing:0.2px; }
+
+.places-list{ margin-bottom:4px; }
+.place-row{
+  display:flex; align-items:center; gap:14px; padding:14px 4px;
+  border-bottom:1px solid var(--line);
+}
+.place-icon{
+  width:40px; height:40px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:15px; flex:0 0 auto;
+}
+.place-text{ flex:1; min-width:0; }
+.place-text strong{ font-size:14.5px; font-weight:600; display:block; }
+.place-text small{ font-size:12.5px; color:var(--muted); }
+.place-row i.chev{ color:var(--faint); font-size:13px; }
+
+.add-place-row{
+  display:flex; align-items:center; gap:12px; padding:14px 4px;
+  font-weight:600; font-size:14.5px; color:var(--ink); width:100%; text-align:left;
+}
+.add-place-row .plus-circle{
+  width:32px; height:32px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:13px;
+}
+.add-place-form{ margin-top:12px; }
+.add-place-form .input-group{ margin-bottom:10px; }
+
+/* ---------- Bottom modal sheets (driver / account required) ---------- */
+.modal-sheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:5000;
+  max-width:520px; margin:0 auto;
+  background:var(--bg); border-radius:var(--r-lg) var(--r-lg) 0 0;
+  box-shadow:var(--shadow-sheet);
+  padding:10px 20px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(110%); transition:transform 0.35s cubic-bezier(.2,.8,.2,1);
+}
+.modal-sheet.active{ transform:translateY(0); }
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(10,10,11,0.32); z-index:4500;
+  opacity:0; pointer-events:none; transition:opacity 0.3s;
+}
+.modal-backdrop.active{ opacity:1; pointer-events:auto; }
+
+.driver-card{ display:flex; align-items:center; gap:16px; padding:6px 4px 20px; }
+.driver-avatar{
+  width:60px; height:60px; border-radius:50%; background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  font-family:var(--font-display); font-weight:700; flex:0 0 auto;
+}
+.driver-name{ font-size:16.5px; font-weight:700; }
+.driver-rating{ font-size:13.5px; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:5px; }
+.driver-rating i{ color:var(--ink); font-size:11px; }
+.driver-car{ font-size:13px; color:var(--muted); margin-top:1px; }
+
+.driver-actions{ display:flex; gap:12px; margin-bottom:6px; }
+.action-btn{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px; border-radius:var(--r-md); background:var(--surface);
+  font-weight:600; font-size:14px;
+}
+.action-btn.call{ background:var(--accent); color:var(--accent-ink); }
+
+.centered-modal{ text-align:center; padding-top:6px; }
+.badge-circle{
+  width:56px; height:56px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  margin:4px auto 16px; color:var(--ink);
+}
+.centered-modal h3{ font-size:17px; font-weight:700; margin-bottom:8px; }
+.centered-modal p{ font-size:13.5px; color:var(--muted); line-height:1.5; margin-bottom:20px; padding:0 6px; }
+
+@media (min-width: 768px){
+  .sheet{ left:16px; right:auto; bottom:16px; width:400px; border-radius:var(--r-lg); }
+  .locate-btn{ right:16px; }
+}
+
+/* ---------- Écran de recherche plein écran ---------- */
+.search-overlay{
+  position:fixed; inset:0; z-index:3800; background:var(--bg);
+  display:flex; flex-direction:column;
+  transform:translateY(100%); transition:transform 0.3s cubic-bezier(.2,.8,.2,1);
+}
+.search-overlay.open{ transform:translateY(0); }
+.search-overlay-header{
+  display:flex; align-items:center; gap:12px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 14px;
+  border-bottom:1px solid var(--line); flex:0 0 auto;
+}
+.overlay-field-stack{
+  flex:1; display:flex; align-items:center; gap:12px;
+  background:var(--surface); border-radius:var(--r-md); padding:13px 16px;
+}
+.overlay-field-stack .field-dot{ width:10px; height:10px; border-radius:2px; background:var(--ink); flex:0 0 auto; }
+.overlay-field-stack input{ flex:1; font-size:15.5px; font-weight:500; }
+.overlay-results{ flex:1; overflow-y:auto; padding:8px 16px 24px; }
+
+.overlay-section-label{ font-size:12px; font-weight:700; color:var(--muted); margin:14px 4px 6px; }
+.overlay-item{
+  display:flex; align-items:center; gap:14px; padding:13px 4px;
+  border-bottom:1px solid var(--line);
+}
+.overlay-item .overlay-item-icon{
+  width:36px; height:36px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:13.5px; color:var(--muted); flex:0 0 auto;
+}
+.overlay-item .overlay-item-text{ flex:1; min-width:0; }
+.overlay-item .overlay-item-text strong{ font-size:14.5px; font-weight:600; display:block; }
+.overlay-item .overlay-item-text small{ font-size:12.5px; color:var(--muted); }
+.overlay-empty{ text-align:center; color:var(--muted); font-size:13.5px; padding:30px 10px; }
+
+/* ---------- Modal "Quand voulez-vous partir ?" ---------- */
+.schedule-option{
+  display:flex; align-items:center; gap:14px; padding:14px;
+  border-radius:var(--r-md); border:1.5px solid var(--line); margin-bottom:10px;
+}
+.schedule-option.active{ border-color:var(--ink); background:var(--surface); }
+.schedule-option-icon{
+  width:40px; height:40px; border-radius:50%; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; font-size:15px; flex:0 0 auto;
+}
+.schedule-option-text{ flex:1; }
+.schedule-option-title{ font-weight:700; font-size:14.5px; }
+.schedule-option-sub{ font-size:12px; color:var(--muted); margin-top:1px; }
+.schedule-radio{
+  width:20px; height:20px; border-radius:50%; border:2px solid var(--line); flex:0 0 auto;
+}
+.schedule-option.active .schedule-radio{ border-color:var(--ink); background:radial-gradient(var(--ink) 0 40%, transparent 42%); }
+
+.schedule-datetime{ display:none; gap:10px; margin-top:4px; }
+.schedule-datetime.show{ display:flex; }
+.schedule-datetime .input-group{ flex:1; }
+
+/* ---------- Bouton "ma position" déplaçable ---------- */
+.locate-btn{ touch-action:none; user-select:none; }
+.locate-btn.dragging{ box-shadow:0 10px 30px rgba(10,10,11,0.3); transition:none; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+</style>
 </head>
 <body>
 
-    <div class="menu-trigger" onclick="toggleAccount()"><i class="fas fa-bars"></i></div>
-    <div class="status-badge" id="orderStatus">🟢 Prêt</div>
-    <div class="user-info-header" id="userInfoHeader">
-        <i class="fas fa-user-circle"></i>
-        <span id="headerUserName">Invité</span>
+<div id="map"></div>
+
+<div class="top-bar">
+  <button class="icon-btn" onclick="toggleAccount()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  <div class="status-pill ok" id="orderStatusPill"><span class="dot"></span><span id="orderStatus">Prêt</span></div>
+  <button class="avatar-btn" id="userInfoHeader" onclick="toggleAccount()" aria-label="Mon compte"><span id="headerUserInitial"><i class="fas fa-user" style="font-size:15px;"></i></span></button>
+</div>
+
+<button class="locate-btn" id="locateBtn" style="bottom:220px;" onclick="getCurrentLocation()" aria-label="Ma position"><i class="fas fa-location-crosshairs"></i></button>
+
+<!-- ===================== BOTTOM SHEET ===================== -->
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+
+  <!-- ---- État 1 : recherche d'adresse / choix du véhicule ---- -->
+  <div id="sheetHome">
+    <div class="greeting" id="homeGreeting">Bonjour</div>
+
+    <div class="where-to-row">
+      <button class="where-to" id="whereToPrompt" onclick="expandSheet(); openSearchOverlay('end');">
+        <i class="fas fa-search"></i>
+        <span>Où allez-vous ?</span>
+      </button>
+      <div class="schedule-pill" id="schedulePill" onclick="openScheduleModal()"><i class="fas fa-clock"></i> <span id="schedulePillLabel">Maint.</span> <i class="fas fa-chevron-down" style="font-size:9px;"></i></div>
     </div>
 
-    <div id="map"></div>
+    <div class="home-quick-list" id="homeFavoritesList"></div>
 
-    <div id="account-page">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h2>Mon Compte</h2>
-            <i class="fas fa-times fa-lg" onclick="toggleAccount()" style="cursor:pointer;"></i>
+    <div class="search-form" id="searchForm">
+      <div class="top-row">
+        <h2>Votre trajet</h2>
+      </div>
+      <div class="field-stack">
+        <div class="field">
+          <span class="field-dot dot-start"></span>
+          <input type="text" id="startInput" placeholder="Lieu de départ" autocomplete="off" readonly onclick="openSearchOverlay('start')">
+          <i class="fas fa-location-crosshairs field-clear" onclick="event.stopPropagation(); getCurrentLocation();" style="cursor:pointer;"></i>
         </div>
-
-        <!-- SECTION PROFIL UTILISATEUR -->
-        <div class="profile-section">
-            <div class="profile-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="profile-input-group">
-                <label><i class="fas fa-user"></i> Nom complet</label>
-                <input type="text" id="userName" placeholder="Entrez votre nom">
-            </div>
-            <div class="profile-input-group">
-                <label><i class="fas fa-phone"></i> Numéro de téléphone</label>
-                <input type="tel" id="userPhone" placeholder="+221 77 000 00 00">
-            </div>
-            <button class="save-profile-btn" onclick="saveUserProfile()">
-                <i class="fas fa-save"></i> Enregistrer mon profil
-            </button>
+        <div class="field">
+          <span class="field-dot dot-end"></span>
+          <input type="text" id="endInput" placeholder="Où allez-vous ?" autocomplete="off" readonly onclick="openSearchOverlay('end')">
         </div>
-        
-        <p style="margin-bottom: 15px; font-weight: bold;">📍 Adresses enregistrées</p>
-        <div id="favorites-list"></div>
-
-        <div class="search-group" style="margin-top: 20px;">
-            <input type="text" id="newFavName" placeholder="Nom (ex: Maison, Travail)">
-            <input type="text" id="newFavAddr" placeholder="Adresse">
-            <button class="btn-order" onclick="addFavorite()" style="margin-top:10px;">Ajouter aux favoris</button>
-        </div>
+      </div>
     </div>
 
-    <div id="ui-panel">
-        <div class="search-group">
-            <div class="input-row">
-                <div class="dot" style="background: #2ecc71;"></div>
-                <input type="text" id="startInput" placeholder="Lieu de départ" autocomplete="off">
-                <i class="fas fa-location-crosshairs" onclick="getCurrentLocation()" style="cursor:pointer; color: #666;"></i>
-            </div>
-            <div style="height: 1px; background: #ddd; margin: 5px 0;"></div>
-            <div class="input-row">
-                <div class="dot" style="background: #e74c3c;"></div>
-                <input type="text" id="endInput" placeholder="Où allez-vous ?" autocomplete="off">
-            </div>
-            <div id="suggestions"></div>
+    <div class="ride-list" id="rideList">
+      <div class="ride-row active" data-vehicle="eco" data-base="500" data-rate="350" onclick="setActiveRide(this)">
+        <div class="ride-icon"><i class="fas fa-car"></i></div>
+        <div class="ride-meta">
+          <div class="ride-name">Bou Eco</div>
+          <div class="ride-sub">Moins cher, économisez plus</div>
         </div>
-
-        <div class="ride-selector">
-            <div class="ride-card active" data-vehicle="eco" data-base="500" data-rate="350" onclick="setActiveRide(this)">
-                <i class="fas fa-car"></i>
-                <div>Eco</div>
-                <div class="price" id="priceEco">--- F</div>
-            </div>
-            <div class="ride-card" data-vehicle="comfort" data-base="800" data-rate="550" onclick="setActiveRide(this)">
-                <i class="fas fa-car-side"></i>
-                <div>Confort</div>
-                <div class="price" id="priceComfort">--- F</div>
-            </div>
+        <div class="ride-price">--- F</div>
+      </div>
+      <div class="ride-row" data-vehicle="xl" data-base="900" data-rate="500" onclick="setActiveRide(this)">
+        <div class="ride-icon"><i class="fas fa-van-shuttle"></i></div>
+        <div class="ride-meta">
+          <div class="ride-name">Bou XL</div>
+          <div class="ride-sub">Jusqu'à 6 places, idéal pour les groupes</div>
         </div>
-
-        <button class="btn-order" id="orderBtn" onclick="commander()">COMMANDER MOR-TAXI</button>
+        <div class="ride-price">--- F</div>
+      </div>
+      <div class="ride-row" data-vehicle="suv" data-base="1200" data-rate="650" onclick="setActiveRide(this)">
+        <div class="ride-icon"><i class="fas fa-truck-pickup"></i></div>
+        <div class="ride-meta">
+          <div class="ride-name">Bou SUV</div>
+          <div class="ride-sub">Plus d'espace, plus de coffre</div>
+        </div>
+        <div class="ride-price">--- F</div>
+      </div>
+      <div class="ride-row" data-vehicle="luxe" data-base="2000" data-rate="900" onclick="setActiveRide(this)">
+        <div class="ride-icon"><i class="fas fa-car-side"></i></div>
+        <div class="ride-meta">
+          <div class="ride-name">Bou Luxe</div>
+          <div class="ride-sub">Véhicules haut de gamme, chauffeurs pros</div>
+        </div>
+        <div class="ride-price">--- F</div>
+      </div>
     </div>
 
-    <div class="driver-modal" id="driverModal">
-        <div class="driver-info">
-            <div class="driver-avatar"><i class="fas fa-user"></i></div>
-            <div>
-                <h3 id="driverName">Chauffeur</h3>
-                <div id="driverRating">★★★★★ 4.9</div>
-                <div id="driverCar"></div>
-            </div>
+    <button class="cta-btn" id="orderBtn" onclick="commander()">Commander MOR-TAXI</button>
+  </div>
+
+  <!-- ---- État 2 : recherche d'un chauffeur ---- -->
+  <div id="sheetSearching">
+    <div class="spinner-ring" id="searchingSpinner"></div>
+    <div class="searching-title" id="searchingTitle">Recherche d'un chauffeur…</div>
+    <div class="searching-sub" id="searchingSub">Nous prévenons les chauffeurs disponibles autour de vous</div>
+    <div class="trip-summary">
+      <div class="trip-summary-row"><span class="dot" style="background:var(--accent); border:2px solid var(--ink); border-radius:50%;"></span><span class="addr" id="searchingFrom">Départ</span></div>
+      <div class="trip-summary-row"><span class="dot" style="background:var(--ink); border-radius:2px;"></span><span class="addr" id="searchingTo">Destination</span></div>
+      <div class="trip-summary-price"><span>Prix estimé</span><b id="searchingPrice">--- F</b></div>
+    </div>
+    <button class="cta-btn secondary show" onclick="cancelSearch()">Annuler la recherche</button>
+  </div>
+
+  <!-- ---- État 3 : chauffeur trouvé / course en cours ---- -->
+  <div id="sheetTrip">
+    <div class="trip-status-label" id="tripStatusLabel">CHAUFFEUR EN ROUTE</div>
+    <div class="driver-card" style="padding:0 0 16px;">
+      <div class="driver-avatar" id="driverAvatarInitial">C</div>
+      <div>
+        <div class="driver-name" id="driverName">Chauffeur MOR-TAXI</div>
+        <div class="driver-rating"><i class="fas fa-star"></i><span id="driverRating">4.9</span></div>
+        <div class="driver-car" id="driverCar">Toyota Corolla</div>
+      </div>
+    </div>
+    <div class="driver-actions">
+      <a class="action-btn call" id="driverCallBtn" href="tel:"><i class="fas fa-phone"></i> Appeler</a>
+      <div class="action-btn"><i class="fas fa-message"></i> Message</div>
+    </div>
+    <div class="trip-summary">
+      <div class="trip-summary-row"><span class="dot" style="background:var(--accent); border:2px solid var(--ink); border-radius:50%;"></span><span class="addr" id="tripFrom">Départ</span></div>
+      <div class="trip-summary-row"><span class="dot" style="background:var(--ink); border-radius:2px;"></span><span class="addr" id="tripTo">Destination</span></div>
+      <div class="trip-summary-price"><span>Prix de la course</span><b id="tripPrice">--- F</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ÉCRAN DE RECHERCHE PLEIN ÉCRAN ===================== -->
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-overlay-header">
+    <button class="icon-btn" style="box-shadow:none;background:var(--surface);width:40px;height:40px;font-size:14px;" onclick="closeSearchOverlay()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
+    <div class="overlay-field-stack">
+      <span class="field-dot" id="overlayDot"></span>
+      <input type="text" id="overlayInput" placeholder="Rechercher une adresse" autocomplete="off">
+    </div>
+  </div>
+  <div class="overlay-results" id="overlayResults"></div>
+</div>
+
+<!-- ===================== MODAL "QUAND VOULEZ-VOUS PARTIR ?" ===================== -->
+<div class="modal-sheet" id="scheduleModal">
+  <div class="sheet-handle"></div>
+  <div class="modal-title-row">
+    <h2 style="font-size:16.5px;font-weight:700;">Quand voulez-vous partir ?</h2>
+    <button class="icon-btn" style="box-shadow:none;background:var(--surface);width:34px;height:34px;font-size:13px;" onclick="closeScheduleModal()"><i class="fas fa-times"></i></button>
+  </div>
+
+  <div class="schedule-option active" id="scheduleNowOption" onclick="selectScheduleOption('now')">
+    <div class="schedule-option-icon"><i class="fas fa-bolt"></i></div>
+    <div class="schedule-option-text">
+      <div class="schedule-option-title">Maintenant</div>
+      <div class="schedule-option-sub">Un chauffeur vous est attribué tout de suite</div>
+    </div>
+    <div class="schedule-radio"></div>
+  </div>
+
+  <div class="schedule-option" id="scheduleLaterOption" onclick="selectScheduleOption('later')">
+    <div class="schedule-option-icon"><i class="fas fa-calendar-days"></i></div>
+    <div class="schedule-option-text">
+      <div class="schedule-option-title">Plus tard</div>
+      <div class="schedule-option-sub">Choisissez une date et une heure</div>
+    </div>
+    <div class="schedule-radio"></div>
+  </div>
+
+  <div class="schedule-datetime" id="scheduleDatetime">
+    <div class="input-group">
+      <label>Date</label>
+      <input type="date" id="scheduleDateInput">
+    </div>
+    <div class="input-group">
+      <label>Heure</label>
+      <input type="time" id="scheduleTimeInput">
+    </div>
+  </div>
+
+  <button class="cta-btn show" style="margin-top:18px;" onclick="confirmSchedule()">Confirmer</button>
+</div>
+
+<!-- ===================== ACCOUNT PAGE ===================== -->
+<div class="page" id="account-page">
+  <div class="page-header">
+    <button class="icon-btn" style="box-shadow:none;background:var(--surface);width:40px;height:40px;font-size:14px;" onclick="toggleAccount()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
+    <h1>Mon compte</h1>
+    <div style="width:40px;"></div>
+  </div>
+
+  <div class="page-body">
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="profile-avatar-lg" id="profileAvatarInitial">?</div>
+        <div>
+          <h3 id="profileDisplayName">Nouveau client</h3>
+          <p>Modifiez vos informations ci-dessous</p>
         </div>
-        <div id="driverPhone"></div>
-        <button class="btn-order" onclick="closeModal()">Fermer</button>
+      </div>
+      <div class="input-group">
+        <label><i class="fas fa-user"></i>&nbsp; Nom complet</label>
+        <input type="text" id="userName" placeholder="Entrez votre nom">
+      </div>
+      <div class="input-group">
+        <label><i class="fas fa-phone"></i>&nbsp; Numéro de téléphone</label>
+        <input type="tel" id="userPhone" placeholder="+221 77 000 00 00">
+      </div>
+      <button class="cta-btn show" style="margin-top:14px;" onclick="saveUserProfile()">Enregistrer mon profil</button>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    
-    <script>
-        // ==================== FIREBASE CONFIGURATION ====================
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_Cj2crubK08ffhx9DQ1KNr2-dR8zkmsQ",
-            authDomain: "clubsaldia.firebaseapp.com",
-            projectId: "clubsaldia",
-            databaseURL: "https://clubsaldia-default-rtdb.firebaseio.com",
-            storageBucket: "clubsaldia.firebasestorage.app",
-            messagingSenderId: "965460761858",
-            appId: "1:965460761858:web:fdc57522e506f51050b61b"
-        };
+    <p class="section-title">Adresses enregistrées</p>
+    <div id="favorites-list" class="places-list"></div>
 
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+    <button class="add-place-row" onclick="toggleAddPlaceForm()">
+      <span class="plus-circle"><i class="fas fa-plus"></i></span>
+      Ajouter une adresse
+    </button>
 
-        // ==================== GLOBAL VARIABLES ====================
-        const map = L.map('map', { zoomControl: false }).setView([14.7167, -17.4677], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+    <div class="add-place-form" id="addPlaceForm" style="display:none;">
+      <div class="input-group">
+        <label>Nom</label>
+        <input type="text" id="newFavName" placeholder="Ex : Maison, Travail">
+      </div>
+      <div class="input-group">
+        <label>Adresse</label>
+        <input type="text" id="newFavAddr" placeholder="Adresse à Dakar">
+      </div>
+      <button class="cta-btn show" onclick="addFavorite()">Ajouter aux favoris</button>
+    </div>
+  </div>
+</div>
 
-        let startCoords = [14.7167, -17.4677];
-        let endCoords = null;
-        let startMarker, endMarker, polyline = null;
-        let activeInputId = 'startInput';
-        let distance = 0;
-        let selectedVehicle = 'eco';
-        let vehicleBase = 500;
-        let vehicleRate = 350;
-        let currentOrderId = null;
-        let orderListener = null;
-        
-        // Identifiant unique du client
-        let clientId = localStorage.getItem('client_id');
-        if(!clientId) {
-            clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-            localStorage.setItem('client_id', clientId);
-        }
+<!-- ===================== MODAL BACKDROP ===================== -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
 
-        // ==================== GESTION DU PROFIL UTILISATEUR (FIREBASE) ====================
-        
-        // Sauvegarder le profil dans Firebase
-        async function saveUserProfile() {
-            const userName = document.getElementById('userName').value;
-            const userPhone = document.getElementById('userPhone').value;
-            
-            if(!userName && !userPhone) {
-                alert("Veuillez entrer au moins votre nom ou votre téléphone");
-                return;
+<!-- ===================== ACCOUNT-REQUIRED MODAL ===================== -->
+<div class="modal-sheet" id="accountRequiredModal">
+  <div class="sheet-handle"></div>
+  <div class="centered-modal">
+    <div class="badge-circle"><i class="fas fa-user-plus"></i></div>
+    <h3>Créez votre compte</h3>
+    <p>Il nous faut votre nom et votre numéro de téléphone pour que le chauffeur puisse vous joindre.</p>
+  </div>
+  <button class="cta-btn show" onclick="goToAccountPage()">Créer mon compte</button>
+  <button class="cta-btn secondary show" onclick="closeAccountRequiredModal()">Annuler</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+// ==================== FIREBASE CONFIGURATION ====================
+const firebaseConfig = {
+    apiKey: "AIzaSyD_Cj2crubK08ffhx9DQ1KNr2-dR8zkmsQ",
+    authDomain: "clubsaldia.firebaseapp.com",
+    projectId: "clubsaldia",
+    databaseURL: "https://clubsaldia-default-rtdb.firebaseio.com",
+    storageBucket: "clubsaldia.firebasestorage.app",
+    messagingSenderId: "965460761858",
+    appId: "1:965460761858:web:fdc57522e506f51050b61b"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// ==================== GLOBAL VARIABLES ====================
+const map = L.map('map', { zoomControl: false }).setView([14.7167, -17.4677], 13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+let startCoords = [14.7167, -17.4677];
+let endCoords = null;
+let startMarker, endMarker, polyline = null;
+let activeInputId = 'startInput';
+let distance = 0;
+let selectedVehicle = 'eco';
+let currentOrderId = null;
+let orderListener = null;
+let userProfile = null;
+
+let clientId = localStorage.getItem('client_id');
+if (!clientId) {
+    clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    localStorage.setItem('client_id', clientId);
+}
+
+// ==================== ICONES DE MARQUEURS (style pin minimal) ====================
+const startIcon = L.divIcon({
+    className: '', html: '<div style="width:18px;height:18px;border-radius:50%;background:#C8FA3E;border:3px solid #0A0A0B;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+    iconSize: [18, 18], iconAnchor: [9, 9]
+});
+const endIcon = L.divIcon({
+    className: '', html: '<div style="width:16px;height:16px;border-radius:3px;background:#0A0A0B;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+    iconSize: [16, 16], iconAnchor: [8, 8]
+});
+
+// ==================== SHEET UI STATE ====================
+function expandSheet() {
+    document.getElementById('sheetHome').classList.add('expanded');
+    document.getElementById('searchForm').classList.add('open');
+    document.getElementById('endInput').focus();
+    activeInputId = 'endInput';
+}
+function revealRideOptions() {
+    document.getElementById('sheetHome').classList.add('expanded');
+    document.getElementById('searchForm').classList.add('open');
+    document.getElementById('rideList').classList.add('show');
+    document.getElementById('orderBtn').classList.add('show');
+}
+
+// ==================== PROFIL UTILISATEUR (FIREBASE) ====================
+async function saveUserProfile() {
+    const userName = document.getElementById('userName').value.trim();
+    const userPhone = document.getElementById('userPhone').value.trim();
+
+    if (!userName && !userPhone) {
+        alert("Veuillez entrer au moins votre nom ou votre téléphone");
+        return;
+    }
+
+    const profileData = { name: userName, phone: userPhone, updatedAt: Date.now(), clientId: clientId };
+
+    try {
+        await database.ref('clients/' + clientId).set(profileData);
+        userProfile = profileData;
+        alert("✅ Profil enregistré !");
+        updateHeaderIdentity(userName);
+        localStorage.setItem('client_name', userName);
+    } catch (error) {
+        console.error("Erreur saveProfile:", error);
+        alert("Erreur lors de l'enregistrement");
+    }
+}
+
+async function loadUserProfile() {
+    try {
+        const snapshot = await database.ref('clients/' + clientId).once('value');
+        const profile = snapshot.val();
+
+        if (profile) {
+            userProfile = profile;
+            document.getElementById('userName').value = profile.name || '';
+            document.getElementById('userPhone').value = profile.phone || '';
+            if (profile.name) updateHeaderIdentity(profile.name);
+        } else {
+            userProfile = null;
+            const savedName = localStorage.getItem('client_name');
+            if (savedName) {
+                document.getElementById('userName').value = savedName;
+                updateHeaderIdentity(savedName);
             }
-            
-            const profileData = {
-                name: userName,
-                phone: userPhone,
-                updatedAt: Date.now(),
-                clientId: clientId
-            };
-            
-            try {
-                await database.ref('clients/' + clientId).set(profileData);
-                alert("✅ Profil enregistré dans Firebase !");
-                
-                // Mettre à jour l'affichage
-                document.getElementById('headerUserName').innerHTML = userName.split(' ')[0] || "Client";
-                localStorage.setItem('client_name', userName);
-            } catch(error) {
-                console.error("Erreur saveProfile:", error);
-                alert("Erreur lors de l'enregistrement");
-            }
         }
-        
-        // Charger le profil depuis Firebase
-        async function loadUserProfile() {
-            try {
-                const snapshot = await database.ref('clients/' + clientId).once('value');
-                const profile = snapshot.val();
-                
-                if(profile) {
-                    document.getElementById('userName').value = profile.name || '';
-                    document.getElementById('userPhone').value = profile.phone || '';
-                    if(profile.name) {
-                        document.getElementById('headerUserName').innerHTML = profile.name.split(' ')[0];
-                    }
-                } else {
-                    // Vérifier si y'a des données en localStorage
-                    const savedName = localStorage.getItem('client_name');
-                    if(savedName) {
-                        document.getElementById('userName').value = savedName;
-                        document.getElementById('headerUserName').innerHTML = savedName.split(' ')[0];
-                    }
-                }
-            } catch(error) {
-                console.error("Erreur loadProfile:", error);
-            }
-        }
+    } catch (error) {
+        console.error("Erreur loadProfile:", error);
+    }
+}
 
-        // ==================== INITIALISATION DES MARQUEURS ====================
-        startMarker = L.marker(startCoords, {draggable: true}).addTo(map);
-        startMarker.bindPopup("Départ (Déplacez-moi)");
-        
-        startMarker.on('dragend', function(e) {
-            const pos = e.target.getLatLng();
-            updateStart(pos.lat, pos.lng, "Position déplacée");
+function updateHeaderIdentity(name) {
+    const initial = name ? name.trim().charAt(0).toUpperCase() : '';
+    document.getElementById('headerUserInitial').innerHTML = initial || '<i class="fas fa-user" style="font-size:15px;"></i>';
+    document.getElementById('profileAvatarInitial').innerHTML = initial || '?';
+    document.getElementById('profileDisplayName').innerText = name ? name.split(' ')[0] : 'Nouveau client';
+    document.getElementById('homeGreeting').innerText = name ? 'Bonjour, ' + name.split(' ')[0] : 'Bonjour';
+}
+
+function hasCompleteAccount() {
+    const name = (userProfile && userProfile.name) || document.getElementById('userName').value.trim();
+    const phone = (userProfile && userProfile.phone) || document.getElementById('userPhone').value.trim();
+    return !!(name && phone);
+}
+
+// ==================== ÉCRAN DE RECHERCHE PLEIN ÉCRAN + HISTORIQUE ====================
+const RECENT_KEY = 'mor_taxi_recent_addresses';
+let overlaySearchTimer = null;
+let overlayRequestId = 0;
+
+function getRecentAddresses() {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+}
+
+function saveRecentAddress(name, lat, lon) {
+    let recent = getRecentAddresses();
+    recent = recent.filter(r => r.name.toLowerCase() !== name.toLowerCase());
+    recent.unshift({ name, lat, lon });
+    recent = recent.slice(0, 6);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+}
+
+function openSearchOverlay(which) {
+    activeInputId = which === 'start' ? 'startInput' : 'endInput';
+    const currentField = document.getElementById(activeInputId);
+    const overlayInput = document.getElementById('overlayInput');
+    overlayInput.value = '';
+    overlayInput.placeholder = which === 'start' ? 'Lieu de départ' : 'Où allez-vous ?';
+    document.getElementById('overlayDot').style.cssText = which === 'start'
+        ? 'border-radius:50%; background:var(--accent); border:2px solid var(--ink); width:10px; height:10px;'
+        : 'border-radius:2px; background:var(--ink); width:10px; height:10px;';
+
+    document.getElementById('searchOverlay').classList.add('open');
+    renderOverlayResults('');
+    setTimeout(() => overlayInput.focus(), 200);
+}
+
+function closeSearchOverlay() {
+    document.getElementById('searchOverlay').classList.remove('open');
+}
+
+function renderOverlayResults(query, remoteResults) {
+    const container = document.getElementById('overlayResults');
+    container.innerHTML = '';
+
+    const recent = getRecentAddresses();
+    const q = query.trim().toLowerCase();
+    const matchingRecent = q.length === 0 ? recent : recent.filter(r => r.name.toLowerCase().includes(q));
+
+    if (matchingRecent.length > 0) {
+        const label = document.createElement('div');
+        label.className = 'overlay-section-label';
+        label.innerText = 'Recherches récentes';
+        container.appendChild(label);
+
+        matchingRecent.forEach(item => {
+            container.appendChild(buildOverlayItem('fa-clock-rotate-left', item.name, null, () => {
+                chooseOverlayResult(item.name, item.lat, item.lon);
+            }));
         });
+    }
 
-        // Gérer quel input est actif pour l'autocomplétion
-        document.querySelectorAll('input').forEach(inp => {
-            inp.onfocus = () => { 
-                if(inp.id !== 'newFavName' && inp.id !== 'newFavAddr' && inp.id !== 'userName' && inp.id !== 'userPhone') {
-                    activeInputId = inp.id; 
-                }
-            };
+    if (remoteResults && remoteResults.length > 0) {
+        const label = document.createElement('div');
+        label.className = 'overlay-section-label';
+        label.innerText = 'Résultats';
+        container.appendChild(label);
+
+        remoteResults.forEach(place => {
+            const shortName = place.display_name.split(',')[0];
+            const rest = place.display_name.split(',').slice(1, 3).join(',').trim();
+            container.appendChild(buildOverlayItem('fa-location-dot', shortName, rest, () => {
+                chooseOverlayResult(shortName, place.lat, place.lon);
+            }));
         });
+    }
 
-        // ==================== SELECTION PAR CLIC SUR LA CARTE ====================
-        map.on('click', (e) => {
-            if (activeInputId === 'startInput') {
-                updateStart(e.latlng.lat, e.latlng.lng, "Point sur la carte");
-            } else if (activeInputId === 'endInput') {
-                updateEnd(e.latlng.lat, e.latlng.lng, "Point sur la carte");
-            }
+    if (matchingRecent.length === 0 && (!remoteResults || remoteResults.length === 0) && q.length >= 2) {
+        const empty = document.createElement('div');
+        empty.className = 'overlay-empty';
+        empty.innerText = 'Aucune adresse trouvée';
+        container.appendChild(empty);
+    }
+}
+
+function buildOverlayItem(iconClass, title, subtitle, onClick) {
+    const div = document.createElement('div');
+    div.className = 'overlay-item';
+    div.innerHTML = `<div class="overlay-item-icon"><i class="fas ${iconClass}"></i></div>
+                      <div class="overlay-item-text"><strong>${title}</strong>${subtitle ? `<small>${subtitle}</small>` : ''}</div>`;
+    div.onclick = onClick;
+    return div;
+}
+
+function chooseOverlayResult(name, lat, lon) {
+    if (activeInputId === 'startInput') updateStart(lat, lon, name);
+    else updateEnd(lat, lon, name);
+    saveRecentAddress(name, lat, lon);
+    closeSearchOverlay();
+}
+
+document.getElementById('overlayInput').addEventListener('input', (e) => {
+    const query = e.target.value;
+    renderOverlayResults(query); // affiche l'historique tout de suite, sans attendre le réseau
+
+    clearTimeout(overlaySearchTimer);
+    if (query.trim().length < 2) return;
+
+    const thisRequestId = ++overlayRequestId;
+    overlaySearchTimer = setTimeout(async () => {
+        try {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, Dakar, Sénégal&limit=6&countrycodes=sn`);
+            const data = await resp.json();
+            if (thisRequestId !== overlayRequestId) return; // une saisie plus récente a eu lieu entre-temps
+            renderOverlayResults(query, data);
+        } catch (error) {
+            console.error("Erreur de géocodage:", error);
+        }
+    }, 300);
+});
+
+// ==================== MARQUEURS ====================
+startMarker = L.marker(startCoords, { draggable: true, icon: startIcon }).addTo(map);
+startMarker.on('dragend', (e) => {
+    const pos = e.target.getLatLng();
+    updateStart(pos.lat, pos.lng, "Position déplacée");
+});
+
+map.on('click', (e) => {
+    if (activeInputId === 'startInput') updateStart(e.latlng.lat, e.latlng.lng, "Point sur la carte");
+    else if (activeInputId === 'endInput') updateEnd(e.latlng.lat, e.latlng.lng, "Point sur la carte");
+});
+
+// ==================== GEOLOCALISATION ====================
+function setStatus(text, mode) {
+    const pill = document.getElementById('orderStatusPill');
+    pill.classList.remove('ok', 'busy', 'done');
+    pill.classList.add(mode || 'ok');
+    document.getElementById('orderStatus').innerText = text;
+}
+
+function getCurrentLocation() {
+    setStatus('Localisation…', 'busy');
+    if (!navigator.geolocation) {
+        alert("La géolocalisation n'est pas supportée par votre navigateur.");
+        setStatus('Prêt', 'ok');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude, lng = pos.coords.longitude;
+            map.setView([lat, lng], 16);
+            updateStart(lat, lng, "Ma position");
+            setStatus('Prêt', 'ok');
+        },
+        (err) => {
+            console.error("Erreur géolocalisation:", err);
+            let msg = "Impossible d'obtenir votre position exacte.";
+            if (err.code === err.PERMISSION_DENIED) msg = "Veuillez autoriser l'accès à votre position dans les réglages de votre navigateur.";
+            else if (err.code === err.TIMEOUT) msg = "La localisation a pris trop de temps. Réessayez, idéalement avec le GPS/Wi-Fi activé.";
+            alert(msg);
+            setStatus('Prêt', 'ok');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+}
+
+// ==================== BOUTON "MA POSITION" DÉPLAÇABLE ====================
+(function makeLocateButtonDraggable() {
+    const btn = document.getElementById('locateBtn');
+    let dragging = false, moved = false, startX = 0, startY = 0, originLeft = 0, originTop = 0;
+
+    function toFixedLeftTop() {
+        const rect = btn.getBoundingClientRect();
+        btn.style.left = rect.left + 'px';
+        btn.style.top = rect.top + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+    }
+
+    btn.addEventListener('pointerdown', (e) => {
+        dragging = true; moved = false;
+        toFixedLeftTop();
+        startX = e.clientX; startY = e.clientY;
+        originLeft = parseFloat(btn.style.left);
+        originTop = parseFloat(btn.style.top);
+        btn.setPointerCapture(e.pointerId);
+        btn.classList.add('dragging');
+    });
+
+    btn.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+        if (!moved) return;
+        const margin = 6;
+        const maxLeft = window.innerWidth - btn.offsetWidth - margin;
+        const maxTop = window.innerHeight - btn.offsetHeight - margin;
+        btn.style.left = Math.min(Math.max(margin, originLeft + dx), maxLeft) + 'px';
+        btn.style.top = Math.min(Math.max(margin, originTop + dy), maxTop) + 'px';
+    });
+
+    btn.addEventListener('pointerup', (e) => {
+        dragging = false;
+        btn.classList.remove('dragging');
+        if (moved) {
+            // On vient de déplacer le bouton : ne pas déclencher le recentrage.
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+})();
+
+// ==================== MODAL DE PROGRAMMATION DE COURSE ====================
+let scheduledFor = null; // null = maintenant, sinon timestamp choisi
+
+function openScheduleModal() {
+    document.getElementById('scheduleModal').classList.add('active');
+    document.getElementById('modalBackdrop').classList.add('active');
+}
+function closeScheduleModal() {
+    document.getElementById('scheduleModal').classList.remove('active');
+    document.getElementById('modalBackdrop').classList.remove('active');
+}
+
+function selectScheduleOption(which) {
+    document.getElementById('scheduleNowOption').classList.toggle('active', which === 'now');
+    document.getElementById('scheduleLaterOption').classList.toggle('active', which === 'later');
+    document.getElementById('scheduleDatetime').classList.toggle('show', which === 'later');
+
+    if (which === 'later') {
+        const dateInput = document.getElementById('scheduleDateInput');
+        const timeInput = document.getElementById('scheduleTimeInput');
+        if (!dateInput.value) {
+            const now = new Date();
+            dateInput.value = now.toISOString().slice(0, 10);
+            now.setMinutes(now.getMinutes() + 30);
+            timeInput.value = now.toTimeString().slice(0, 5);
+        }
+    }
+}
+
+function confirmSchedule() {
+    const isLater = document.getElementById('scheduleLaterOption').classList.contains('active');
+    const label = document.getElementById('schedulePillLabel');
+
+    if (!isLater) {
+        scheduledFor = null;
+        label.innerText = 'Maint.';
+    } else {
+        const dateVal = document.getElementById('scheduleDateInput').value;
+        const timeVal = document.getElementById('scheduleTimeInput').value;
+        if (!dateVal || !timeVal) { alert("Veuillez choisir une date et une heure"); return; }
+        const chosen = new Date(dateVal + 'T' + timeVal);
+        if (chosen.getTime() < Date.now()) { alert("Choisissez une heure dans le futur"); return; }
+        scheduledFor = chosen.getTime();
+        const dd = String(chosen.getDate()).padStart(2, '0');
+        const mm = chosen.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+        const hh = String(chosen.getHours()).padStart(2, '0');
+        const min = String(chosen.getMinutes()).padStart(2, '0');
+        label.innerText = `${dd} ${mm}, ${hh}:${min}`;
+    }
+    closeScheduleModal();
+}
+
+// ==================== POSITIONS ====================
+function updateStart(lat, lon, name) {
+    startCoords = [parseFloat(lat), parseFloat(lon)];
+    document.getElementById('startInput').value = name;
+    startMarker.setLatLng(startCoords);
+    if (endCoords) drawRoute();
+}
+
+function updateEnd(lat, lon, name) {
+    endCoords = [parseFloat(lat), parseFloat(lon)];
+    document.getElementById('endInput').value = name;
+    if (endMarker) map.removeLayer(endMarker);
+    endMarker = L.marker(endCoords, { draggable: true, icon: endIcon }).addTo(map);
+    endMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        updateEnd(pos.lat, pos.lng, "Position déplacée");
+    });
+    drawRoute();
+    revealRideOptions();
+}
+
+// ==================== ITINERAIRE (OSRM) ====================
+async function drawRoute() {
+    if (!startCoords || !endCoords) return;
+
+    try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        if (data.routes && data.routes[0]) {
+            const route = data.routes[0];
+            distance = route.distance / 1000;
+
+            if (polyline) map.removeLayer(polyline);
+            polyline = L.geoJSON(route.geometry, { style: { color: '#0A0A0B', weight: 4, dashArray: '1,9', lineCap: 'round' } }).addTo(map);
+
+            map.fitBounds(L.latLngBounds([startCoords, endCoords]), { padding: [70, 70] });
+            updatePrices();
+        }
+    } catch (error) {
+        console.error("Erreur de calcul d'itinéraire:", error);
+        if (polyline) map.removeLayer(polyline);
+        polyline = L.polyline([startCoords, endCoords], { color: '#0A0A0B', weight: 4, dashArray: '1,9' }).addTo(map);
+        distance = map.distance(L.latLng(startCoords), L.latLng(endCoords)) / 1000;
+        updatePrices();
+    }
+}
+
+// ==================== PRIX ====================
+function updatePrices() {
+    document.querySelectorAll('.ride-row').forEach(row => {
+        const base = parseFloat(row.dataset.base);
+        const rate = parseFloat(row.dataset.rate);
+        row.querySelector('.ride-price').innerText = Math.round(base + rate * distance) + " F";
+    });
+}
+function getCurrentPrice() {
+    const activeRow = document.querySelector('.ride-row.active');
+    const base = parseFloat(activeRow.dataset.base);
+    const rate = parseFloat(activeRow.dataset.rate);
+    return Math.round(base + rate * distance);
+}
+
+// ==================== SELECTION VEHICULE ====================
+function setActiveRide(el) {
+    document.querySelectorAll('.ride-row').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    selectedVehicle = el.dataset.vehicle;
+}
+
+// ==================== FAVORIS ====================
+function getPlaceIcon(name) {
+    const n = (name || '').toLowerCase();
+    if (n.includes('maison') || n.includes('domicile')) return 'fa-house';
+    if (n.includes('travail') || n.includes('bureau')) return 'fa-briefcase';
+    return 'fa-star';
+}
+
+function loadFavorites() {
+    const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    const container = document.getElementById('favorites-list');
+    container.innerHTML = '';
+
+    if (favorites.length === 0) {
+        const defaultFavs = [
+            { name: "Domicile", address: "Sacré Cœur, Dakar" },
+            { name: "Travail", address: "Plateau, Dakar" },
+            { name: "Gare", address: "Route de l'Aéroport, Dakar" }
+        ];
+        defaultFavs.forEach(fav => saveFavoriteToLocal(fav.name, fav.address));
+        return loadFavorites();
+    }
+
+    favorites.forEach(fav => {
+        const div = document.createElement('div');
+        div.className = 'place-row';
+        div.onclick = () => useFavorite(fav.name, fav.address);
+        div.innerHTML = `<div class="place-icon"><i class="fas ${getPlaceIcon(fav.name)}"></i></div>
+                          <div class="place-text"><strong>${fav.name}</strong><small>${fav.address}</small></div>
+                          <i class="fas fa-chevron-right chev"></i>`;
+        container.appendChild(div);
+    });
+
+    loadHomeFavorites(favorites);
+}
+
+// Même liste, affichée directement sur l'écran d'accueil (comme Domicile / Gare)
+function loadHomeFavorites(favorites) {
+    favorites = favorites || JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    const container = document.getElementById('homeFavoritesList');
+    container.innerHTML = '';
+
+    favorites.forEach(fav => {
+        const div = document.createElement('div');
+        div.className = 'place-row';
+        div.onclick = () => useFavoriteFromHome(fav.name, fav.address);
+        div.innerHTML = `<div class="place-icon"><i class="fas ${getPlaceIcon(fav.name)}"></i></div>
+                          <div class="place-text"><strong>${fav.name}</strong><small>${fav.address}</small></div>
+                          <i class="fas fa-chevron-right chev"></i>`;
+        container.appendChild(div);
+    });
+}
+
+function saveFavoriteToLocal(name, address) {
+    const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    favorites.push({ name, address });
+    localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
+}
+
+function toggleAddPlaceForm() {
+    const form = document.getElementById('addPlaceForm');
+    form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
+}
+
+function addFavorite() {
+    const name = document.getElementById('newFavName').value;
+    const addr = document.getElementById('newFavAddr').value;
+    if (!name || !addr) { alert("Veuillez remplir les deux champs"); return; }
+    saveFavoriteToLocal(name, addr);
+    document.getElementById('newFavName').value = '';
+    document.getElementById('newFavAddr').value = '';
+    document.getElementById('addPlaceForm').style.display = 'none';
+    loadFavorites();
+}
+
+function useFavorite(name, addr) {
+    toggleAccount();
+    selectDestinationByAddress(addr);
+}
+
+// Depuis l'accueil (Domicile / Gare / etc.) : pas besoin de fermer la page compte
+function useFavoriteFromHome(name, addr) {
+    expandSheet();
+    selectDestinationByAddress(addr);
+}
+
+function selectDestinationByAddress(addr) {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + ', Dakar')}&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if (data[0]) updateEnd(data[0].lat, data[0].lon, addr);
+            else alert("Adresse non trouvée");
         });
+}
 
-        // ==================== GEOLOCALISATION ====================
-        function getCurrentLocation() {
-            map.locate({setView: true, maxZoom: 16});
-        }
-        
-        map.on('locationfound', (e) => {
-            updateStart(e.latlng.lat, e.latlng.lng, "Ma position");
-        });
-
-        // ==================== AUTOCOMPLETION NOMINATIM ====================
-        const suggestionsBox = document.getElementById('suggestions');
-        
-        document.querySelectorAll('#startInput, #endInput').forEach(input => {
-            input.addEventListener('input', async (e) => {
-                const query = e.target.value;
-                if (query.length < 3) { 
-                    suggestionsBox.style.display = 'none'; 
-                    return; 
-                }
-                
-                try {
-                    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}, Dakar, Sénégal&limit=5&countrycodes=sn`);
-                    const data = await resp.json();
-                    suggestionsBox.innerHTML = '';
-                    
-                    if(data.length > 0) {
-                        suggestionsBox.style.display = 'block';
-                        data.forEach(place => {
-                            const div = document.createElement('div');
-                            div.className = 'suggestion-item';
-                            div.innerText = place.display_name.split(',')[0];
-                            div.onclick = () => {
-                                if(activeInputId === 'startInput') {
-                                    updateStart(place.lat, place.lon, div.innerText);
-                                } else {
-                                    updateEnd(place.lat, place.lon, div.innerText);
-                                }
-                                suggestionsBox.style.display = 'none';
-                            };
-                            suggestionsBox.appendChild(div);
-                        });
-                    }
-                } catch(error) {
-                    console.error("Erreur de géocodage:", error);
-                }
-            });
-        });
-
-        // Fermer les suggestions en cliquant ailleurs
-        document.addEventListener('click', (e) => {
-            if(!e.target.closest('.search-group')) {
-                suggestionsBox.style.display = 'none';
-            }
-        });
-
-        // ==================== UPDATE START POSITION ====================
-        function updateStart(lat, lon, name) {
-            startCoords = [parseFloat(lat), parseFloat(lon)];
-            document.getElementById('startInput').value = name;
-            startMarker.setLatLng(startCoords);
-            drawRoute();
-        }
-
-        // ==================== UPDATE END POSITION ====================
-        function updateEnd(lat, lon, name) {
-            endCoords = [parseFloat(lat), parseFloat(lon)];
-            document.getElementById('endInput').value = name;
-            if(endMarker) map.removeLayer(endMarker);
-            endMarker = L.marker(endCoords, {draggable: true}).addTo(map);
-            endMarker.bindPopup("Arrivée");
-            endMarker.on('dragend', function(e) {
-                const pos = e.target.getLatLng();
-                updateEnd(pos.lat, pos.lng, "Position déplacée");
-            });
-            drawRoute();
-        }
-
-        // ==================== CALCUL D'ITINERAIRE AVEC OSRM ====================
-        async function drawRoute() {
-            if (!startCoords || !endCoords) return;
-            
-            try {
-                const url = `https://router.project-osrm.org/route/v1/driving/${startCoords[1]},${startCoords[0]};${endCoords[1]},${endCoords[0]}?overview=full&geometries=geojson`;
-                const resp = await fetch(url);
-                const data = await resp.json();
-                
-                if(data.routes && data.routes[0]) {
-                    const route = data.routes[0];
-                    distance = route.distance / 1000;
-                    
-                    if(polyline) map.removeLayer(polyline);
-                    
-                    polyline = L.geoJSON(route.geometry, {
-                        style: {color: '#111', weight: 4, dashArray: '8,8'}
-                    }).addTo(map);
-                    
-                    const bounds = L.latLngBounds([startCoords, endCoords]);
-                    map.fitBounds(bounds, {padding: [50, 50]});
-                    
-                    updatePrices();
-                }
-            } catch(error) {
-                console.error("Erreur de calcul d'itinéraire:", error);
-                if(polyline) map.removeLayer(polyline);
-                polyline = L.polyline([startCoords, endCoords], {color: '#111', weight: 4, dashArray: '8,8'}).addTo(map);
-                distance = map.distance(L.latLng(startCoords), L.latLng(endCoords)) / 1000;
-                updatePrices();
-            }
-        }
-
-        // ==================== MISE À JOUR DES PRIX ====================
-        function updatePrices() {
-            const ecoPrice = Math.round(500 + (distance * 350));
-            const comfortPrice = Math.round(800 + (distance * 550));
-            document.getElementById('priceEco').innerHTML = ecoPrice + " F";
-            document.getElementById('priceComfort').innerHTML = comfortPrice + " F";
-        }
-
-        function getCurrentPrice() {
-            if(selectedVehicle === 'eco') {
-                return Math.round(500 + (distance * 350));
-            } else {
-                return Math.round(800 + (distance * 550));
-            }
-        }
-
-        // ==================== SELECTION DU VÉHICULE ====================
-        function setActiveRide(el) {
-            document.querySelectorAll('.ride-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            selectedVehicle = el.dataset.vehicle;
-            vehicleBase = parseInt(el.dataset.base);
-            vehicleRate = parseInt(el.dataset.rate);
-        }
-
-        // ==================== FAVORIS (LOCALSTORAGE) ====================
-        function loadFavorites() {
-            const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
-            const container = document.getElementById('favorites-list');
-            container.innerHTML = '';
-            
-            if(favorites.length === 0) {
-                const defaultFavs = [
-                    { name: "🏠 Maison", address: "Sacré Cœur, Dakar" },
-                    { name: "💼 Travail", address: "Plateau, Dakar" },
-                    { name: "⭐ Saldia Club", address: "Route de l'Aéroport, Dakar" }
-                ];
-                defaultFavs.forEach(fav => {
-                    saveFavoriteToLocal(fav.name, fav.address);
-                });
-            }
-            
-            favorites.forEach((fav, index) => {
-                const div = document.createElement('div');
-                div.className = 'fav-item';
-                div.onclick = () => useFavorite(fav.name, fav.address);
-                div.innerHTML = `<i class="fas fa-location-dot"></i><div><strong>${fav.name}</strong><br><small>${fav.address}</small></div>`;
-                container.appendChild(div);
-            });
-        }
-        
-        function saveFavoriteToLocal(name, address) {
-            const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
-            favorites.push({ name, address });
-            localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
-        }
-        
-        function addFavorite() {
-            const name = document.getElementById('newFavName').value;
-            const addr = document.getElementById('newFavAddr').value;
-            if(!name || !addr) {
-                alert("Veuillez remplir les deux champs");
-                return;
-            }
-            saveFavoriteToLocal(name, addr);
-            document.getElementById('newFavName').value = '';
-            document.getElementById('newFavAddr').value = '';
-            loadFavorites();
-            alert("Favori ajouté !");
-        }
-        
-        function useFavorite(name, addr) {
-            document.getElementById('endInput').value = addr;
-            toggleAccount();
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr + ', Dakar')}&limit=1`)
-                .then(r => r.json())
-                .then(data => {
-                    if(data[0]) {
-                        updateEnd(data[0].lat, data[0].lon, addr);
-                    } else {
-                        alert("Adresse non trouvée");
-                    }
-                });
-        }
-
-        function toggleAccount() {
-            const acc = document.getElementById('account-page');
-            acc.style.display = (acc.style.display === 'flex') ? 'none' : 'flex';
-            if(acc.style.display === 'flex') {
-                loadFavorites();
-                loadUserProfile();
-            }
-        }
-
-        // ==================== COMMANDE VERS FIREBASE ====================
-        async function commander() {
-            if(!startCoords || !endCoords) {
-                alert("Veuillez sélectionner un départ et une destination");
-                return;
-            }
-            
-            // Récupérer les infos du client depuis Firebase
-            let clientProfile = null;
-            try {
-                const snapshot = await database.ref('clients/' + clientId).once('value');
-                clientProfile = snapshot.val();
-            } catch(e) {}
-            
-            const startAddr = document.getElementById('startInput').value || "Départ";
-            const endAddr = document.getElementById('endInput').value || "Destination";
-            const price = getCurrentPrice();
-            const userName = clientProfile?.name || document.getElementById('userName').value || "Client";
-            const userPhone = clientProfile?.phone || document.getElementById('userPhone').value || "Non renseigné";
-            
-            const order = {
-                id: Date.now().toString(),
-                pickup: {
-                    lat: startCoords[0],
-                    lng: startCoords[1],
-                    address: startAddr
-                },
-                destination: {
-                    lat: endCoords[0],
-                    lng: endCoords[1],
-                    address: endAddr
-                },
-                vehicle: selectedVehicle,
-                price: price,
-                distance: distance.toFixed(1),
-                status: 'en_attente',
-                createdAt: Date.now(),
-                clientId: clientId,
-                clientName: userName,
-                clientPhone: userPhone
-            };
-            
-            document.getElementById('orderBtn').disabled = true;
-            document.getElementById('orderStatus').innerHTML = "⏳ Recherche chauffeur...";
-            
-            try {
-                await database.ref('commandes/' + order.id).set(order);
-                currentOrderId = order.id;
-                
-                if(orderListener) orderListener();
-                orderListener = database.ref('commandes/' + order.id).on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if(data) {
-                        if(data.status === 'acceptee') {
-                            document.getElementById('orderStatus').innerHTML = "✅ Course acceptée !";
-                            showDriverInfo(data);
-                            database.ref('historique/' + order.id).set(data);
-                        } else if(data.status === 'terminee') {
-                            document.getElementById('orderStatus').innerHTML = "✅ Course terminée";
-                            document.getElementById('orderBtn').disabled = false;
-                        }
-                    }
-                });
-                
-                alert(`🚀 Commande envoyée par ${userName} ! Un chauffeur va vous attribuer.`);
-                
-            } catch(error) {
-                console.error("Erreur Firebase:", error);
-                alert("Erreur lors de l'envoi de la commande");
-                document.getElementById('orderBtn').disabled = false;
-                document.getElementById('orderStatus').innerHTML = "🟢 Prêt";
-            }
-        }
-        
-        function showDriverInfo(order) {
-            const modal = document.getElementById('driverModal');
-            document.getElementById('driverName').innerHTML = order.driverName || 'Chauffeur MOR-TAXI';
-            document.getElementById('driverRating').innerHTML = '★★★★★ ' + (order.driverRating || '4.9');
-            document.getElementById('driverCar').innerHTML = order.driverCar || 'Toyota Corolla';
-            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${order.driverPhone || '+221 78 000 00 00'}`;
-            modal.classList.add('active');
-        }
-        
-        function closeModal() {
-            document.getElementById('driverModal').classList.remove('active');
-        }
-
-        // ==================== INITIALISATION ====================
-        updateStart(14.7167, -17.4677, "Dakar Centre");
+// ==================== NAVIGATION PAGES / MODALES ====================
+function toggleAccount() {
+    const acc = document.getElementById('account-page');
+    const isOpen = acc.classList.contains('open');
+    if (isOpen) {
+        acc.classList.remove('open');
+    } else {
+        acc.classList.add('open');
+        loadFavorites();
         loadUserProfile();
-        
-        console.log("🆔 Client ID:", clientId);
-    </script>
+    }
+}
+
+function showAccountRequiredModal() {
+    document.getElementById('accountRequiredModal').classList.add('active');
+    document.getElementById('modalBackdrop').classList.add('active');
+}
+function closeAccountRequiredModal() {
+    document.getElementById('accountRequiredModal').classList.remove('active');
+    document.getElementById('modalBackdrop').classList.remove('active');
+}
+function goToAccountPage() {
+    closeAccountRequiredModal();
+    document.getElementById('account-page').classList.add('open');
+    loadFavorites();
+    loadUserProfile();
+}
+function closeAllModals() {
+    closeAccountRequiredModal();
+    closeScheduleModal();
+}
+
+// ==================== ÉTATS DE LA FEUILLE (accueil / recherche / trajet) ====================
+function showSheetState(state) {
+    document.getElementById('sheetHome').classList.remove('show');
+    document.getElementById('sheetSearching').classList.remove('show');
+    document.getElementById('sheetTrip').classList.remove('show');
+    document.getElementById('sheetHome').style.display = state === 'home' ? 'block' : 'none';
+    document.getElementById('sheetSearching').classList.toggle('show', state === 'searching');
+    document.getElementById('sheetTrip').classList.toggle('show', state === 'trip');
+}
+
+function resetToHome() {
+    if (orderListener && currentOrderId) {
+        database.ref('commandes/' + currentOrderId).off('value', orderListener);
+    }
+    orderListener = null;
+    currentOrderId = null;
+    scheduledFor = null;
+    document.getElementById('schedulePillLabel').innerText = 'Maint.';
+    document.getElementById('orderBtn').disabled = false;
+    document.getElementById('sheetHome').classList.remove('expanded');
+    document.getElementById('searchForm').classList.remove('open');
+    document.getElementById('rideList').classList.remove('show');
+    document.getElementById('orderBtn').classList.remove('show');
+    setStatus('Prêt', 'ok');
+    showSheetState('home');
+}
+
+async function cancelSearch() {
+    if (!currentOrderId) { resetToHome(); return; }
+    try {
+        await database.ref('commandes/' + currentOrderId).remove();
+    } catch (e) {
+        console.error("Erreur annulation:", e);
+    }
+    resetToHome();
+}
+
+// ==================== COMMANDE (FIREBASE) ====================
+async function commander() {
+    if (!startCoords || !endCoords) {
+        alert("Veuillez sélectionner un départ et une destination");
+        return;
+    }
+
+    try {
+        const snapshot = await database.ref('clients/' + clientId).once('value');
+        userProfile = snapshot.val();
+    } catch (e) {
+        console.error("Erreur récupération profil:", e);
+    }
+
+    if (!hasCompleteAccount()) {
+        showAccountRequiredModal();
+        return;
+    }
+
+    const startAddr = document.getElementById('startInput').value || "Départ";
+    const endAddr = document.getElementById('endInput').value || "Destination";
+    const price = getCurrentPrice();
+    const userName = (userProfile && userProfile.name) || document.getElementById('userName').value;
+    const userPhone = (userProfile && userProfile.phone) || document.getElementById('userPhone').value;
+
+    const order = {
+        id: Date.now().toString(),
+        pickup: { lat: startCoords[0], lng: startCoords[1], address: startAddr },
+        destination: { lat: endCoords[0], lng: endCoords[1], address: endAddr },
+        vehicle: selectedVehicle,
+        price: price,
+        distance: distance.toFixed(1),
+        status: 'en_attente',
+        scheduledFor: scheduledFor,
+        createdAt: Date.now(),
+        clientId: clientId,
+        clientName: userName,
+        clientPhone: userPhone
+    };
+
+    document.getElementById('orderBtn').disabled = true;
+
+    // Basculer immédiatement sur l'écran "Recherche d'un chauffeur"
+    document.getElementById('searchingFrom').innerText = startAddr;
+    document.getElementById('searchingTo').innerText = endAddr;
+    document.getElementById('searchingPrice').innerText = price + ' F';
+
+    if (scheduledFor) {
+        const d = new Date(scheduledFor);
+        const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) + ' à ' + d.toTimeString().slice(0, 5);
+        document.getElementById('searchingSpinner').style.display = 'none';
+        document.getElementById('searchingTitle').innerText = 'Course programmée';
+        document.getElementById('searchingSub').innerText = 'Un chauffeur sera recherché le ' + label;
+        setStatus('Course programmée', 'busy');
+    } else {
+        document.getElementById('searchingSpinner').style.display = 'block';
+        document.getElementById('searchingTitle').innerText = "Recherche d'un chauffeur…";
+        document.getElementById('searchingSub').innerText = 'Nous prévenons les chauffeurs disponibles autour de vous';
+        setStatus('Recherche chauffeur…', 'busy');
+    }
+    showSheetState('searching');
+
+    try {
+        await database.ref('commandes/' + order.id).set(order);
+        currentOrderId = order.id;
+
+        if (orderListener) database.ref('commandes/' + currentOrderId).off('value', orderListener);
+        orderListener = (snapshot) => {
+            const data = snapshot.val();
+            if (!data) { resetToHome(); return; }
+
+            if (data.status === 'en_attente') {
+                setStatus('Recherche chauffeur…', 'busy');
+                showSheetState('searching');
+            } else if (data.status === 'acceptee') {
+                setStatus('Chauffeur en route', 'done');
+                showDriverInfo(data);
+                database.ref('historique/' + order.id).set(data);
+            } else if (data.status === 'terminee') {
+                setStatus('Course terminée', 'done');
+                document.getElementById('tripStatusLabel').innerText = 'COURSE TERMINÉE';
+                setTimeout(resetToHome, 4000);
+            }
+        };
+        database.ref('commandes/' + order.id).on('value', orderListener);
+    } catch (error) {
+        console.error("Erreur Firebase:", error);
+        alert("Erreur lors de l'envoi de la commande");
+        resetToHome();
+    }
+}
+
+function showDriverInfo(order) {
+    const name = order.driverName || 'Chauffeur MOR-TAXI';
+    document.getElementById('driverAvatarInitial').innerText = name.charAt(0).toUpperCase();
+    document.getElementById('driverName').innerText = name;
+    document.getElementById('driverRating').innerText = order.driverRating || '4.9';
+    document.getElementById('driverCar').innerText = order.driverCar || 'Toyota Corolla';
+    document.getElementById('driverCallBtn').setAttribute('href', 'tel:' + (order.driverPhone || '+221780000000'));
+    document.getElementById('tripStatusLabel').innerText = 'CHAUFFEUR EN ROUTE';
+    document.getElementById('tripFrom').innerText = order.pickup?.address || 'Départ';
+    document.getElementById('tripTo').innerText = order.destination?.address || 'Destination';
+    document.getElementById('tripPrice').innerText = order.price + ' F';
+    showSheetState('trip');
+}
+
+// ==================== INITIALISATION ====================
+updateStart(14.7167, -17.4677, "Dakar Centre");
+loadUserProfile();
+loadFavorites();
+console.log("🆔 Client ID:", clientId);
+</script>
 </body>
 </html>
