@@ -11,6 +11,23 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        a, button, input, textarea, select, div, .service-card, .banner-link {
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        a:focus, button:focus, a:active, button:active, 
+        .service-card:focus, .service-card:active,
+        .banner-link:focus, .banner-link:active,
+        .btn-phone:focus, .btn-phone:active,
+        .btn-join:focus, .btn-join:active {
+            outline: none !important;
+            box-shadow: none !important;
+            -webkit-tap-highlight-color: transparent !important;
         }
 
         /* --- FOND TRANSPARENT ET ADAPTATIF --- */
@@ -75,7 +92,7 @@
             text-align: center;
         }
 
-        /* --- CONTENEUR D'IMAGE AVEC CONTOURS ARRONDIS --- */
+        /* --- CONTENEUR D'IMAGE SANS BORDURE NI FOND --- */
         .image-container {
             width: 100%;
             background-color: transparent;
@@ -85,30 +102,25 @@
             overflow: hidden;
             margin-bottom: 10px;
             transition: transform 0.2s;
-            
-            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
-            border: 2px solid #e0e0e0;
-            border-radius: 20px;
-            padding: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
+            border: none;
+            box-shadow: none;
+            padding: 0;
         }
 
         .image-container:hover {
             transform: scale(1.02);
-            border-color: #1a7a4c;
-            box-shadow: 0 4px 12px rgba(26, 122, 76, 0.15);
         }
 
-        /* --- IMAGE QUI REMPLIT SANS COUPER --- */
+        /* --- IMAGE AVEC COINS ARRONDIS UNIQUEMENT --- */
         .image-container img {
             width: 100%;
             height: auto;
             max-height: 220px;
             object-fit: contain;
             display: block;
-            
-            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
-            border-radius: 14px;
+            /* ✨ SEULEMENT LES COINS ARRONDIS, RIEN D'AUTRE ✨ */
+            border-radius: 20px;
         }
 
         .service-title {
@@ -139,30 +151,24 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.2s;
-            
-            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
-            border: 2px solid #e0e0e0;
-            border-radius: 20px;
-            padding: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
+            border: none;
+            box-shadow: none;
+            padding: 0;
         }
 
         .banner-image-box:hover {
             transform: scale(1.01);
-            border-color: #1a7a4c;
-            box-shadow: 0 4px 12px rgba(26, 122, 76, 0.15);
         }
 
-        /* --- IMAGE BANNIÈRE ENTIÈRE --- */
         .banner-image-box img {
             width: 100%;
             height: auto;
             max-height: 180px;
             object-fit: contain;
             display: block;
-            
-            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
-            border-radius: 14px;
+            /* ✨ SEULEMENT LES COINS ARRONDIS ✨ */
+            border-radius: 20px;
         }
 
         /* --- BAS DE PAGE (2 CARTES) --- */
@@ -183,7 +189,7 @@
             background-color: #fff;
         }
 
-        /* --- IMAGE DE CARTE AVEC CONTOURS --- */
+        /* --- IMAGE DE CARTE SANS BORDURE NI FOND --- */
         .card-img-box {
             width: 100%;
             display: flex;
@@ -191,12 +197,10 @@
             align-items: center;
             margin-bottom: 15px;
             background-color: transparent;
-            
-            /* ✨ CONTOURS ARRONDIS AUX 4 COINS ✨ */
-            border: 2px solid #e0e0e0;
-            border-radius: 16px;
-            padding: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
+            border: none;
+            box-shadow: none;
+            padding: 0;
         }
 
         .card-img-box img {
@@ -204,9 +208,8 @@
             max-height: 110px;
             object-fit: contain;
             display: block;
-            
-            /* ✨ CONTOURS ARRONDIS AUSSI SUR L'IMAGE ✨ */
-            border-radius: 10px;
+            /* ✨ SEULEMENT LES COINS ARRONDIS ✨ */
+            border-radius: 16px;
         }
 
         .info-card h3 {
@@ -238,6 +241,12 @@
             cursor: pointer;
             text-decoration: none;
             color: #111;
+            transition: all 0.2s;
+        }
+
+        .btn-phone:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
         }
 
         .btn-join {
@@ -264,9 +273,9 @@
             .services-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .service-title { font-size: 13px; }
             .bottom-cards { grid-template-columns: 1fr; }
-            .image-container img { max-height: 140px; }
-            .image-container { border-radius: 16px; padding: 6px; }
-            .banner-image-box { border-radius: 16px; padding: 6px; }
+            .image-container img { max-height: 140px; border-radius: 16px; }
+            .banner-image-box img { border-radius: 16px; }
+            .card-img-box img { border-radius: 12px; }
         }
     </style>
 </head>
