@@ -13,7 +13,7 @@
 <style>
 :root{
   --ink:#0A0A0B; --muted:#6E6E73; --line:#E7E7E9; --surface:#F3F3F4; --bg:#FFFFFF;
-  --accent:#C8FA3E; --accent-ink:#173300; --danger:#E5484D; --success:#1DAA5C;
+  --accent:#C8FA3E; --accent-ink:#173300; --danger:#E5484D; --success:#1DAA5C; --warn:#B8860B;
   --r-lg:22px; --r-md:14px;
   --font-body:'Inter', system-ui, sans-serif;
   --font-display:'Space Grotesk','Inter',sans-serif;
@@ -23,11 +23,7 @@ body{ font-family:var(--font-body); color:var(--ink); background:var(--surface);
 button{ font-family:inherit; border:none; cursor:pointer; }
 input, textarea{ font-family:inherit; border:none; outline:none; }
 
-/* ---------- Portail mot de passe ---------- */
-#gate{
-  position:fixed; inset:0; background:var(--ink); display:flex; align-items:center; justify-content:center;
-  z-index:100; padding:20px;
-}
+#gate{ position:fixed; inset:0; background:var(--ink); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; }
 .gate-card{ background:var(--bg); border-radius:var(--r-lg); padding:32px 26px; width:100%; max-width:340px; text-align:center; }
 .gate-card i{ font-size:26px; color:var(--accent-ink); background:var(--accent); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
 .gate-card h2{ font-size:17px; font-weight:800; margin-bottom:6px; }
@@ -36,62 +32,85 @@ input, textarea{ font-family:inherit; border:none; outline:none; }
 .gate-card button{ width:100%; background:var(--ink); color:#fff; padding:14px; border-radius:var(--r-md); font-weight:700; }
 .gate-error{ color:var(--danger); font-size:12.5px; margin-top:8px; display:none; }
 
-/* ---------- Layout général ---------- */
 #app{ display:none; }
 #app.show{ display:block; }
 
-.topbar{
-  background:var(--ink); color:#fff; padding:18px 20px; display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:10;
-}
+.topbar{ background:var(--ink); color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:30; flex-wrap:wrap; gap:10px; }
 .topbar-title{ font-family:var(--font-display); font-weight:700; font-size:16px; display:flex; align-items:center; gap:10px; }
 .topbar-title i{ color:var(--accent); }
 .logout-link{ color:rgba(255,255,255,0.7); font-size:12.5px; background:none; }
+.search-bar{ flex:1 1 220px; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.1); border-radius:20px; padding:9px 14px; }
+.search-bar input{ background:none; color:#fff; font-size:13px; flex:1; }
+.search-bar input::placeholder{ color:rgba(255,255,255,0.5); }
+.search-bar i{ color:rgba(255,255,255,0.5); font-size:12px; }
 
-.tabs{ display:flex; gap:8px; padding:16px 20px 0; max-width:900px; margin:0 auto; }
-.tab{
-  flex:1; text-align:center; padding:12px 8px; border-radius:var(--r-md); font-weight:700; font-size:13px;
-  background:var(--bg); color:var(--muted); position:relative;
-}
+.tabs{ display:flex; gap:6px; padding:16px 20px 0; max-width:1000px; margin:0 auto; overflow-x:auto; }
+.tab{ flex:1; min-width:110px; text-align:center; padding:11px 6px; border-radius:var(--r-md); font-weight:700; font-size:12.5px; background:var(--bg); color:var(--muted); }
 .tab.active{ background:var(--ink); color:#fff; }
-.tab .count{ display:inline-block; margin-left:6px; background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:1px 7px; font-size:11px; }
+.tab .count{ display:inline-block; margin-left:4px; background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:1px 6px; font-size:10.5px; }
 .tab.active .count{ background:rgba(255,255,255,0.2); color:#fff; }
 
-.list{ max-width:900px; margin:0 auto; padding:16px 20px 60px; display:flex; flex-direction:column; gap:12px; }
+.list{ max-width:1000px; margin:0 auto; padding:16px 20px 60px; display:flex; flex-direction:column; gap:12px; }
 .empty-state{ text-align:center; padding:60px 20px; color:var(--muted); font-size:14px; }
 
 .app-card{ background:var(--bg); border-radius:var(--r-lg); padding:18px; }
-.app-card-top{ display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.app-card-top{ display:flex; align-items:center; gap:14px; margin-bottom:10px; }
 .app-avatar{ width:48px; height:48px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:18px; flex:0 0 auto; }
 .app-name{ font-weight:700; font-size:15.5px; }
 .app-date{ font-size:12px; color:var(--muted); }
-.status-chip{ margin-left:auto; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
-.status-chip.en_attente{ background:#FDF3D8; color:#B8860B; }
+.status-chip{ margin-left:auto; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+.status-chip.en_attente{ background:#FDF3D8; color:var(--warn); }
+.status-chip.verification_approfondie{ background:#E3EEFD; color:#1D5FAA; }
 .status-chip.valide{ background:#DFF6E3; color:var(--success); }
 .status-chip.rejete{ background:#FCE4E4; color:var(--danger); }
+.status-chip.brouillon{ background:var(--surface); color:var(--muted); }
+
+.pw-box{ display:flex; align-items:center; gap:10px; background:#173300; color:var(--accent); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-family:var(--font-display); font-weight:700; letter-spacing:3px; font-size:16px; }
+.pw-box i{ font-family:var(--font-body); letter-spacing:0; font-size:11px; color:rgba(255,255,255,0.6); font-weight:600; }
+
+.toggle-detail{ font-size:12.5px; font-weight:700; color:var(--ink); margin-bottom:12px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.detail-body{ display:none; }
+.detail-body.show{ display:block; }
 
 .app-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; margin-bottom:14px; }
 .app-field{ font-size:13px; }
 .app-field label{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px; }
 .app-field div{ font-weight:600; }
+.field-group-title{ font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; margin:14px 0 8px; grid-column:1 / -1; border-top:1px solid var(--line); padding-top:12px; }
 
-.app-photos{ display:flex; gap:10px; margin-bottom:14px; }
-.app-photos img{ width:90px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--line); cursor:pointer; }
-.app-photos .no-photo{ width:90px; height:64px; border-radius:10px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; text-align:center; }
-
-.app-actions{ display:flex; gap:10px; }
-.app-actions button{ flex:1; padding:12px; border-radius:var(--r-md); font-weight:700; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:8px; }
-.btn-approve{ background:var(--success); color:#fff; }
-.btn-reject{ background:var(--surface); color:var(--danger); }
-.btn-revoke{ background:var(--surface); color:var(--ink); }
+.app-photos{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.app-photos .photo-item{ text-align:center; }
+.app-photos img{ width:84px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--line); cursor:pointer; display:block; }
+.app-photos small{ font-size:9.5px; color:var(--muted); display:block; margin-top:3px; max-width:84px; }
+.app-photos .no-photo{ width:84px; height:60px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:9px; text-align:center; }
 
 .rejection-note{ background:#FCE4E4; color:#8a2222; border-radius:10px; padding:10px 12px; font-size:12.5px; margin-bottom:12px; }
+.history-note{ font-size:11.5px; color:var(--muted); margin-bottom:12px; }
+.history-note div{ padding:3px 0; }
 
-/* Aperçu photo plein écran */
-#photoViewer{ position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+.app-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.app-actions button{ flex:1; min-width:110px; padding:12px; border-radius:var(--r-md); font-weight:700; font-size:12.5px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.btn-approve{ background:var(--success); color:#fff; }
+.btn-reject{ background:var(--surface); color:var(--danger); }
+.btn-verify{ background:var(--surface); color:#1D5FAA; }
+.btn-revoke{ background:var(--surface); color:var(--ink); }
+.btn-pdf{ background:var(--surface); color:var(--ink); }
+
+#photoViewer{ position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
 #photoViewer.show{ display:flex; }
 #photoViewer img{ max-width:100%; max-height:100%; border-radius:12px; }
 #photoViewer button{ position:absolute; top:20px; right:20px; width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); color:#fff; font-size:16px; }
+
+/* Vue imprimable (export PDF via impression navigateur) */
+#printArea{ display:none; }
+@media print{
+  body *{ visibility:hidden; }
+  #printArea, #printArea *{ visibility:visible; }
+  #printArea{ display:block; position:absolute; top:0; left:0; width:100%; padding:20px; }
+  .print-photo{ width:140px; height:100px; object-fit:cover; border-radius:6px; margin:4px; }
+  .print-row{ display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:6px 0; font-size:13px; }
+  .print-section h3{ margin:18px 0 8px; font-size:15px; border-bottom:2px solid #000; padding-bottom:4px; }
+}
 </style>
 </head>
 <body>
@@ -109,12 +128,14 @@ input, textarea{ font-family:inherit; border:none; outline:none; }
 
 <div id="app">
   <div class="topbar">
-    <div class="topbar-title"><i class="fas fa-shield-halved"></i> Administration chauffeurs</div>
+    <div class="topbar-title"><i class="fas fa-shield-halved"></i> Chauffeurs</div>
+    <div class="search-bar"><i class="fas fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Rechercher (nom, tél, plaque, email…)" oninput="renderList()"></div>
     <button class="logout-link" onclick="location.reload()">Se déconnecter</button>
   </div>
 
   <div class="tabs">
     <div class="tab active" data-tab="en_attente" onclick="switchTab('en_attente')">En attente <span class="count" id="countPending">0</span></div>
+    <div class="tab" data-tab="verification_approfondie" onclick="switchTab('verification_approfondie')">Vérif. approfondie <span class="count" id="countVerif">0</span></div>
     <div class="tab" data-tab="valide" onclick="switchTab('valide')">Validés <span class="count" id="countApproved">0</span></div>
     <div class="tab" data-tab="rejete" onclick="switchTab('rejete')">Rejetés <span class="count" id="countRejected">0</span></div>
   </div>
@@ -126,6 +147,8 @@ input, textarea{ font-family:inherit; border:none; outline:none; }
   <button onclick="closePhotoViewer()"><i class="fas fa-xmark"></i></button>
   <img id="photoViewerImg" src="" alt="">
 </div>
+
+<div id="printArea"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -143,10 +166,9 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // ==================== ACCÈS (portail simple par code) ====================
-// NOTE IMPORTANTE : cette protection est côté client uniquement — pratique pour un usage
-// interne restreint, mais elle ne remplace pas une vraie authentification côté serveur.
-// Pour une sécurité plus sérieuse, il faudrait ajouter Firebase Authentication + des règles
-// de sécurité sur la base de données restreignant l'accès au nœud "chauffeurs".
+// NOTE IMPORTANTE : protection côté client uniquement, pratique pour un usage interne,
+// mais pas une vraie authentification serveur. Pour une sécurité sérieuse, ajouter
+// Firebase Authentication + des règles de sécurité sur le nœud "chauffeurs".
 const ADMIN_PASSCODE = 'GNUDEM-ADMIN-2026';
 
 function checkPassword() {
@@ -163,22 +185,21 @@ function checkPassword() {
 if (sessionStorage.getItem('admin_ok') === '1') {
     document.getElementById('gate').style.display = 'none';
     document.getElementById('app').classList.add('show');
-    startListeningWhenReady();
-}
-function startListeningWhenReady() {
-    // startListening est défini plus bas ; on attend le prochain tick pour être sûr qu'il existe
     setTimeout(startListening, 0);
 }
 
 // ==================== DONNÉES ====================
 let allApplications = [];
 let currentTab = 'en_attente';
+const expandedCards = new Set();
 
 function startListening() {
     database.ref('chauffeurs').on('value', (snapshot) => {
         const data = snapshot.val() || {};
-        allApplications = Object.keys(data).map(id => ({ id, ...data[id] }));
-        allApplications.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+        allApplications = Object.keys(data)
+            .map(id => ({ id, ...data[id] }))
+            .filter(a => a.status !== 'brouillon'); // les brouillons non soumis ne concernent pas l'admin
+        allApplications.sort((a, b) => (b.submittedAt || b.updatedAt || 0) - (a.submittedAt || a.updatedAt || 0));
         renderCounts();
         renderList();
     });
@@ -186,6 +207,7 @@ function startListening() {
 
 function renderCounts() {
     document.getElementById('countPending').innerText = allApplications.filter(a => a.status === 'en_attente').length;
+    document.getElementById('countVerif').innerText = allApplications.filter(a => a.status === 'verification_approfondie').length;
     document.getElementById('countApproved').innerText = allApplications.filter(a => a.status === 'valide').length;
     document.getElementById('countRejected').innerText = allApplications.filter(a => a.status === 'rejete').length;
 }
@@ -196,85 +218,170 @@ function switchTab(tab) {
     renderList();
 }
 
+function matchesSearch(app, query) {
+    if (!query) return true;
+    const haystack = JSON.stringify(app).toLowerCase();
+    return haystack.includes(query.toLowerCase());
+}
+
 function renderList() {
     const container = document.getElementById('list');
-    const items = allApplications.filter(a => a.status === currentTab);
+    const query = document.getElementById('searchInput').value.trim();
+    const items = allApplications.filter(a => a.status === currentTab && matchesSearch(a, query));
     container.innerHTML = '';
 
     if (items.length === 0) {
-        container.innerHTML = `<div class="empty-state">Aucun dossier ${currentTab === 'en_attente' ? 'en attente' : currentTab === 'valide' ? 'validé' : 'rejeté'} pour l'instant.</div>`;
+        container.innerHTML = `<div class="empty-state">Aucun dossier ${query ? 'ne correspond à cette recherche' : 'dans cette catégorie'} pour l'instant.</div>`;
         return;
     }
-
     items.forEach(app => container.appendChild(buildAppCard(app)));
 }
+
+function fmtDate(ts) {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
+
+const PHOTO_FIELDS = [
+    ['idDocPhoto', "Pièce d'identité"], ['licensePhoto', 'Permis'], ['criminalRecordPhoto', 'Casier judiciaire'],
+    ['carteGrisePhoto', 'Carte grise'], ['procurationPhoto', 'Procuration'],
+    ['visiteTechniquePhoto', 'Visite technique'], ['assuranceTPVPhoto', 'Assurance TPV'],
+    ['photoFront', 'Face avant'], ['photoBack', 'Face arrière'], ['photoLeft', 'Côté gauche'], ['photoRight', 'Côté droit'],
+    ['photoInteriorFront', 'Intérieur avant'], ['photoInteriorBack', 'Intérieur arrière']
+];
 
 function buildAppCard(app) {
     const card = document.createElement('div');
     card.className = 'app-card';
 
-    const date = app.submittedAt ? new Date(app.submittedAt) : null;
-    const dateStr = date ? `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}` : '—';
-    const initial = (app.name || '?').charAt(0).toUpperCase();
-    const statusLabel = app.status === 'en_attente' ? 'En attente' : app.status === 'valide' ? 'Validé' : 'Rejeté';
+    const initial = ((app.firstName || app.name || '?').charAt(0)).toUpperCase();
+    const fullName = app.firstName ? `${app.firstName} ${app.lastName || ''}` : (app.name || 'Sans nom');
+    const statusLabels = { en_attente: 'En attente', verification_approfondie: 'Vérif. approfondie', valide: 'Validé', rejete: 'Rejeté' };
+    const isExpanded = expandedCards.has(app.id);
 
     let photosHtml = '<div class="app-photos">';
-    photosHtml += app.idPhoto ? `<img src="${app.idPhoto}" onclick="viewPhoto('${app.idPhoto.replace(/'/g, "\\'")}')" alt="Pièce d'identité">` : `<div class="no-photo">Pas de photo<br>pièce d'identité</div>`;
-    photosHtml += app.carPhoto ? `<img src="${app.carPhoto}" onclick="viewPhoto('${app.carPhoto.replace(/'/g, "\\'")}')" alt="Véhicule">` : `<div class="no-photo">Pas de photo<br>véhicule</div>`;
+    PHOTO_FIELDS.forEach(([key, label]) => {
+        if (app[key]) {
+            photosHtml += `<div class="photo-item"><img src="${app[key]}" onclick="viewPhoto('${app.id}','${key}')" alt="${label}"><small>${label}</small></div>`;
+        }
+    });
     photosHtml += '</div>';
 
     const rejectionHtml = app.status === 'rejete' && app.rejectionReason
         ? `<div class="rejection-note"><strong>Motif du rejet :</strong> ${app.rejectionReason}</div>` : '';
 
-    let actionsHtml = '';
-    if (app.status === 'en_attente') {
-        actionsHtml = `
-            <div class="app-actions">
-                <button class="btn-approve" onclick="approveApplication('${app.id}')"><i class="fas fa-check"></i> Valider</button>
-                <button class="btn-reject" onclick="rejectApplication('${app.id}')"><i class="fas fa-xmark"></i> Rejeter</button>
-            </div>`;
-    } else if (app.status === 'valide') {
-        actionsHtml = `
-            <div class="app-actions">
-                <button class="btn-revoke" onclick="revokeApplication('${app.id}')"><i class="fas fa-ban"></i> Révoquer l'accès</button>
-            </div>`;
-    } else if (app.status === 'rejete') {
-        actionsHtml = `
-            <div class="app-actions">
-                <button class="btn-approve" onclick="approveApplication('${app.id}')"><i class="fas fa-check"></i> Valider quand même</button>
-            </div>`;
-    }
+    const historyHtml = Array.isArray(app.history) && app.history.length
+        ? `<div class="history-note"><strong>Historique :</strong>${app.history.map(h => `<div>• ${h.action} — ${fmtDate(h.at)}${h.note ? ' (' + h.note + ')' : ''}</div>`).join('')}</div>` : '';
+
+    const pwHtml = app.status === 'valide' && app.password
+        ? `<div class="pw-box"><i class="fas fa-key" style="color:var(--accent);"></i> ${app.password} <i>mot de passe chauffeur</i></div>` : '';
+
+    let actionsHtml = '<div class="app-actions">';
+    if (app.status !== 'valide') actionsHtml += `<button class="btn-approve" onclick="approveApplication('${app.id}')"><i class="fas fa-check"></i> Valider</button>`;
+    if (app.status !== 'rejete') actionsHtml += `<button class="btn-reject" onclick="rejectApplication('${app.id}')"><i class="fas fa-xmark"></i> Rejeter</button>`;
+    if (app.status !== 'verification_approfondie' && app.status !== 'valide') actionsHtml += `<button class="btn-verify" onclick="verifyApplication('${app.id}')"><i class="fas fa-magnifying-glass"></i> Vérif. approfondie</button>`;
+    if (app.status === 'valide') actionsHtml += `<button class="btn-revoke" onclick="revokeApplication('${app.id}')"><i class="fas fa-ban"></i> Révoquer</button>`;
+    actionsHtml += `<button class="btn-pdf" onclick="exportToPdf('${app.id}')"><i class="fas fa-file-pdf"></i> Export PDF</button>`;
+    actionsHtml += '</div>';
+
+    const detailHtml = `
+        ${pwHtml}
+        <div class="app-grid">
+            <div class="field-group-title">Identité</div>
+            <div class="app-field"><label>Date de naissance</label><div>${fmtDate(app.birthDate) !== '—' ? app.birthDate : '—'}</div></div>
+            <div class="app-field"><label>Lieu de naissance</label><div>${app.birthPlace || '—'}</div></div>
+            <div class="app-field"><label>Adresse</label><div>${app.address || '—'}</div></div>
+            <div class="app-field"><label>Situation familiale</label><div>${app.maritalStatus || '—'}</div></div>
+            <div class="app-field"><label>Téléphone principal</label><div>${app.phonePrimary || '—'}</div></div>
+            <div class="app-field"><label>Téléphone secondaire</label><div>${app.phoneSecondary || '—'}</div></div>
+            <div class="app-field"><label>Email</label><div>${app.email || '—'}</div></div>
+            <div class="app-field"><label>Contact d'urgence</label><div>${app.emergencyName ? `${app.emergencyName} (${app.emergencyRelation || '?'}) — ${app.emergencyPhone || ''}` : '—'}</div></div>
+
+            <div class="field-group-title">Profil professionnel</div>
+            <div class="app-field"><label>Expérience</label><div>${app.yearsExperience ? app.yearsExperience + ' ans' : '—'}</div></div>
+            <div class="app-field"><label>Véhicules maîtrisés</label><div>${(app.vehicleTypes || []).join(', ') || '—'}</div></div>
+            <div class="app-field" style="grid-column:1/-1;"><label>Zones maîtrisées</label><div>${app.knownAreas || '—'}</div></div>
+            <div class="app-field" style="grid-column:1/-1;"><label>Expériences antérieures</label><div>${(app.experiences || []).filter(e => e.company).map(e => `${e.company} — ${e.role} (${e.startDate || '?'} → ${e.endDate || '?'})`).join('<br>') || '—'}</div></div>
+
+            <div class="field-group-title">Documents</div>
+            <div class="app-field"><label>Pièce d'identité</label><div>${app.idDocType || '—'}</div></div>
+            <div class="app-field"><label>Permis — catégories</label><div>${(app.licenseCategories || []).join(', ') || '—'}</div></div>
+            <div class="app-field"><label>Permis — délivré le</label><div>${app.licenseIssueDate || '—'}</div></div>
+            <div class="app-field"><label>Casier judiciaire du</label><div>${app.criminalRecordDate || '—'}</div></div>
+
+            <div class="field-group-title">Véhicule</div>
+            <div class="app-field"><label>Option</label><div>${app.vehicleOption === 'own' ? 'Véhicule personnel' : app.vehicleOption === 'assigned' ? 'À attribuer' : '—'}</div></div>
+            ${app.vehicleOption === 'own' ? `
+            <div class="app-field"><label>Propriété</label><div>${app.ownership === 'self' ? 'Le candidat' : app.ownership === 'other' ? `${app.ownerName || '?'} (${app.ownerRelation || '?'}) — ${app.ownerPhone || ''}` : '—'}</div></div>
+            <div class="app-field"><label>Véhicule</label><div>${app.carBrand || ''} ${app.carModel || ''} ${app.carYear ? '(' + app.carYear + ')' : ''}</div></div>
+            <div class="app-field"><label>Plaque</label><div>${app.carPlate || '—'}</div></div>
+            <div class="app-field"><label>Couleur</label><div>${app.carColor || '—'}</div></div>
+            <div class="app-field"><label>État</label><div>${app.carCondition || '—'}</div></div>
+            <div class="app-field"><label>Visite technique</label><div>${app.visiteTechniqueDate || '—'}</div></div>
+            <div class="app-field"><label>Assurance TPV — échéance</label><div>${app.assuranceTPVDate || '—'}</div></div>
+            ` : ''}
+        </div>
+        ${photosHtml}
+        ${rejectionHtml}
+        ${historyHtml}
+        ${actionsHtml}
+    `;
 
     card.innerHTML = `
         <div class="app-card-top">
             <div class="app-avatar">${initial}</div>
             <div>
-                <div class="app-name">${app.name || 'Sans nom'}</div>
-                <div class="app-date">Reçu le ${dateStr}</div>
+                <div class="app-name">${fullName}</div>
+                <div class="app-date">Reçu le ${fmtDate(app.submittedAt)} · ${app.phonePrimary || app.phone || ''}</div>
             </div>
-            <div class="status-chip ${app.status}">${statusLabel}</div>
+            <div class="status-chip ${app.status}">${statusLabels[app.status] || app.status}</div>
         </div>
-        <div class="app-grid">
-            <div class="app-field"><label>Téléphone</label><div>${app.phone || '—'}</div></div>
-            <div class="app-field"><label>Email</label><div>${app.email || '—'}</div></div>
-            <div class="app-field"><label>Adresse</label><div>${app.address || '—'}</div></div>
-            <div class="app-field"><label>N° pièce d'identité</label><div>${app.idNumber || '—'}</div></div>
-            <div class="app-field"><label>Véhicule</label><div>${app.car ? `${app.car.brand || ''} ${app.car.model || ''} ${app.car.year ? '(' + app.car.year + ')' : ''}` : '—'}</div></div>
-            <div class="app-field"><label>Plaque</label><div>${app.car?.plate || '—'}</div></div>
-            <div class="app-field"><label>N° permis</label><div>${app.licenseNumber || '—'}</div></div>
+        <div class="toggle-detail" onclick="toggleCardDetail('${app.id}', this)">
+            <i class="fas fa-chevron-${isExpanded ? 'up' : 'down'}"></i> ${isExpanded ? 'Masquer les détails' : 'Voir tous les détails'}
         </div>
-        ${photosHtml}
-        ${rejectionHtml}
-        ${actionsHtml}
+        <div class="detail-body ${isExpanded ? 'show' : ''}" id="detail-${app.id}">${detailHtml}</div>
     `;
     return card;
 }
 
+function toggleCardDetail(id, el) {
+    const body = document.getElementById('detail-' + id);
+    const isNowShown = !body.classList.contains('show');
+    body.classList.toggle('show', isNowShown);
+    el.innerHTML = `<i class="fas fa-chevron-${isNowShown ? 'up' : 'down'}"></i> ${isNowShown ? 'Masquer les détails' : 'Voir tous les détails'}`;
+    if (isNowShown) expandedCards.add(id); else expandedCards.delete(id);
+}
+
+async function logHistory(id, action, note) {
+    const snap = await database.ref('chauffeurs/' + id + '/history').once('value');
+    const history = snap.val() || [];
+    history.push({ action, at: Date.now(), note: note || null });
+    await database.ref('chauffeurs/' + id + '/history').set(history);
+}
+
+// ==================== MOT DE PASSE UNIQUE (8 chiffres, jamais répété) ====================
+async function generateUniquePassword() {
+    const usedSnap = await database.ref('mots_de_passe_utilises').once('value');
+    const used = usedSnap.val() || {};
+    let candidate;
+    let attempts = 0;
+    do {
+        candidate = String(Math.floor(10000000 + Math.random() * 90000000)); // 8 chiffres
+        attempts++;
+    } while (used[candidate] && attempts < 50);
+    await database.ref('mots_de_passe_utilises/' + candidate).set(true);
+    return candidate;
+}
+
 async function approveApplication(id) {
     try {
+        const app = allApplications.find(a => a.id === id);
+        const password = (app && app.password) ? app.password : await generateUniquePassword();
         await database.ref('chauffeurs/' + id).update({
-            status: 'valide', validatedAt: Date.now(), rejectionReason: null
+            status: 'valide', validatedAt: Date.now(), rejectionReason: null, password
         });
+        await logHistory(id, 'validee');
     } catch (error) {
         console.error("Erreur validation:", error);
         alert("Erreur lors de la validation.");
@@ -283,14 +390,23 @@ async function approveApplication(id) {
 
 async function rejectApplication(id) {
     const reason = prompt("Motif du rejet (visible par le chauffeur) :", "");
-    if (reason === null) return; // annulé
+    if (reason === null) return;
     try {
-        await database.ref('chauffeurs/' + id).update({
-            status: 'rejete', rejectedAt: Date.now(), rejectionReason: reason || null
-        });
+        await database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: reason || null });
+        await logHistory(id, 'rejetee', reason);
     } catch (error) {
         console.error("Erreur rejet:", error);
         alert("Erreur lors du rejet.");
+    }
+}
+
+async function verifyApplication(id) {
+    try {
+        await database.ref('chauffeurs/' + id).update({ status: 'verification_approfondie', updatedAt: Date.now() });
+        await logHistory(id, 'mise en vérification approfondie');
+    } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors du changement de statut.");
     }
 }
 
@@ -298,18 +414,71 @@ async function revokeApplication(id) {
     if (!confirm("Révoquer l'accès de ce chauffeur ? Il ne pourra plus recevoir de courses tant qu'il n'est pas revalidé.")) return;
     try {
         await database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: "Accès révoqué par l'administrateur" });
+        await logHistory(id, 'accès révoqué');
     } catch (error) {
         console.error("Erreur révocation:", error);
         alert("Erreur lors de la révocation.");
     }
 }
 
-function viewPhoto(src) {
-    document.getElementById('photoViewerImg').src = src;
+function viewPhoto(appId, key) {
+    const app = allApplications.find(a => a.id === appId);
+    if (!app || !app[key]) return;
+    document.getElementById('photoViewerImg').src = app[key];
     document.getElementById('photoViewer').classList.add('show');
 }
 function closePhotoViewer() {
     document.getElementById('photoViewer').classList.remove('show');
+}
+
+// ==================== EXPORT PDF (impression navigateur → "Enregistrer en PDF") ====================
+function exportToPdf(id) {
+    const app = allApplications.find(a => a.id === id);
+    if (!app) return;
+    const fullName = app.firstName ? `${app.firstName} ${app.lastName || ''}` : (app.name || 'Candidat');
+
+    let photosHtml = '';
+    PHOTO_FIELDS.forEach(([key, label]) => {
+        if (app[key]) photosHtml += `<div style="display:inline-block; text-align:center; margin:4px;"><img class="print-photo" src="${app[key]}"><div style="font-size:10px;">${label}</div></div>`;
+    });
+
+    const row = (label, val) => `<div class="print-row"><span>${label}</span><span>${val || '—'}</span></div>`;
+
+    document.getElementById('printArea').innerHTML = `
+        <h1 style="font-size:20px; margin-bottom:4px;">GNU DÉM — Dossier chauffeur</h1>
+        <p style="color:#666; font-size:12px; margin-bottom:16px;">Exporté le ${fmtDate(Date.now())} — Statut : ${app.status}</p>
+
+        <div class="print-section"><h3>Identité</h3>
+            ${row('Nom complet', fullName)}
+            ${row('Date de naissance', app.birthDate)}
+            ${row('Lieu de naissance', app.birthPlace)}
+            ${row('Adresse', app.address)}
+            ${row('Téléphone principal', app.phonePrimary)}
+            ${row('Téléphone secondaire', app.phoneSecondary)}
+            ${row('Email', app.email)}
+            ${row('Situation familiale', app.maritalStatus)}
+            ${row('Contact d\'urgence', app.emergencyName ? `${app.emergencyName} (${app.emergencyRelation||''}) - ${app.emergencyPhone||''}` : '')}
+        </div>
+
+        <div class="print-section"><h3>Profil professionnel</h3>
+            ${row('Expérience', app.yearsExperience ? app.yearsExperience + ' ans' : '')}
+            ${row('Véhicules maîtrisés', (app.vehicleTypes||[]).join(', '))}
+            ${row('Zones maîtrisées', app.knownAreas)}
+        </div>
+
+        <div class="print-section"><h3>Véhicule</h3>
+            ${row('Option', app.vehicleOption === 'own' ? 'Véhicule personnel' : 'À attribuer')}
+            ${row('Marque / Modèle', `${app.carBrand||''} ${app.carModel||''}`)}
+            ${row('Année / Couleur', `${app.carYear||''} / ${app.carColor||''}`)}
+            ${row('Plaque', app.carPlate)}
+            ${row('État', app.carCondition)}
+        </div>
+
+        ${app.password ? `<div class="print-section"><h3>Accès</h3>${row('Mot de passe chauffeur', app.password)}</div>` : ''}
+
+        <div class="print-section"><h3>Documents et photos</h3>${photosHtml}</div>
+    `;
+    window.print();
 }
 </script>
 </body>
