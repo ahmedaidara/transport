@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gnu Dém School — Le transport scolaire sécurisé, made in Sénégal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12182A;
+    --ink-soft:#242C42;
+    --sand:#F1E6CE;
+    --sand-deep:#E7D8B4;
+    --paper:#FAF6EC;
+    --gold:#D9A441;
+    --gold-deep:#B4832E;
+    --green:#1F4B3F;
+    --green-soft:#2E6A57;
+    --clay:#B33A2E;
+    --text:#1C1A14;
+    --text-soft:#57543F;
+    --line:rgba(28,26,20,0.14);
+    --line-dark:rgba(241,230,206,0.18);
+    --radius-card: 6px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Karla', sans-serif;
+    color:var(--text);
+    background:var(--paper);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  p{margin:0;}
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
+  }
+
+  /* ---------- layout shell ---------- */
+  .shell{
+    display:grid;
+    grid-template-columns:76px 1fr;
+    min-height:100vh;
+  }
+  .rail{
+    background:var(--ink);
+    color:var(--sand);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:22px 0 18px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .rail-mark{
+    width:38px;height:38px;
+    border-radius:50%;
+    border:1.5px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--gold);
+    margin-bottom:34px;
+    flex-shrink:0;
+  }
+  .rail-nav{
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+    flex:1;
+  }
+  .rail-nav a{
+    text-decoration:none;
+    font-size:12.5px;
+    letter-spacing:0.02em;
+    color:rgba(241,230,206,0.55);
+    transform:rotate(180deg);
+    transition:color .15s ease;
+    padding:2px 0;
+  }
+  .rail-nav a:hover, .rail-nav a:focus-visible{color:var(--sand);}
+  .rail-foot{
+    writing-mode:vertical-rl;
+    font-size:10.5px;
+    color:rgba(241,230,206,0.4);
+    transform:rotate(180deg);
+    letter-spacing:0.04em;
+  }
+
+  main{min-width:0;}
+  section{padding:96px 8vw;}
+  .container{max-width:920px;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    background:var(--ink);
+    color:var(--sand);
+    padding-top:88px;
+    padding-bottom:80px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    right:-8%;
+    top:-20%;
+    width:520px;height:520px;
+    border-radius:50%;
+    border:1px solid var(--line-dark);
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    right:2%;
+    bottom:-30%;
+    width:340px;height:340px;
+    border-radius:50%;
+    border:1px solid var(--line-dark);
+  }
+  .eyebrow-plain{
+    font-size:14px;
+    color:var(--gold);
+    margin-bottom:18px;
+    font-family:'Karla',sans-serif;
+    font-weight:600;
+  }
+  .hero h1{
+    font-size:clamp(2.1rem, 4.4vw, 3.4rem);
+    line-height:1.08;
+    max-width:14ch;
+    color:var(--paper);
+  }
+  .hero-sub{
+    margin-top:24px;
+    font-size:1.1rem;
+    color:rgba(250,246,236,0.8);
+    max-width:52ch;
+  }
+  .hero-cta{
+    margin-top:38px;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    position:relative;
+    z-index:2;
+  }
+  .btn{
+    font-family:'Karla',sans-serif;
+    font-weight:700;
+    font-size:0.95rem;
+    padding:14px 26px;
+    border-radius:3px;
+    border:1.5px solid transparent;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+  }
+  .btn-gold{background:var(--gold); color:var(--ink);}
+  .btn-gold:hover{background:var(--gold-deep);}
+  .btn-outline{border-color:rgba(250,246,236,0.4); color:var(--paper); background:transparent;}
+  .btn-outline:hover{border-color:var(--paper);}
+
+  .stat-strip{
+    margin-top:64px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    border-top:1px solid var(--line-dark);
+    padding-top:26px;
+    max-width:640px;
+    position:relative;
+    z-index:2;
+  }
+  .stat-strip div + div{border-left:1px solid var(--line-dark); padding-left:22px;}
+  .stat-strip dt{
+    font-family:'Fraunces',serif;
+    font-size:1.6rem;
+    color:var(--paper);
+  }
+  .stat-strip dd{
+    margin:6px 0 0;
+    font-size:0.82rem;
+    color:rgba(250,246,236,0.6);
+  }
+
+  /* ---------- chapter heading ---------- */
+  .chapter-head{
+    display:flex;
+    align-items:baseline;
+    gap:18px;
+    margin-bottom:56px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px;
+  }
+  .chapter-tag{
+    font-family:'Fraunces',serif;
+    font-size:0.95rem;
+    color:var(--gold-deep);
+    flex-shrink:0;
+  }
+  .chapter-head h2{
+    font-size:clamp(1.5rem,2.6vw,2.05rem);
+  }
+
+  /* ---------- steps ---------- */
+  .step{
+    display:grid;
+    grid-template-columns:64px 1fr 300px;
+    gap:36px;
+    padding:38px 0;
+    border-bottom:1px solid var(--line);
+    align-items:start;
+  }
+  .step:last-child{border-bottom:none;}
+  .step-num{
+    font-family:'Fraunces',serif;
+    font-size:1.5rem;
+    color:var(--sand-deep);
+    -webkit-text-stroke:1px var(--text-soft);
+    color:transparent;
+  }
+  .step-body h3{font-size:1.2rem; margin-bottom:10px;}
+  .step-body p{color:var(--text-soft); max-width:46ch;}
+  .step-visual{
+    background:var(--sand);
+    border-radius:var(--radius-card);
+    padding:18px;
+    border:1px solid var(--line);
+  }
+
+  /* mini calendar visual */
+  .cal-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+  .cal-grid span{
+    background:var(--paper);
+    border-radius:2px;
+    aspect-ratio:1;
+    font-size:0.6rem;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text-soft);
+  }
+  .cal-grid span.on{background:var(--green); color:var(--sand);}
+  .cal-grid span.off{background:var(--sand-deep); color:var(--text-soft); opacity:.5;}
+  .cal-label{font-size:0.7rem; color:var(--text-soft); margin-top:10px;}
+
+  /* trio drivers */
+  .trio{display:flex; gap:10px;}
+  .driver-badge{
+    flex:1;
+    text-align:center;
+    padding:14px 6px;
+    border-radius:4px;
+    background:var(--paper);
+    border:1px solid var(--line);
+  }
+  .driver-badge.principal{border-color:var(--gold-deep); box-shadow:inset 0 0 0 1px var(--gold-deep);}
+  .driver-avatar{
+    width:34px;height:34px;
+    border-radius:50%;
+    margin:0 auto 8px;
+    background:var(--ink-soft);
+  }
+  .driver-badge.principal .driver-avatar{background:var(--gold-deep);}
+  .driver-role{font-size:0.68rem; color:var(--text-soft); letter-spacing:0.01em;}
+  .rule-note{
+    margin-top:14px;
+    font-size:0.76rem;
+    color:var(--clay);
+    border-top:1px dashed var(--line);
+    padding-top:12px;
+  }
+
+  /* pass-ecole id card */
+  .id-card{
+    background:var(--ink);
+    color:var(--sand);
+    border-radius:6px;
+    overflow:hidden;
+    border:1px solid var(--line-dark);
+  }
+  .id-card-top{
+    background:linear-gradient(90deg, var(--green) 0 33%, var(--gold) 33% 66%, var(--clay) 66% 100%);
+    height:5px;
+  }
+  .id-card-body{display:flex; gap:14px; padding:16px;}
+  .id-photo{
+    width:46px;height:56px;
+    background:var(--ink-soft);
+    border:1px solid var(--line-dark);
+    border-radius:3px;
+    flex-shrink:0;
+  }
+  .id-fields{font-size:0.72rem; line-height:1.7;}
+  .id-fields b{color:var(--paper); font-weight:700;}
+  .id-caption{
+    font-size:0.68rem;
+    color:rgba(241,230,206,0.5);
+    padding:0 16px 14px;
+  }
+
+  /* code secret */
+  .code-pad{text-align:center;}
+  .code-display{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:12px;
+  }
+  .code-display span{
+    width:32px;height:40px;
+    background:var(--ink);
+    color:var(--gold);
+    font-family:'Fraunces',serif;
+    font-size:1.2rem;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:3px;
+  }
+  .code-caption{font-size:0.72rem; color:var(--text-soft);}
+
+  /* notifications */
+  .notif{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:10px 12px;
+    font-size:0.76rem;
+    margin-bottom:10px;
+  }
+  .notif:last-child{margin-bottom:0;}
+  .notif b{color:var(--green-soft);}
+
+  /* ---------- devis simulator ---------- */
+  .devis{
+    background:var(--sand);
+  }
+  .devis-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    background:var(--paper);
+  }
+  .devis-form{padding:38px;}
+  .field{margin-bottom:22px;}
+  .field label{
+    display:block;
+    font-size:0.8rem;
+    font-weight:700;
+    margin-bottom:8px;
+    color:var(--text-soft);
+  }
+  .field select, .field input[type=text]{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:'Karla',sans-serif;
+    font-size:0.92rem;
+    background:var(--paper);
+    color:var(--text);
+  }
+  .radio-row{display:flex; flex-direction:column; gap:8px;}
+  .radio-opt{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:10px 12px;
+    cursor:pointer;
+    font-size:0.85rem;
+  }
+  .radio-opt input{margin-right:8px;}
+  .radio-opt .pct{color:var(--green-soft); font-weight:700; font-size:0.78rem;}
+  .radio-opt.active{border-color:var(--gold-deep); background:rgba(217,164,65,0.08);}
+
+  .devis-result{
+    background:var(--ink);
+    color:var(--sand);
+    padding:38px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .devis-result h3{
+    font-size:0.85rem;
+    color:rgba(241,230,206,0.55);
+    font-family:'Karla',sans-serif;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .price-xof{
+    font-family:'Fraunces',serif;
+    font-size:2.4rem;
+    color:var(--paper);
+    margin:4px 0 2px;
+  }
+  .price-eur{font-size:0.85rem; color:var(--gold);}
+  .devis-breakdown{
+    margin-top:22px;
+    border-top:1px solid var(--line-dark);
+    padding-top:18px;
+    font-size:0.8rem;
+  }
+  .devis-breakdown div{
+    display:flex;
+    justify-content:space-between;
+    padding:5px 0;
+    color:rgba(241,230,206,0.75);
+  }
+  .devis-breakdown div.total{
+    color:var(--paper);
+    font-weight:700;
+    border-top:1px solid var(--line-dark);
+    margin-top:6px;
+    padding-top:10px;
+  }
+  .devis-cta{
+    margin-top:26px;
+  }
+  .devis-note{
+    font-size:0.72rem;
+    color:rgba(241,230,206,0.5);
+    margin-top:14px;
+  }
+
+  /* discount table */
+  .discount-table{
+    margin-top:44px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--line);
+    border-left:1px solid var(--line);
+  }
+  .discount-cell{
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:18px 16px;
+    background:var(--paper);
+  }
+  .discount-cell .pct-big{
+    font-family:'Fraunces',serif;
+    font-size:1.5rem;
+    color:var(--green-soft);
+  }
+  .discount-cell .mode{
+    font-size:0.76rem;
+    color:var(--text-soft);
+    margin-top:4px;
+  }
+
+  /* ---------- confidentiality band ---------- */
+  .confid{
+    background:var(--ink);
+    color:var(--sand);
+  }
+  .confid .chapter-head{border-color:var(--line-dark);}
+  .confid .chapter-tag{color:var(--gold);}
+  .confid-sub{color:rgba(241,230,206,0.7); max-width:60ch; margin-bottom:44px;}
+  .pledges{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:28px;
+  }
+  .pledge{
+    border-top:2px solid var(--gold);
+    padding-top:16px;
+  }
+  .pledge h4{font-size:1.02rem; color:var(--paper); margin-bottom:8px;}
+  .pledge p{font-size:0.86rem; color:rgba(241,230,206,0.62);}
+
+  /* footer */
+  footer{
+    padding:44px 8vw;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:0.78rem;
+    color:var(--text-soft);
+    border-top:1px solid var(--line);
+  }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 860px){
+    .shell{grid-template-columns:1fr;}
+    .rail{
+      position:sticky; top:0; height:auto;
+      flex-direction:row;
+      padding:14px 18px;
+      z-index:10;
+    }
+    .rail-mark{margin-bottom:0; margin-right:16px;}
+    .rail-nav{
+      writing-mode:horizontal-tb;
+      flex-direction:row;
+      gap:16px;
+      overflow-x:auto;
+    }
+    .rail-nav a{transform:none;}
+    .rail-foot{display:none;}
+    section{padding:56px 6vw;}
+    .step{grid-template-columns:1fr; gap:14px;}
+    .step-num{font-size:1.2rem;}
+    .stat-strip{grid-template-columns:1fr; gap:16px;}
+    .stat-strip div + div{border-left:none; padding-left:0; border-top:1px solid var(--line-dark); padding-top:16px;}
+    .devis-grid{grid-template-columns:1fr;}
+    .discount-table{grid-template-columns:1fr 1fr;}
+    .pledges{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="rail">
+    <div class="rail-mark">GD</div>
+    <div class="rail-nav">
+      <a href="#systeme">Le système</a>
+      <a href="#devis">Devis</a>
+      <a href="#confidentialite">Confidentialité</a>
+    </div>
+    <div class="rail-foot">DAKAR · SÉNÉGAL</div>
+  </nav>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="eyebrow-plain">Gnu Dém School</div>
+      <h1>La sérénité sur mesure pour le trajet de vos enfants.</h1>
+      <p class="hero-sub">Le premier service de transport scolaire intelligent, sécurisé et 100% souverain à Dakar. Fait par nous, pour nos familles.</p>
+      <div class="hero-cta">
+        <a href="#devis" class="btn btn-gold">Obtenir mon devis</a>
+        <a href="#systeme" class="btn btn-outline">Voir comment ça marche</a>
+      </div>
+      <dl class="stat-strip">
+        <div>
+          <dt>3</dt>
+          <dd>chauffeurs pré-validés par enfant</dd>
+        </div>
+        <div>
+          <dt>4</dt>
+          <dd>chiffres, générés chaque matin</dd>
+        </div>
+        <div>
+          <dt>2</dt>
+          <dd>notifications à chaque trajet</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- CHAPITRE 1 : LE SYSTEME -->
+    <section id="systeme">
+      <div class="chapter-head">
+        <span class="chapter-tag">Chapitre I</span>
+        <h2>Le système École Serein — comment ça marche</h2>
+      </div>
+
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>L'emploi du temps de votre enfant</h3>
+          <p>Vous importez les horaires une fois. L'application s'ajuste ensuite toute seule : cours qui changent, pauses, mercredis raccourcis — plus besoin de reprogrammer chaque semaine.</p>
+        </div>
+        <div class="step-visual">
+          <div class="cal-grid">
+            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span>
+            <span class="on">8h</span><span class="on">8h</span><span class="on">8h</span><span class="on">8h</span><span class="on">8h</span><span class="off">—</span>
+            <span class="on">16h</span><span class="on">16h</span><span class="on">13h</span><span class="on">16h</span><span class="on">16h</span><span class="off">—</span>
+          </div>
+          <p class="cal-label">Semaine type, ajustée automatiquement</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Le trio de chauffeurs : sécurité et plan B</h3>
+          <p>Vous choisissez vos chauffeurs sur une liste de profils vérifiés, avec photo et coordonnées complètes, et composez votre pool de confiance : un principal, deux secours pré-validés qui connaissent déjà l'enfant et le trajet.</p>
+        </div>
+        <div class="step-visual">
+          <div class="trio">
+            <div class="driver-badge principal">
+              <div class="driver-avatar"></div>
+              <div class="driver-role">Principal</div>
+            </div>
+            <div class="driver-badge">
+              <div class="driver-avatar"></div>
+              <div class="driver-role">Secours 1</div>
+            </div>
+            <div class="driver-badge">
+              <div class="driver-avatar"></div>
+              <div class="driver-role">Secours 2</div>
+            </div>
+          </div>
+          <p class="rule-note">Règle d'or : un empêchement du principal doit être signalé au moins 2h avant l'heure de récupération pour basculer proprement sur un secours.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>La fiche Pass-École</h3>
+          <p>Chaque enfant a sa fiche numérique sécurisée : photo, identité, école, classe, contacts des parents. Présentée au vigile de l'établissement, elle lève tout doute au moment de la remise.</p>
+        </div>
+        <div class="step-visual" style="padding:0; overflow:hidden;">
+          <div class="id-card">
+            <div class="id-card-top"></div>
+            <div class="id-card-body">
+              <div class="id-photo"></div>
+              <div class="id-fields">
+                <div><b>Jean D.</b> · 9 ans</div>
+                <div>École Le Baobab — CM1</div>
+                <div>Contact : Maman, Papa</div>
+              </div>
+            </div>
+            <div class="id-caption">Pass-École · vérifiable par le vigile</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Le code secret du jour</h3>
+          <p>Chaque matin, un code à 4 chiffres est généré pour l'enfant. Le chauffeur doit le saisir sur son écran pour démarrer la course. Sans le bon code, pas de départ possible.</p>
+        </div>
+        <div class="step-visual code-pad">
+          <div class="code-display">
+            <span>4</span><span>1</span><span>0</span><span>7</span>
+          </div>
+          <p class="code-caption">Régénéré automatiquement chaque jour</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3>Suivi en temps réel</h3>
+          <p>Vous recevez une notification à la montée et une à l'arrivée. Vous savez toujours où en est le trajet, sans avoir à appeler.</p>
+        </div>
+        <div class="step-visual">
+          <div class="notif"><b>Départ —</b> Jean est monté à bord avec Moussa (Chauffeur #402).</div>
+          <div class="notif"><b>Arrivée —</b> Course terminée, Jean est bien arrivé à l'école.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAPITRE 2 : DEVIS -->
+    <section id="devis" class="devis">
+      <div class="chapter-head">
+        <span class="chapter-tag">Chapitre II</span>
+        <h2>Votre devis, sur mesure</h2>
+      </div>
+      <p style="max-width:60ch; color:var(--text-soft); margin-bottom:40px;">Aucun tarif ne s'affiche en libre-service : renseignez votre trajet, le système calcule la distance et les contraintes, et vous obtenez un devis complet avant toute validation.</p>
+
+      <div class="devis-grid">
+        <div class="devis-form">
+          <div class="field">
+            <label for="zone">Zone de résidence</label>
+            <select id="zone">
+              <option value="12000">Plateau / centre-ville — proche de l'école</option>
+              <option value="19000">Périphérie — Sicap, Mermoz, Ouakam</option>
+              <option value="27000">Banlieue éloignée — Pikine, Guédiawaye, Rufisque</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="trajet">Type de trajet</label>
+            <select id="trajet">
+              <option value="1">Aller simple (dépose uniquement)</option>
+              <option value="1.7">Aller-retour (matin et soir)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mode de paiement</label>
+            <div class="radio-row" id="paiement-row">
+              <label class="radio-opt active">
+                <span><input type="radio" name="paiement" value="0.10" checked> Intégral en début de mois</span>
+                <span class="pct">−10%</span>
+              </label>
+              <label class="radio-opt">
+                <span><input type="radio" name="paiement" value="0.05"> En 2 tranches</span>
+                <span class="pct">−5%</span>
+              </label>
+              <label class="radio-opt">
+                <span><input type="radio" name="paiement" value="0.02"> En 3 tranches</span>
+                <span class="pct">−2%</span>
+              </label>
+              <label class="radio-opt">
+                <span><input type="radio" name="paiement" value="0"> À la semaine</span>
+                <span class="pct">Tarif standard</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="devis-result">
+          <div>
+            <h3>Estimation mensuelle</h3>
+            <div class="price-xof" id="prix-xof">54 000 XOF</div>
+            <div class="price-eur" id="prix-eur">≈ 82,32 EUR</div>
+            <div class="devis-breakdown">
+              <div><span>Tarif de base (zone + trajet)</span><span id="detail-base">60 000 XOF</span></div>
+              <div><span>Réduction appliquée</span><span id="detail-reduc">−10%</span></div>
+              <div class="total"><span>Total à payer</span><span id="detail-total">54 000 XOF</span></div>
+            </div>
+          </div>
+          <div>
+            <a href="#" class="btn btn-gold devis-cta">Valider ce devis</a>
+            <p class="devis-note">Estimation indicative. Le devis final tient compte de l'adresse exacte et des horaires transmis par l'école.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="discount-table">
+        <div class="discount-cell"><div class="pct-big">−10%</div><div class="mode">Paiement intégral, début de mois</div></div>
+        <div class="discount-cell"><div class="pct-big">−5%</div><div class="mode">Paiement en 2 tranches</div></div>
+        <div class="discount-cell"><div class="pct-big">−2%</div><div class="mode">Paiement en 3 tranches</div></div>
+        <div class="discount-cell"><div class="pct-big">0%</div><div class="mode">Paiement à la semaine</div></div>
+      </div>
+    </section>
+
+    <!-- CHAPITRE 3 : CONFIDENTIALITE -->
+    <section id="confidentialite" class="confid">
+      <div class="chapter-head">
+        <span class="chapter-tag">Chapitre III</span>
+        <h2>Vos comptes, zéro compromis</h2>
+      </div>
+      <p class="confid-sub">Les données d'un enfant ne sont pas un produit. Ce principe encadre tout ce que nous construisons.</p>
+      <div class="pledges">
+        <div class="pledge">
+          <h4>Chiffrement de bout en bout</h4>
+          <p>Position, fiche Pass-École et code du jour sont chiffrés à chaque étape, du téléphone du parent à celui du chauffeur.</p>
+        </div>
+        <div class="pledge">
+          <h4>Hébergement souverain</h4>
+          <p>Les données restent sur des infrastructures maîtrisées localement, sans dépendance à un hébergeur étranger.</p>
+        </div>
+        <div class="pledge">
+          <h4>Interdiction absolue de revente</h4>
+          <p>Géolocalisation et profils scolaires ne sont jamais transmis à des tiers publicitaires, sous aucune forme.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Gnu Dém School — Dakar, Sénégal</span>
+      <span>© 2026 Gnu Dém</span>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  const zoneEl = document.getElementById('zone');
+  const trajetEl = document.getElementById('trajet');
+  const paiementRadios = document.querySelectorAll('input[name="paiement"]');
+  const eurRate = 655.957; // XOF fixe par EUR
+
+  function formatXOF(n){
+    return Math.round(n).toLocaleString('fr-FR') + ' XOF';
+  }
+  function formatEUR(n){
+    return (n / eurRate).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' EUR';
+  }
+
+  function updateDevis(){
+    const zoneBase = parseFloat(zoneEl.value);
+    const trajetMult = parseFloat(trajetEl.value);
+    let discount = 0.10;
+    paiementRadios.forEach(r => { if(r.checked) discount = parseFloat(r.value); });
+
+    const base = zoneBase * trajetMult;
+    const total = base * (1 - discount);
+
+    document.getElementById('prix-xof').textContent = formatXOF(total);
+    document.getElementById('prix-eur').textContent = '≈ ' + formatEUR(total);
+    document.getElementById('detail-base').textContent = formatXOF(base);
+    document.getElementById('detail-reduc').textContent = discount > 0 ? ('−' + Math.round(discount*100) + '%') : 'Aucune';
+    document.getElementById('detail-total').textContent = formatXOF(total);
+
+    document.querySelectorAll('.radio-opt').forEach(opt => {
+      const input = opt.querySelector('input');
+      opt.classList.toggle('active', input.checked);
+    });
+  }
+
+  zoneEl.addEventListener('change', updateDevis);
+  trajetEl.addEventListener('change', updateDevis);
+  paiementRadios.forEach(r => r.addEventListener('change', updateDevis));
+  updateDevis();
+</script>
+
+</body>
+</html>
