@@ -2,226 +2,362 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MOR-TAXI | Chauffeur</title>
-    
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    
-    <style>
-        :root { --yango-yellow: #ffcc00; --yango-black: #111; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { height: 100vh; display: flex; flex-direction: column; background: #0a0a0a; overflow: hidden; }
 
-        #map { flex-grow: 1; z-index: 1; }
-        
-        .header {
-            position: absolute; top: 0; left: 0; right: 0; z-index: 1000;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 20px; background: linear-gradient(to bottom, #0a0a0a, transparent);
+    <style>
+        :root{
+            --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F3F3F4; --line:#E7E7E9;
+            --ink:#0A0A0B; --muted:#6E6E73;
+            --accent:#8FBF1E; --accent-ink:#173300;
+            --danger:#E5484D;
+            --r-lg:26px; --r-md:16px;
+            --font-body:'Inter', system-ui, sans-serif;
+            --font-display:'Space Grotesk','Inter',sans-serif;
         }
-        .logo h1 { font-size: 20px; color: #ffcc00; }
-        .status-badge { padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: bold; }
-        .status-badge.online { background: #00C853; color: white; }
-        .status-badge.offline { background: #555; color: white; }
-        
-        .dashboard {
-            position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
-            background: #111; border-radius: 24px 24px 0 0; padding: 20px;
-            max-width: 500px; margin: 0 auto;
-            transition: transform 0.3s;
-            max-height: 70vh;
-            overflow-y: auto;
+        *{ margin:0; padding:0; box-sizing:border-box; }
+        body{ height:100vh; display:flex; flex-direction:column; background:var(--bg); color:var(--ink); overflow:hidden; font-family:var(--font-body); -webkit-tap-highlight-color:transparent; }
+        button{ font-family:inherit; border:none; cursor:pointer; color:inherit; }
+        #map{ position:fixed; inset:0; z-index:1; }
+        /* Les tuiles OpenStreetMap sont toujours claires : on simule le thème sombre
+           en les inversant par filtre CSS (gratuit, aucune clé API, fonctionne toujours). */
+        /* Thème clair : tuiles OpenStreetMap affichées normalement, sans filtre d'inversion */
+        .leaflet-control-attribution{ font-size:9px !important; opacity:0.5; }
+
+        .header{
+            position:fixed; top:0; left:0; right:0; z-index:1000;
+            display:flex; justify-content:space-between; align-items:center;
+            padding:calc(16px + env(safe-area-inset-top)) 18px 0;
         }
-        .stats { display: flex; gap: 15px; margin-bottom: 15px; }
-        .stat-card { flex: 1; background: #1a1a1a; border-radius: 16px; padding: 12px; text-align: center; }
-        .stat-value { color: #ffcc00; font-size: 20px; font-weight: bold; }
-        .rating { color: #ffcc00; margin: 10px 0; }
-        .toggle-btn { width: 100%; background: #ffcc00; border: none; padding: 14px; border-radius: 30px; font-weight: bold; cursor: pointer; }
-        .toggle-btn.offline { background: #555; color: white; }
-        
-        .orders-list {
-            background: #1a1a1a;
-            border-radius: 20px;
-            margin: 15px 0;
-            max-height: 300px;
-            overflow-y: auto;
+        .logo{ font-family:var(--font-display); font-weight:700; font-size:18px; letter-spacing:0.3px; }
+        .status-badge{
+            display:flex; align-items:center; gap:8px;
+            padding:9px 16px 9px 12px; border-radius:30px; font-size:12.5px; font-weight:700;
+            background:var(--panel);
         }
-        .orders-title {
-            padding: 12px;
-            font-weight: bold;
-            color: #ffcc00;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            background: #1a1a1a;
+        .status-badge .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); }
+        .status-badge.offline .dot{ background:#666; }
+
+        .locate-btn{
+            position:fixed; right:16px; z-index:900;
+            width:46px; height:46px; border-radius:50%;
+            background:var(--panel); display:flex; align-items:center; justify-content:center;
+            font-size:17px; box-shadow:0 6px 20px rgba(0,0,0,0.4);
         }
-        .order-item {
-            padding: 12px;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
-            transition: background 0.2s;
+
+        .dashboard{
+            position:fixed; bottom:0; left:0; right:0; z-index:1000;
+            background:var(--panel); border-radius:var(--r-lg) var(--r-lg) 0 0;
+            padding:16px 18px calc(16px + env(safe-area-inset-bottom));
+            max-width:520px; margin:0 auto;
+            max-height:62vh; overflow-y:auto;
+            box-shadow:0 -12px 34px rgba(0,0,0,0.5);
         }
-        .order-item:hover { background: #2a2a2a; }
-        .order-item.pending { border-left: 3px solid #ffcc00; }
-        .order-item.accepted { border-left: 3px solid #00C853; opacity: 0.7; }
-        .order-price { color: #ffcc00; font-weight: bold; float: right; }
-        .order-client { font-size: 12px; color: #888; margin-top: 5px; }
-        .no-orders { text-align: center; padding: 30px; color: #888; }
-        
-        .order-detail-modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000;
-            display: none; align-items: center; justify-content: center;
+        .sheet-handle{ width:36px; height:4px; border-radius:2px; background:var(--line); margin:0 auto 14px; }
+
+        .stats{ display:flex; gap:12px; margin-bottom:14px; }
+        .stat-card{ flex:1; background:var(--panel-2); border-radius:16px; padding:12px 14px; }
+        .stat-label{ font-size:11px; color:var(--muted); font-weight:600; margin-bottom:4px; }
+        .stat-value{ font-family:var(--font-display); color:var(--accent); font-size:19px; font-weight:700; }
+        .rating-row{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); font-weight:600; margin-bottom:16px; }
+        .rating-row i{ color:var(--accent); }
+
+        .section-title{
+            display:flex; justify-content:space-between; align-items:center;
+            font-size:13px; font-weight:700; color:var(--muted); margin-bottom:10px;
         }
-        .order-detail-modal.active { display: flex; }
-        .order-detail-card {
-            background: #1a1a1a; border-radius: 32px; padding: 24px;
-            width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto;
+        .count-chip{ background:var(--panel-2); border-radius:20px; padding:3px 10px; font-size:12px; color:var(--ink); }
+
+        .orders-list{ margin-bottom:16px; }
+        .order-item{
+            background:var(--panel-2); border-radius:16px; padding:14px; margin-bottom:8px;
+            border-left:3px solid var(--accent);
         }
-        .detail-row { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333; }
-        .detail-label { color: #888; font-size: 12px; margin-bottom: 5px; }
-        .detail-value { font-size: 16px; font-weight: bold; }
-        .detail-price { color: #ffcc00; font-size: 24px; }
-        .accept-detail-btn { background: #ffcc00; color: #111; border: none; padding: 14px; border-radius: 24px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 15px; }
-        
-        .alert-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000;
-            display: none; align-items: center; justify-content: center;
-            animation: pulse 0.5s ease;
+        .order-item.accepted{ border-left-color:#3DDC84; opacity:0.85; }
+        .order-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; }
+        .order-route{ font-size:14px; font-weight:600; line-height:1.4; }
+        .order-price{ font-family:var(--font-display); color:var(--accent); font-weight:700; font-size:15px; white-space:nowrap; }
+        .order-client{ font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+        .no-orders{ text-align:center; padding:24px 10px; color:var(--muted); font-size:13.5px; }
+
+        .cta-btn{
+            width:100%; padding:16px; border-radius:var(--r-md); font-weight:700; font-size:15.5px;
+            display:flex; align-items:center; justify-content:center; gap:8px;
         }
-        .alert-overlay.active { display: flex; }
-        .alert-card {
-            background: linear-gradient(135deg, #ffcc00, #ff9900); color: #111;
-            border-radius: 32px; padding: 30px; width: 90%; max-width: 400px; text-align: center;
+        .cta-btn.online{ background:var(--accent); color:var(--accent-ink); }
+        .cta-btn.offline{ background:var(--panel-2); color:var(--ink); }
+        .cta-btn:active{ transform:scale(0.98); }
+
+        /* ---------- Bottom sheet modals ---------- */
+        .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:2400; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+        .modal-backdrop.active{ opacity:1; pointer-events:auto; }
+
+        .modal-sheet{
+            position:fixed; left:0; right:0; bottom:0; z-index:2500;
+            max-width:500px; margin:0 auto;
+            background:var(--panel); border-radius:var(--r-lg) var(--r-lg) 0 0;
+            padding:16px 20px calc(20px + env(safe-area-inset-bottom));
+            transform:translateY(110%); transition:transform 0.32s cubic-bezier(.2,.8,.2,1);
+            max-height:82vh; overflow-y:auto;
         }
-        .alert-price { font-size: 36px; font-weight: bold; margin: 15px 0; }
-        .alert-buttons { display: flex; gap: 12px; margin-top: 20px; }
-        .accept-btn, .decline-btn { flex: 1; padding: 14px; border-radius: 24px; font-weight: bold; cursor: pointer; border: none; }
-        .accept-btn { background: #111; color: #ffcc00; }
-        .decline-btn { background: rgba(0,0,0,0.3); color: white; }
-        
-        .active-ride {
-            position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a;
-            border-radius: 24px 24px 0 0; padding: 20px; z-index: 1500;
-            transform: translateY(100%); transition: transform 0.3s;
-            max-width: 500px; margin: 0 auto;
+        .modal-sheet.active{ transform:translateY(0); }
+
+        .detail-row{ margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+        .detail-row:last-of-type{ border-bottom:none; }
+        .detail-label{ color:var(--muted); font-size:11.5px; font-weight:600; margin-bottom:4px; }
+        .detail-value{ font-size:15.5px; font-weight:600; }
+        .detail-price{ color:var(--accent); font-family:var(--font-display); font-size:24px; }
+
+        .modal-title-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+        .modal-title-row h3{ font-size:16.5px; font-weight:700; }
+        .icon-btn-sm{ width:34px; height:34px; border-radius:50%; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-size:13px; }
+
+        /* Alerte nouvelle course (plein écran, urgente) */
+        .alert-overlay{
+            position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:3000;
+            display:none; align-items:center; justify-content:center; padding:20px;
         }
-        .active-ride.active { transform: translateY(0); }
-        
-        @keyframes pulse {
-            0%, 100% { background: rgba(0,0,0,0.95); }
-            50% { background: rgba(0,0,0,0.98); }
+        .alert-overlay.active{ display:flex; animation:flash 1s ease infinite; }
+        @keyframes flash{ 0%,100%{ background:rgba(0,0,0,0.92);} 50%{ background:rgba(0,0,0,0.75);} }
+        .alert-card{
+            background:var(--accent); color:var(--accent-ink);
+            border-radius:32px; padding:30px 26px; width:100%; max-width:380px; text-align:center;
         }
-        
-        @media (min-width: 768px) {
-            .dashboard, .active-ride { left: 50%; transform: translateX(-50%); }
-            .active-ride.active { transform: translateX(-50%) translateY(0); }
+        .alert-card i.fa-bell{ font-size:26px; }
+        .alert-card h2{ margin:10px 0 4px; font-size:19px; }
+        .alert-price{ font-family:var(--font-display); font-size:38px; font-weight:700; margin:10px 0; }
+        .alert-line{ font-size:13.5px; font-weight:600; margin-bottom:4px; opacity:0.85; }
+        .alert-buttons{ display:flex; gap:10px; margin-top:20px; }
+        .accept-btn, .decline-btn{ flex:1; padding:14px; border-radius:24px; font-weight:700; }
+        .accept-btn{ background:var(--accent-ink); color:var(--accent); }
+        .decline-btn{ background:rgba(23,51,0,0.15); color:var(--accent-ink); }
+        .view-details-btn{ margin-top:14px; background:transparent; border:1.5px solid var(--accent-ink); padding:10px; border-radius:20px; width:100%; font-weight:600; font-size:13.5px; color:var(--accent-ink); }
+
+        /* Course en cours */
+        .active-ride-card{ display:flex; align-items:center; gap:14px; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+        .client-avatar{ width:52px; height:52px; border-radius:50%; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent); flex:0 0 auto; }
+        .client-name{ font-size:15.5px; font-weight:700; }
+        .client-phone{ font-size:13px; color:var(--muted); margin-top:2px; }
+        .ride-actions{ display:flex; gap:10px; margin-bottom:16px; }
+        .action-btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:8px; padding:13px; border-radius:var(--r-md); background:var(--panel-2); font-weight:600; font-size:13.5px; color:var(--ink); }
+        .action-btn.call{ background:var(--accent); color:var(--accent-ink); }
+
+        .toast{
+            position:fixed; bottom:100px; left:20px; right:20px; z-index:6000;
+            max-width:460px; margin:0 auto;
+            background:var(--panel); color:var(--ink); padding:13px 16px; border-radius:14px;
+            text-align:center; font-size:13.5px; font-weight:600; display:none;
+            box-shadow:0 10px 30px rgba(0,0,0,0.5);
         }
-        
-        .toast {
-            position: fixed; bottom: 100px; left: 20px; right: 20px;
-            background: #111; color: white; padding: 12px; border-radius: 12px;
-            text-align: center; z-index: 6000; display: none;
+
+        @media (min-width:768px){
+            .dashboard{ left:16px; right:auto; bottom:16px; width:400px; border-radius:var(--r-lg); }
+            .modal-sheet{ left:16px; right:auto; bottom:16px; width:400px; border-radius:var(--r-lg); }
+            .locate-btn{ right:16px; }
         }
+        @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+
+        /* ---------- Portail de validation du compte chauffeur ---------- */
+        #accessGate{
+            position:fixed; inset:0; background:var(--bg); z-index:9000;
+            display:none; align-items:center; justify-content:center; padding:24px;
+            text-align:center;
+        }
+        #accessGate.show{ display:flex; }
+        #loginGate{
+            position:fixed; inset:0; background:var(--bg); z-index:9500;
+            display:none; align-items:center; justify-content:center; padding:24px;
+            text-align:center;
+        }
+        #loginGate.show{ display:flex; }
+        .login-field{ text-align:left; background:var(--panel-2); border-radius:12px; padding:11px 14px; margin-bottom:10px; }
+        .login-field label{ display:block; font-size:11px; color:var(--muted); font-weight:600; margin-bottom:3px; }
+        .login-field input{ width:100%; border:none; background:transparent; outline:none; font-size:15px; font-family:inherit; color:var(--ink); }
+        .login-btn{ width:100%; }
+        .login-error{ color:var(--danger); font-size:12.5px; margin-top:10px; display:none; }
+        .login-error.show{ display:block; }
+        .login-links{ margin-top:18px; display:flex; flex-direction:column; gap:8px; }
+        .login-links a{ color:var(--muted); font-size:12.5px; font-weight:600; text-decoration:underline; }
+        .gate-box{ max-width:360px; }
+        .gate-box .icon{
+            width:72px; height:72px; border-radius:50%; margin:0 auto 20px;
+            display:flex; align-items:center; justify-content:center; font-size:28px;
+        }
+        .gate-box .icon.pending{ background:#FDF3D8; color:#B8860B; }
+        .gate-box .icon.rejected{ background:#FCE4E4; color:var(--danger); }
+        .gate-box .icon.none{ background:var(--panel-2); color:var(--accent); }
+        .gate-box h2{ font-size:18px; font-weight:700; margin-bottom:10px; }
+        .gate-box p{ font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:22px; }
+        .gate-box a.cta, .gate-box button.cta{
+            display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--accent); color:var(--accent-ink);
+            padding:14px 22px; border-radius:24px; font-weight:700; font-size:14px; text-decoration:none; border:none; cursor:pointer;
+        }
+        .gate-box .reason-box{ background:var(--panel-2); border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--muted); margin-bottom:18px; text-align:left; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo"><h1>MOR-TAXI</h1></div>
-        <div class="status-badge online" id="statusBadge">🟢 En ligne</div>
+    <div id="loginGate" class="show">
+        <div class="gate-box">
+            <div class="icon none"><i class="fas fa-right-to-bracket"></i></div>
+            <h2>Connexion chauffeur</h2>
+            <p>Connectez-vous avec votre numéro de téléphone et le mot de passe communiqué par l'équipe GNU DÉM après validation de votre dossier.</p>
+            <div class="login-field">
+                <label>Numéro de téléphone</label>
+                <input type="tel" id="loginPhone" placeholder="+221 77 000 00 00">
+            </div>
+            <div class="login-field">
+                <label>Mot de passe (8 chiffres)</label>
+                <input type="password" inputmode="numeric" maxlength="8" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="cta login-btn" onclick="attemptLogin()"><i class="fas fa-right-to-bracket"></i> Se connecter</button>
+            <div class="login-error" id="loginError">Numéro ou mot de passe incorrect — ou candidature pas encore validée.</div>
+            <div class="login-links">
+                <a href="candidature.html">Pas encore chauffeur ? Faire ma candidature</a>
+                <a href="candidature.html">Vérifier le statut de ma candidature</a>
+            </div>
+        </div>
     </div>
+
+    <div id="accessGate">
+        <div class="gate-box" id="gateBox">
+            <div class="icon none"><i class="fas fa-spinner fa-spin"></i></div>
+            <h2>Vérification en cours…</h2>
+            <p>Merci de patienter, nous vérifions votre accès chauffeur.</p>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo"><span style="color:#4C7A0F;">GN</span><span style="color:#B8860B;">U D</span><span style="color:#E5484D;">ÉM</span> <span style="font-size:12px; color:var(--muted); font-weight:600;">Chauffeur</span></div>
+        <div class="status-badge" id="statusBadge"><span class="dot"></span><span id="statusText">En ligne</span></div>
+
+    </div>
+
+    <button class="locate-btn" id="locateBtn" style="bottom:290px;" onclick="centerOnDriver()" aria-label="Ma position"><i class="fas fa-location-crosshairs"></i></button>
 
     <div id="map"></div>
 
     <div class="dashboard" id="dashboard">
+        <div class="sheet-handle"></div>
+
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-label">Gains aujourd'hui</div>
-                <div class="stat-value" id="todayEarnings">0 FCFA</div>
+                <div class="stat-value" id="todayEarnings">0 F</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Courses</div>
                 <div class="stat-value" id="totalRides">0</div>
             </div>
         </div>
-        <div class="rating" id="driverRating">★★★★★ 4.9</div>
-        
-        <div class="orders-list">
-            <div class="orders-title">
-                <span><i class="fas fa-list"></i> Courses en attente</span>
-                <span id="pendingCount">0</span>
-            </div>
-            <div id="ordersContainer">
-                <div class="no-orders">Chargement des commandes...</div>
-            </div>
+        <div class="rating-row"><i class="fas fa-star"></i> <span id="driverRatingText">4.9 · Bon chauffeur</span></div>
+
+        <div class="section-title">
+            <span>Courses en attente</span>
+            <span class="count-chip" id="pendingCount">0</span>
         </div>
-        
-        <button class="toggle-btn" id="toggleStatusBtn">🔴 Mettre hors ligne</button>
+        <div class="orders-list" id="ordersContainer">
+            <div class="no-orders">Chargement des commandes…</div>
+        </div>
+
+        <button class="cta-btn online" id="toggleStatusBtn"><i class="fas fa-power-off"></i> Mettre hors ligne</button>
+        <button class="cta-btn offline" style="margin-top:8px;" onclick="logoutDriver()"><i class="fas fa-right-from-bracket"></i> Se déconnecter</button>
     </div>
 
-    <div class="order-detail-modal" id="orderDetailModal">
-        <div class="order-detail-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <h3 style="color:#ffcc00;">Détails de la course</h3>
-                <i class="fas fa-times fa-lg" onclick="closeDetailModal()" style="cursor:pointer;"></i>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">👤 Client</div>
-                <div class="detail-value" id="detailClientName">-</div>
-                <div class="detail-label" style="margin-top:5px;">📞 Téléphone</div>
-                <div class="detail-value" id="detailClientPhone">-</div>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">📍 Départ</div>
-                <div class="detail-value" id="detailPickup">-</div>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">🏁 Destination</div>
-                <div class="detail-value" id="detailDestination">-</div>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">🚗 Véhicule</div>
-                <div class="detail-value" id="detailVehicle">-</div>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">📏 Distance</div>
-                <div class="detail-value" id="detailDistance">- km</div>
-            </div>
-            <div class="detail-row">
-                <div class="detail-label">💰 Prix</div>
-                <div class="detail-value detail-price" id="detailPrice">- FCFA</div>
-            </div>
-            <button class="accept-detail-btn" id="acceptFromDetailBtn">✅ Accepter cette course</button>
+    <!-- ===================== BACKDROP ===================== -->
+    <div class="modal-backdrop" id="modalBackdrop" onclick="closeDetailModal()"></div>
+
+    <!-- ===================== DÉTAIL D'UNE COMMANDE ===================== -->
+    <div class="modal-sheet" id="orderDetailModal">
+        <div class="modal-title-row">
+            <h3>Détails de la course</h3>
+            <button class="icon-btn-sm" onclick="closeDetailModal()"><i class="fas fa-times"></i></button>
         </div>
+        <div class="detail-row">
+            <div class="detail-label">Client</div>
+            <div class="detail-value" id="detailClientName">-</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Téléphone</div>
+            <div class="detail-value" id="detailClientPhone">-</div>
+        </div>
+        <div class="detail-row" id="detailStopsRow" style="display:none;">
+            <div class="detail-label">Itinéraire (dans l'ordre)</div>
+            <div class="detail-value" id="detailStops" style="font-weight:500; font-size:13.5px; line-height:1.6;"></div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Départ</div>
+            <div class="detail-value" id="detailPickup">-</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Destination</div>
+            <div class="detail-value" id="detailDestination">-</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Véhicule · Distance</div>
+            <div class="detail-value" id="detailVehicle">-</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Prix</div>
+            <div class="detail-value detail-price" id="detailPrice">-</div>
+        </div>
+        <button class="cta-btn online" id="acceptFromDetailBtn">Accepter cette course</button>
     </div>
 
+    <!-- ===================== ALERTE NOUVELLE COURSE ===================== -->
     <div class="alert-overlay" id="alertOverlay">
         <div class="alert-card">
-            <i class="fas fa-bell fa-2x"></i>
+            <i class="fas fa-bell"></i>
             <h2>Nouvelle course !</h2>
-            <div class="alert-price" id="alertPrice">-- FCFA</div>
-            <div id="alertPickup">📍 Départ: --</div>
-            <div id="alertDestination">🏁 Arrivée: --</div>
-            <div id="alertClient">👤 Client: --</div>
+            <div class="alert-price" id="alertPrice">-- F</div>
+            <div class="alert-line" id="alertPickup">Départ : --</div>
+            <div class="alert-line" id="alertDestination">Arrivée : --</div>
+            <div class="alert-line" id="alertClient">Client : --</div>
             <div class="alert-buttons">
-                <button class="accept-btn" id="acceptBtn">✅ Accepter</button>
-                <button class="decline-btn" id="declineBtn">❌ Refuser</button>
+                <button class="accept-btn" id="acceptBtn">Accepter</button>
+                <button class="decline-btn" id="declineBtn">Refuser</button>
             </div>
-            <button id="viewDetailsBtn" style="margin-top:15px; background:transparent; border:1px solid #111; padding:8px; border-radius:20px; cursor:pointer; width:100%;">📋 Voir les détails</button>
+            <button class="view-details-btn" id="viewDetailsBtn">Voir les détails</button>
         </div>
     </div>
 
-    <div class="active-ride" id="activeRidePanel">
-        <h3 style="margin-bottom: 15px; color:#ffcc00;">🚗 Course en cours</h3>
-        <div style="margin-bottom: 10px;"><strong>👤 Client:</strong> <span id="clientName">--</span></div>
-        <div style="margin-bottom: 10px;"><strong>📞 Tél:</strong> <span id="clientPhone">--</span></div>
-        <div style="margin-bottom: 10px;"><strong>📍 Départ:</strong> <span id="clientPickup">--</span></div>
-        <div style="margin-bottom: 10px;"><strong>🏁 Destination:</strong> <span id="clientDest">--</span></div>
-        <div style="margin-bottom: 10px;"><strong>💰 Gain:</strong> <span id="ridePrice" style="color:#ffcc00; font-weight:bold;">-- FCFA</span></div>
-        <button id="completeRideBtn" style="width:100%; background:#ffcc00; border:none; padding:14px; border-radius:24px; margin-top:15px; font-weight:bold; cursor:pointer;">✅ Course terminée</button>
+    <!-- ===================== COURSE EN COURS ===================== -->
+    <div class="modal-sheet" id="activeRidePanel">
+        <div class="modal-title-row"><h3>Course en cours</h3></div>
+        <div class="active-ride-card">
+            <div class="client-avatar" id="clientAvatarInitial">C</div>
+            <div>
+                <div class="client-name" id="clientName">--</div>
+                <div class="client-phone" id="clientPhone">--</div>
+            </div>
+        </div>
+        <div class="ride-actions">
+            <a class="action-btn call" id="clientCallBtn" href="tel:"><i class="fas fa-phone"></i> Appeler</a>
+            <div class="action-btn"><i class="fas fa-route"></i> Itinéraire</div>
+        </div>
+        <div class="detail-row" id="activeStopsRow" style="display:none;">
+            <div class="detail-label">Itinéraire (dans l'ordre)</div>
+            <div class="detail-value" id="activeStops" style="font-weight:500; font-size:13.5px; line-height:1.6;"></div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Départ</div>
+            <div class="detail-value" id="clientPickup">--</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Destination</div>
+            <div class="detail-value" id="clientDest">--</div>
+        </div>
+        <div class="detail-row">
+            <div class="detail-label">Gain de la course</div>
+            <div class="detail-value detail-price" id="ridePrice">-- F</div>
+        </div>
+        <button class="cta-btn online" id="completeRideBtn">Course terminée</button>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -229,7 +365,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    
+
     <script>
         // ==================== FIREBASE CONFIGURATION ====================
         const firebaseConfig = {
@@ -241,322 +377,464 @@
             messagingSenderId: "965460761858",
             appId: "1:965460761858:web:fdc57522e506f51050b61b"
         };
-
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        
         console.log("🔥 Firebase chauffeur initialisé");
 
+        // ==================== IDENTITÉ DU CHAUFFEUR (via connexion) ====================
+        // Le driverId n'est plus généré au hasard : il correspond à l'identifiant Firebase
+        // du dossier chauffeur, obtenu uniquement après une connexion réussie (téléphone +
+        // mot de passe fourni par l'administrateur). null tant qu'aucune connexion n'a eu lieu.
+        let driverId = localStorage.getItem('driver_id') || null;
+        // Ces informations viennent du dossier de candidature validé (chauffeurs/{driverId}) —
+        // remplies par checkDriverStatus() avant que le tableau de bord ne démarre.
+        let driverName = 'Chauffeur';
+        let driverPhone = '';
+        let driverCar = 'Véhicule non renseigné';
+        let driverRating = 4.9;
+
         // ==================== VARIABLES ====================
-        const map = L.map('map').setView([14.7167, -17.4677], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        const map = L.map('map', { zoomControl: false }).setView([14.7167, -17.4677], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
         let isOnline = true;
         let currentOrder = null;
-        let driverMarker;
         let rideRoute = null;
         let allOrders = [];
         let selectedOrderForDetail = null;
-        
-        const driverId = 'driver_' + Math.random().toString(36).substr(2, 8);
-        let totalEarnings = parseFloat(localStorage.getItem('driver_total_earnings_' + driverId) || '0');
-        let totalCompletedRides = parseInt(localStorage.getItem('driver_total_rides_' + driverId) || '0');
+        let moveInterval = null;
+
+        let totalEarnings = 0;
+        let totalCompletedRides = 0;
+
+        // Recharge les gains/courses du BON chauffeur une fois la connexion confirmée
+        // (avant la connexion, driverId est inconnu — ne jamais lire/écrire sous une fausse clé).
+        function loadEarningsForCurrentDriver() {
+            totalEarnings = parseFloat(localStorage.getItem('driver_total_earnings_' + driverId) || '0');
+            totalCompletedRides = parseInt(localStorage.getItem('driver_total_rides_' + driverId) || '0');
+            updateDashboard();
+        }
 
         const driverCoords = { lat: 14.7167, lng: -17.4677 };
-        driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
-            icon: L.divIcon({ 
-                html: '<div style="background:#ffcc00; width:20px; height:20px; border-radius:50%; border:3px solid #111; box-shadow:0 0 10px #ffcc00;"></div>'
+        const driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
+            icon: L.divIcon({
+                className: '',
+                html: '<div style="background:#C8FA3E; width:20px; height:20px; border-radius:50%; border:3px solid #0A0A0B; box-shadow:0 0 12px rgba(200,250,62,0.7);"></div>',
+                iconSize: [20, 20], iconAnchor: [10, 10]
             })
         }).addTo(map);
 
+        function centerOnDriver() {
+            map.setView(driverMarker.getLatLng(), 15);
+        }
+
+        // ==================== SON DE NOTIFICATION (Web Audio, fiable) ====================
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [0, 0.18].forEach((delay, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = i === 0 ? 880 : 1046.5;
+                    gain.gain.setValueAtTime(0.0001, ctx.currentTime + delay);
+                    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + delay + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + 0.28);
+                    osc.connect(gain).connect(ctx.destination);
+                    osc.start(ctx.currentTime + delay);
+                    osc.stop(ctx.currentTime + delay + 0.3);
+                });
+            } catch (e) { console.warn("Audio non disponible:", e); }
+        }
+
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
-            toast.style.background = isError ? '#e74c3c' : '#111';
+            toast.style.background = isError ? '#E5484D' : 'var(--panel)';
             toast.innerHTML = message;
             toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 3500);
         }
 
         function updateDashboard() {
-            document.getElementById('todayEarnings').innerHTML = Math.round(totalEarnings).toLocaleString() + ' FCFA';
-            document.getElementById('totalRides').innerHTML = totalCompletedRides;
-            localStorage.setItem('driver_total_earnings_' + driverId, totalEarnings);
-            localStorage.setItem('driver_total_rides_' + driverId, totalCompletedRides);
+            document.getElementById('todayEarnings').innerText = Math.round(totalEarnings).toLocaleString() + ' F';
+            document.getElementById('totalRides').innerText = totalCompletedRides;
+            if (driverId) {
+                localStorage.setItem('driver_total_earnings_' + driverId, totalEarnings);
+                localStorage.setItem('driver_total_rides_' + driverId, totalCompletedRides);
+            }
         }
-        updateDashboard();
 
-        // ==================== AFFICHER LA LISTE ====================
+        // ==================== AFFICHAGE DE LA LISTE ====================
         function displayOrdersList() {
             const container = document.getElementById('ordersContainer');
             const pendingOrders = allOrders.filter(o => o.status === 'en_attente');
             const myAcceptedOrders = allOrders.filter(o => o.status === 'acceptee' && o.driverId === driverId);
-            
-            document.getElementById('pendingCount').innerHTML = pendingOrders.length;
-            
-            if(pendingOrders.length === 0 && myAcceptedOrders.length === 0) {
-                container.innerHTML = '<div class="no-orders">Aucune commande disponible</div>';
+
+            document.getElementById('pendingCount').innerText = pendingOrders.length;
+
+            if (pendingOrders.length === 0 && myAcceptedOrders.length === 0) {
+                container.innerHTML = '<div class="no-orders">Aucune commande disponible pour le moment</div>';
                 return;
             }
-            
+
             let html = '';
-            
-            if(pendingOrders.length > 0) {
-                pendingOrders.forEach(order => {
-                    html += `
-                        <div class="order-item pending" onclick="showOrderDetail('${order.id}')">
-                            <div><strong>${(order.pickup?.address || 'Départ').substring(0, 25)} → ${(order.destination?.address || 'Arrivée').substring(0, 25)}</strong>
-                            <span class="order-price">${order.price} F</span></div>
-                            <div class="order-client"><i class="fas fa-user"></i> ${order.clientName || 'Client'} | 🚗 ${order.vehicle || 'Eco'}</div>
+
+            pendingOrders.forEach(order => {
+                const from = (order.pickup?.address || 'Départ').substring(0, 26);
+                const to = (order.destination?.address || 'Arrivée').substring(0, 26);
+                const sharedBadge = order.isShared
+                    ? `<span style="background:var(--accent); color:var(--accent-ink); font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px;">PARTAGÉE · ${order.passengerCount}p</span>`
+                    : '';
+                html += `
+                    <div class="order-item" onclick="showOrderDetail('${order.id}')">
+                        <div class="order-top">
+                            <div class="order-route">${from} → ${to}${sharedBadge}</div>
+                            <div class="order-price">${order.price} F</div>
                         </div>
-                    `;
-                });
-            }
-            
-            if(myAcceptedOrders.length > 0 && !currentOrder) {
-                html += `<div style="padding:8px 12px; background:#2a2a2a; font-size:12px; margin-top:10px;">🟢 EN COURS</div>`;
-                myAcceptedOrders.forEach(order => {
-                    html += `
-                        <div class="order-item accepted" onclick="resumeOrder('${order.id}')">
-                            <div><strong>${(order.pickup?.address || 'Départ').substring(0, 25)}</strong>
-                            <span class="order-price">${order.price} F</span></div>
-                            <div class="order-client"><i class="fas fa-check-circle"></i> Course en cours</div>
+                        <div class="order-client"><i class="fas fa-user"></i> ${order.isShared ? order.passengerCount + ' passagers' : (order.clientName || 'Client')} · <i class="fas fa-car"></i> ${order.vehicle === 'comfort' ? 'Confort' : 'Eco'}</div>
+                    </div>
+                `;
+            });
+
+            myAcceptedOrders.forEach(order => {
+                if (currentOrder && currentOrder.id === order.id) return;
+                html += `
+                    <div class="order-item accepted" onclick="resumeOrder('${order.id}')">
+                        <div class="order-top">
+                            <div class="order-route">${(order.pickup?.address || 'Départ').substring(0, 26)}</div>
+                            <div class="order-price">${order.price} F</div>
                         </div>
-                    `;
-                });
-            }
-            
+                        <div class="order-client"><i class="fas fa-check-circle"></i> Course en cours — toucher pour reprendre</div>
+                    </div>
+                `;
+            });
+
             container.innerHTML = html;
         }
-        
+
         function resumeOrder(orderId) {
             const order = allOrders.find(o => o.id === orderId);
-            if(order && order.driverId === driverId) {
-                currentOrder = order;
-                document.getElementById('activeRidePanel').classList.add('active');
-                document.getElementById('clientName').innerHTML = order.clientName || 'Client';
-                document.getElementById('clientPhone').innerHTML = order.clientPhone || 'Non renseigné';
-                document.getElementById('clientPickup').innerHTML = order.pickup?.address || 'Adresse';
-                document.getElementById('clientDest').innerHTML = order.destination?.address || 'Destination';
-                document.getElementById('ridePrice').innerHTML = order.price + ' FCFA';
-                if(order.pickup) drawRouteToPickup(order.pickup);
+            if (order && order.driverId === driverId) {
+                openActiveRide(order);
             }
         }
-        
+
         function showOrderDetail(orderId) {
             const order = allOrders.find(o => o.id === orderId);
-            if(!order) return;
+            if (!order) return;
             selectedOrderForDetail = order;
-            
-            document.getElementById('detailClientName').innerHTML = order.clientName || 'Client';
-            document.getElementById('detailClientPhone').innerHTML = order.clientPhone || 'Non renseigné';
-            document.getElementById('detailPickup').innerHTML = order.pickup?.address || 'Adresse non spécifiée';
-            document.getElementById('detailDestination').innerHTML = order.destination?.address || 'Adresse non spécifiée';
-            document.getElementById('detailVehicle').innerHTML = order.vehicle === 'eco' ? 'Eco 🚗' : 'Confort 🚙';
-            document.getElementById('detailDistance').innerHTML = order.distance || '?';
-            document.getElementById('detailPrice').innerHTML = order.price + ' FCFA';
-            
+
+            if (order.isShared && Array.isArray(order.passengers)) {
+                document.getElementById('detailClientName').innerHTML =
+                    `<span style="background:var(--accent); color:var(--accent-ink); font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;">COURSE PARTAGÉE — ${order.passengerCount} PASSAGERS</span>`;
+                document.getElementById('detailClientPhone').innerHTML = order.passengers.map(p =>
+                    `<div style="margin-top:6px; font-size:14px;"><strong>${p.name || 'Client'}</strong> — ${p.phone || 'Non renseigné'}<br><span style="color:var(--muted); font-size:12.5px;">Départ : ${p.pickup?.address || '?'}</span></div>`
+                ).join('');
+
+                if (Array.isArray(order.stops) && order.stops.length > 0) {
+                    const nameByClientId = {};
+                    order.passengers.forEach(p => { nameByClientId[p.clientId] = p.name || 'Client'; });
+                    document.getElementById('detailStops').innerHTML = order.stops.map((s, i) => {
+                        const icon = s.type === 'pickup' ? '🟢' : '⚫';
+                        const action = s.type === 'pickup' ? 'Récupérer' : 'Déposer';
+                        return `${i + 1}. ${icon} ${action} <strong>${nameByClientId[s.clientId] || 'passager'}</strong> — ${s.address || '?'}`;
+                    }).join('<br>');
+                    document.getElementById('detailStopsRow').style.display = 'block';
+                } else {
+                    document.getElementById('detailStopsRow').style.display = 'none';
+                }
+            } else {
+                document.getElementById('detailClientName').innerText = order.clientName || 'Client';
+                document.getElementById('detailClientPhone').innerText = order.clientPhone || 'Non renseigné';
+
+                if (Array.isArray(order.stops) && order.stops.length > 0) {
+                    const allStops = [
+                        `Départ — ${order.pickup?.address || '?'}`,
+                        ...order.stops.map(s => `Arrêt — ${s.address || '?'}`),
+                        `Destination — ${order.destination?.address || '?'}`
+                    ];
+                    document.getElementById('detailStops').innerHTML = allStops.map((s, i) => `${i + 1}. ${s}`).join('<br>');
+                    document.getElementById('detailStopsRow').style.display = 'block';
+                } else {
+                    document.getElementById('detailStopsRow').style.display = 'none';
+                }
+            }
+
+            document.getElementById('detailPickup').innerText = order.pickup?.address || 'Adresse non spécifiée';
+            document.getElementById('detailDestination').innerText = order.destination?.address || 'Adresse non spécifiée';
+            document.getElementById('detailVehicle').innerText = (order.vehicle === 'comfort' ? 'Confort' : 'Eco') + ' · ' + (order.distance || '?') + ' km';
+            document.getElementById('detailPrice').innerText = order.price + ' F' + (order.isShared ? ` (${order.pricePerPassenger} F × ${order.passengerCount})` : '');
+
             document.getElementById('orderDetailModal').classList.add('active');
+            document.getElementById('modalBackdrop').classList.add('active');
         }
-        
+
         function closeDetailModal() {
             document.getElementById('orderDetailModal').classList.remove('active');
+            document.getElementById('modalBackdrop').classList.remove('active');
             selectedOrderForDetail = null;
         }
-        
+
         function acceptFromDetail() {
-            if(selectedOrderForDetail) {
+            if (selectedOrderForDetail) {
                 const order = selectedOrderForDetail;
                 closeDetailModal();
                 acceptSpecificOrder(order);
             }
         }
-        
-        // ==================== ACCEPTER UNE COMMANDE ====================
+
+        // ==================== ACCEPTER UNE COMMANDE (sûr en cas de concurrence) ====================
         function acceptSpecificOrder(order) {
-            if(!order || order.status !== 'en_attente') {
-                showToast("Cette commande n'est plus disponible", true);
+            if (!order) return;
+            if (currentOrder) {
+                showToast("Terminez votre course en cours avant d'en accepter une autre", true);
                 return;
             }
-            
+
+            // Transaction : n'accepte que si la commande est TOUJOURS en_attente au moment
+            // de l'écriture, pour éviter que deux chauffeurs prennent la même course.
             const orderRef = database.ref('commandes/' + order.id);
-            orderRef.update({
-                status: 'acceptee',
-                driverId: driverId,
-                driverName: 'Amadou ' + driverId.substr(-4),
-                driverRating: 4.9,
-                driverCar: 'Toyota Corolla 2023',
-                driverPhone: '+221 78 123 45 67',
-                acceptedAt: Date.now()
-            }).then(() => {
-                currentOrder = order;
-                showToast(`✅ Course acceptée ! Client: ${order.clientName || 'Client'}`);
-                
-                document.getElementById('activeRidePanel').classList.add('active');
-                document.getElementById('clientName').innerHTML = order.clientName || 'Client';
-                document.getElementById('clientPhone').innerHTML = order.clientPhone || 'Non renseigné';
-                document.getElementById('clientPickup').innerHTML = order.pickup?.address || 'Adresse';
-                document.getElementById('clientDest').innerHTML = order.destination?.address || 'Destination';
-                document.getElementById('ridePrice').innerHTML = order.price + ' FCFA';
-                
-                if(order.pickup) drawRouteToPickup(order.pickup);
+            orderRef.transaction((current) => {
+                if (current === null) return current; // supprimée entre-temps
+                if (current.status !== 'en_attente') return; // annule la transaction
+                current.status = 'acceptee';
+                current.driverId = driverId;
+                current.driverName = driverName;
+                current.driverRating = driverRating;
+                current.driverCar = driverCar;
+                current.driverPhone = driverPhone;
+                current.acceptedAt = Date.now();
+                return current;
+            }).then((result) => {
+                if (!result.committed || !result.snapshot.exists()) {
+                    showToast("Cette commande vient d'être prise par un autre chauffeur", true);
+                    return;
+                }
+                const acceptedOrder = { id: order.id, ...result.snapshot.val() };
+                showToast(`Course acceptée ! Client : ${acceptedOrder.clientName || 'Client'}`);
+                openActiveRide(acceptedOrder);
             }).catch(err => {
                 console.error("Erreur acceptation:", err);
                 showToast("Erreur lors de l'acceptation", true);
             });
         }
-        
+
+        function openActiveRide(order) {
+            currentOrder = order;
+            if (order.isShared && Array.isArray(order.passengers)) {
+                document.getElementById('clientAvatarInitial').innerText = order.passengerCount;
+                document.getElementById('clientName').innerText = `Course partagée — ${order.passengerCount} passagers`;
+                document.getElementById('clientPhone').innerHTML = order.passengers.map(p =>
+                    `${p.name || 'Client'} — ${p.phone || 'Non renseigné'}`
+                ).join('<br>');
+                document.getElementById('clientCallBtn').setAttribute('href', 'tel:' + (order.passengers[0]?.phone || ''));
+
+                if (Array.isArray(order.stops) && order.stops.length > 0) {
+                    const nameByClientId = {};
+                    order.passengers.forEach(p => { nameByClientId[p.clientId] = p.name || 'Client'; });
+                    document.getElementById('activeStops').innerHTML = order.stops.map((s, i) => {
+                        const icon = s.type === 'pickup' ? '🟢' : '⚫';
+                        const action = s.type === 'pickup' ? 'Récupérer' : 'Déposer';
+                        return `${i + 1}. ${icon} ${action} <strong>${nameByClientId[s.clientId] || 'passager'}</strong> — ${s.address || '?'}`;
+                    }).join('<br>');
+                    document.getElementById('activeStopsRow').style.display = 'block';
+                }
+            } else {
+                const name = order.clientName || 'Client';
+                document.getElementById('clientAvatarInitial').innerText = name.charAt(0).toUpperCase();
+                document.getElementById('clientName').innerText = name;
+                document.getElementById('clientPhone').innerText = order.clientPhone || 'Non renseigné';
+                document.getElementById('clientCallBtn').setAttribute('href', 'tel:' + (order.clientPhone || ''));
+
+                if (Array.isArray(order.stops) && order.stops.length > 0) {
+                    const allStops = [
+                        `Départ — ${order.pickup?.address || '?'}`,
+                        ...order.stops.map(s => `Arrêt — ${s.address || '?'}`),
+                        `Destination — ${order.destination?.address || '?'}`
+                    ];
+                    document.getElementById('activeStops').innerHTML = allStops.map((s, i) => `${i + 1}. ${s}`).join('<br>');
+                    document.getElementById('activeStopsRow').style.display = 'block';
+                } else {
+                    document.getElementById('activeStopsRow').style.display = 'none';
+                }
+            }
+            document.getElementById('clientPickup').innerText = order.pickup?.address || 'Adresse';
+            document.getElementById('clientDest').innerText = order.destination?.address || 'Destination';
+            document.getElementById('ridePrice').innerText = order.price + ' F' + (order.isShared ? ` (${order.pricePerPassenger} F × ${order.passengerCount})` : '');
+            document.getElementById('activeRidePanel').classList.add('active');
+            document.getElementById('modalBackdrop').classList.add('active');
+            if (order.pickup) drawRouteToPickup(order.pickup);
+            startSimulatedMovement();
+        }
+
+        function closeActiveRidePanel() {
+            document.getElementById('activeRidePanel').classList.remove('active');
+            document.getElementById('modalBackdrop').classList.remove('active');
+        }
+
         function showAlert(order) {
-            if(currentOrder) return;
-            
-            document.getElementById('alertPrice').innerHTML = order.price + ' FCFA';
-            document.getElementById('alertPickup').innerHTML = `📍 ${order.pickup?.address || 'Départ'}`;
-            document.getElementById('alertDestination').innerHTML = `🏁 ${order.destination?.address || 'Arrivée'}`;
-            document.getElementById('alertClient').innerHTML = `👤 ${order.clientName || 'Client'} (${order.clientPhone || 'pas de tel'})`;
-            
+            if (currentOrder) return;
+
+            document.getElementById('alertPrice').innerText = order.price + ' F';
+            document.getElementById('alertPickup').innerText = `Départ : ${order.pickup?.address || '--'}`;
+            document.getElementById('alertDestination').innerText = `Arrivée : ${order.destination?.address || '--'}`;
+            document.getElementById('alertClient').innerText = order.isShared
+                ? `Course partagée : ${order.passengerCount} passagers (${order.pricePerPassenger} F/pers.)`
+                : `Client : ${order.clientName || 'Client'} (${order.clientPhone || 'pas de tél.'})`;
+
             window.currentAlertOrder = order;
             document.getElementById('alertOverlay').classList.add('active');
-            
-            try { if(navigator.vibrate) navigator.vibrate([500, 200, 500]); } catch(e) {}
-            try {
-                const audio = new Audio('data:audio/wav;base64,U3RlYWx0aCBzb3VuZA==');
-                audio.play().catch(() => {});
-            } catch(e) {}
+
+            try { if (navigator.vibrate) navigator.vibrate([400, 150, 400]); } catch (e) {}
+            playNotificationSound();
         }
-        
+
         function acceptFromAlert() {
-            if(window.currentAlertOrder) {
+            if (window.currentAlertOrder) {
                 document.getElementById('alertOverlay').classList.remove('active');
                 acceptSpecificOrder(window.currentAlertOrder);
                 window.currentAlertOrder = null;
             }
         }
-        
+
         function declineFromAlert() {
             document.getElementById('alertOverlay').classList.remove('active');
             window.currentAlertOrder = null;
         }
-        
+
         function viewDetailsFromAlert() {
-            if(window.currentAlertOrder) {
+            if (window.currentAlertOrder) {
+                const order = window.currentAlertOrder;
                 document.getElementById('alertOverlay').classList.remove('active');
-                showOrderDetail(window.currentAlertOrder.id);
                 window.currentAlertOrder = null;
+                showOrderDetail(order.id);
             }
         }
-        
+
         function drawRouteToPickup(pickup) {
-            if(!pickup) return;
+            if (!pickup) return;
             const driverPos = driverMarker.getLatLng();
             const url = `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${pickup.lng},${pickup.lat}?overview=full&geometries=geojson`;
-            
+
             fetch(url).then(res => res.json()).then(data => {
-                if(data.routes && data.routes[0]) {
-                    if(rideRoute) map.removeLayer(rideRoute);
+                if (data.routes && data.routes[0]) {
+                    if (rideRoute) map.removeLayer(rideRoute);
                     rideRoute = L.geoJSON(data.routes[0].geometry, {
-                        style: { color: '#ffcc00', weight: 5 }
+                        style: { color: '#C8FA3E', weight: 5 }
                     }).addTo(map);
-                    const bounds = L.latLngBounds([driverPos, [pickup.lat, pickup.lng]]);
-                    map.fitBounds(bounds, { padding: [50, 50] });
+                    map.fitBounds(L.latLngBounds([driverPos, [pickup.lat, pickup.lng]]), { padding: [60, 60] });
                 }
-            });
+            }).catch(err => console.error("Erreur itinéraire:", err));
         }
-        
+
         // ==================== TERMINER LA COURSE ====================
         function completeRide() {
-            if(currentOrder) {
-                totalEarnings += currentOrder.price;
-                totalCompletedRides++;
-                updateDashboard();
-                
-                database.ref('historique/' + currentOrder.id).set({
-                    ...currentOrder,
-                    completedAt: Date.now(),
-                    driverId: driverId,
-                    driverEarned: currentOrder.price
-                });
-                
-                database.ref('commandes/' + currentOrder.id).remove();
-                
-                document.getElementById('activeRidePanel').classList.remove('active');
-                if(rideRoute) map.removeLayer(rideRoute);
-                
-                showToast(`✅ Course terminée ! +${currentOrder.price} FCFA`);
-                currentOrder = null;
-            }
+            if (!currentOrder) return;
+
+            totalEarnings += currentOrder.price;
+            totalCompletedRides++;
+            updateDashboard();
+
+            database.ref('historique/' + currentOrder.id).set({
+                ...currentOrder,
+                completedAt: Date.now(),
+                driverId: driverId,
+                driverEarned: currentOrder.price
+            });
+            database.ref('commandes/' + currentOrder.id).remove();
+
+            closeActiveRidePanel();
+            if (rideRoute) { map.removeLayer(rideRoute); rideRoute = null; }
+            if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
+
+            showToast(`Course terminée ! +${currentOrder.price} F`);
+            currentOrder = null;
         }
-        
+
         // ==================== ÉCOUTE TEMPS RÉEL ====================
         function startRealtimeListening() {
             database.ref('commandes').on('value', (snapshot) => {
                 const orders = snapshot.val();
                 allOrders = [];
-                
-                if(orders) {
-                    for(let id in orders) {
-                        allOrders.push({ id, ...orders[id] });
-                    }
+
+                if (orders) {
+                    for (let id in orders) allOrders.push({ id, ...orders[id] });
                 }
-                
                 allOrders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 displayOrdersList();
-                
-                // Vérifier nouvelle commande en attente
-                if(isOnline && !currentOrder) {
+
+                // Nouvelle commande en attente -> alerte, uniquement si en ligne et libre
+                if (isOnline && !currentOrder) {
                     const newPendingOrder = allOrders.find(o => o.status === 'en_attente');
-                    if(newPendingOrder && (!window.lastAlertId || window.lastAlertId !== newPendingOrder.id)) {
+                    if (newPendingOrder && window.lastAlertId !== newPendingOrder.id) {
                         window.lastAlertId = newPendingOrder.id;
                         showAlert(newPendingOrder);
                     }
+                    if (!newPendingOrder) window.lastAlertId = null;
                 }
-                
-                // Vérifier si notre course est toujours active
-                if(currentOrder) {
+
+                // Reprendre automatiquement une course déjà acceptée par ce chauffeur
+                // (utile après un rechargement de page)
+                if (!currentOrder) {
+                    const myOngoing = allOrders.find(o => o.status === 'acceptee' && o.driverId === driverId);
+                    if (myOngoing) openActiveRide(myOngoing);
+                }
+
+                // Si notre course en cours a disparu (terminée/supprimée ailleurs), on referme
+                if (currentOrder) {
                     const stillExists = allOrders.find(o => o.id === currentOrder.id);
-                    if(!stillExists) {
+                    if (!stillExists) {
+                        closeActiveRidePanel();
+                        if (rideRoute) { map.removeLayer(rideRoute); rideRoute = null; }
+                        if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
                         currentOrder = null;
-                        document.getElementById('activeRidePanel').classList.remove('active');
-                        if(rideRoute) map.removeLayer(rideRoute);
                     }
                 }
+            }, (error) => {
+                console.error("Erreur d'écoute Firebase:", error);
+                showToast("Connexion au serveur impossible", true);
             });
         }
-        
-        // ==================== TOGGLE STATUS ====================
+
+        // ==================== TOGGLE STATUT ====================
         function toggleStatus() {
             isOnline = !isOnline;
             const badge = document.getElementById('statusBadge');
             const btn = document.getElementById('toggleStatusBtn');
-            
-            if(isOnline) {
-                badge.className = 'status-badge online';
-                badge.innerHTML = '🟢 En ligne';
-                btn.innerHTML = '🔴 Mettre hors ligne';
-                btn.className = 'toggle-btn';
-                showToast("🟢 Vous êtes en ligne");
+
+            if (isOnline) {
+                badge.classList.remove('offline');
+                document.getElementById('statusText').innerText = 'En ligne';
+                btn.innerHTML = '<i class="fas fa-power-off"></i> Mettre hors ligne';
+                btn.className = 'cta-btn online';
+                showToast("Vous êtes en ligne");
             } else {
-                badge.className = 'status-badge offline';
-                badge.innerHTML = '⚫ Hors ligne';
-                btn.innerHTML = '🟢 Mettre en ligne';
-                btn.className = 'toggle-btn offline';
-                showToast("⚫ Vous êtes hors ligne");
+                badge.classList.add('offline');
+                document.getElementById('statusText').innerText = 'Hors ligne';
+                btn.innerHTML = '<i class="fas fa-power-off"></i> Mettre en ligne';
+                btn.className = 'cta-btn offline';
+                showToast("Vous êtes hors ligne");
             }
         }
-        
-        // ==================== MOUVEMENT SIMULÉ ====================
-        function simulateMovement() {
-            setInterval(() => {
-                if(currentOrder && currentOrder.pickup) {
+
+        // ==================== MOUVEMENT SIMULÉ VERS LE CLIENT ====================
+        function startSimulatedMovement() {
+            if (moveInterval) clearInterval(moveInterval);
+            moveInterval = setInterval(() => {
+                if (currentOrder && currentOrder.pickup) {
                     const driverPos = driverMarker.getLatLng();
-                    const targetLat = currentOrder.pickup.lat;
-                    const targetLng = currentOrder.pickup.lng;
-                    const newLat = driverPos.lat + (targetLat - driverPos.lat) * 0.05;
-                    const newLng = driverPos.lng + (targetLng - driverPos.lng) * 0.05;
+                    const newLat = driverPos.lat + (currentOrder.pickup.lat - driverPos.lat) * 0.08;
+                    const newLng = driverPos.lng + (currentOrder.pickup.lng - driverPos.lng) * 0.08;
                     driverMarker.setLatLng([newLat, newLng]);
-                    if(currentOrder.pickup) drawRouteToPickup(currentOrder.pickup);
+                    drawRouteToPickup(currentOrder.pickup);
                 }
             }, 5000);
         }
-        
+
         // ==================== EVENT LISTENERS ====================
         document.getElementById('acceptBtn').addEventListener('click', acceptFromAlert);
         document.getElementById('declineBtn').addEventListener('click', declineFromAlert);
@@ -564,13 +842,155 @@
         document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
         document.getElementById('completeRideBtn').addEventListener('click', completeRide);
         document.getElementById('acceptFromDetailBtn').addEventListener('click', acceptFromDetail);
-        
+
+        // ==================== VÉRIFICATION DU STATUT DE VALIDATION ====================
+        // Le tableau de bord ne démarre QUE si le dossier du chauffeur a été validé par
+        // l'administrateur (voir admin.html). Sinon, on affiche un écran d'attente/blocage
+        // et on n'active ni la carte ni l'écoute des commandes.
+        function showGate(kind, data) {
+            const box = document.getElementById('gateBox');
+            if (kind === 'none') {
+                box.innerHTML = `
+                    <div class="icon none"><i class="fas fa-id-card"></i></div>
+                    <h2>Devenez chauffeur GNU DÉM</h2>
+                    <p>Vous n'avez pas encore de dossier chauffeur sur cet appareil. Remplissez le formulaire de candidature pour rejoindre notre réseau.</p>
+                    <a class="cta" href="candidature.html"><i class="fas fa-paper-plane"></i> Faire ma candidature</a>
+                `;
+            } else if (kind === 'pending') {
+                box.innerHTML = `
+                    <div class="icon pending"><i class="fas fa-hourglass-half"></i></div>
+                    <h2>Candidature en cours d'examen</h2>
+                    <p>Votre dossier a été reçu et est en cours de vérification par notre équipe. Revenez un peu plus tard.</p>
+                    <a class="cta" href="javascript:location.reload()"><i class="fas fa-rotate"></i> Vérifier à nouveau</a>
+                `;
+            } else if (kind === 'rejected') {
+                box.innerHTML = `
+                    <div class="icon rejected"><i class="fas fa-circle-xmark"></i></div>
+                    <h2>Candidature non retenue</h2>
+                    ${data && data.rejectionReason ? `<div class="reason-box"><strong>Motif :</strong> ${data.rejectionReason}</div>` : ''}
+                    <p>Vous pouvez corriger votre dossier et soumettre une nouvelle candidature.</p>
+                    <a class="cta" href="candidature.html"><i class="fas fa-arrows-rotate"></i> Refaire ma candidature</a>
+                `;
+            } else if (kind === 'verif') {
+                box.innerHTML = `
+                    <div class="icon pending"><i class="fas fa-magnifying-glass"></i></div>
+                    <h2>Vérification approfondie en cours</h2>
+                    <p>Votre dossier nécessite une vérification supplémentaire de notre équipe. Merci de votre patience.</p>
+                    <a class="cta" href="javascript:location.reload()"><i class="fas fa-rotate"></i> Vérifier à nouveau</a>
+                `;
+            } else if (kind === 'error') {
+                box.innerHTML = `
+                    <div class="icon rejected"><i class="fas fa-wifi"></i></div>
+                    <h2>Connexion impossible</h2>
+                    <p>Nous n'avons pas pu vérifier votre accès (problème de connexion internet ou serveur momentanément indisponible). Vérifiez votre connexion puis réessayez.</p>
+                    <a class="cta" href="javascript:location.reload()"><i class="fas fa-rotate"></i> Réessayer</a>
+                `;
+            }
+            document.getElementById('accessGate').classList.add('show');
+        }
+
+        function withTimeout(promise, ms) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+            ]);
+        }
+
+        async function checkDriverStatus() {
+            try {
+                const snap = await withTimeout(database.ref('chauffeurs/' + driverId).once('value'), 10000);
+                const data = snap.val();
+
+                if (!data) { showGate('none'); return; }
+
+                if (data.status === 'valide') {
+                    driverName = data.firstName ? `${data.firstName} ${data.lastName || ''}`.trim() : (data.name || driverName);
+                    driverPhone = data.phonePrimary || data.phone || driverPhone;
+                    driverCar = (data.carBrand || data.carModel)
+                        ? `${data.carBrand || ''} ${data.carModel || ''}`.trim()
+                        : (data.car ? `${data.car.brand || ''} ${data.car.model || ''}`.trim() || driverCar : driverCar);
+                    document.getElementById('accessGate').classList.remove('show');
+                    document.getElementById('loginGate').classList.remove('show');
+                    loadEarningsForCurrentDriver();
+                    startRealtimeListening();
+                    showToast(`Bienvenue ${driverName.split(' ')[0]} — en ligne, en attente de commandes`);
+                } else if (data.status === 'rejete') {
+                    showGate('rejected', data);
+                } else if (data.status === 'verification_approfondie') {
+                    showGate('verif', data);
+                } else {
+                    showGate('pending', data);
+                }
+            } catch (error) {
+                console.error("Erreur vérification statut chauffeur:", error);
+                // Erreur réseau/connexion : on le dit clairement plutôt que de laisser
+                // deviner, et on ne débloque jamais l'accès sans confirmation.
+                showGate('error');
+            }
+        }
+
+        // ==================== CONNEXION (téléphone + mot de passe) ====================
+        function normalizePhone(p) {
+            return (p || '').replace(/\D/g, '').slice(-9); // 9 derniers chiffres, insensible au format
+        }
+
+        async function attemptLogin() {
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorEl = document.getElementById('loginError');
+            errorEl.classList.remove('show');
+
+            if (!phone || !password) {
+                errorEl.innerText = "Merci de renseigner votre téléphone et votre mot de passe.";
+                errorEl.classList.add('show');
+                return;
+            }
+
+            const btn = document.querySelector('.login-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connexion…';
+
+            try {
+                const snap = await withTimeout(database.ref('chauffeurs').once('value'), 10000);
+                const all = snap.val() || {};
+                const normalizedInput = normalizePhone(phone);
+                const matchId = Object.keys(all).find(id => {
+                    const d = all[id];
+                    const dPhone = normalizePhone(d.phonePrimary || d.phone);
+                    return dPhone && dPhone === normalizedInput && d.password === password && d.status === 'valide';
+                });
+
+                if (matchId) {
+                    driverId = matchId;
+                    localStorage.setItem('driver_id', driverId);
+                    await checkDriverStatus();
+                } else {
+                    errorEl.innerText = "Numéro ou mot de passe incorrect — ou candidature pas encore validée.";
+                    errorEl.classList.add('show');
+                }
+            } catch (error) {
+                console.error("Erreur connexion:", error);
+                errorEl.innerText = "Connexion au serveur impossible. Vérifiez votre connexion internet.";
+                errorEl.classList.add('show');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Se connecter';
+        }
+
+        function logoutDriver() {
+            if (!confirm("Se déconnecter de votre espace chauffeur ?")) return;
+            localStorage.removeItem('driver_id');
+            location.reload();
+        }
+
         // ==================== INITIALISATION ====================
-        startRealtimeListening();
-        simulateMovement();
-        
-        console.log("🚀 Chauffeur prêt, ID:", driverId);
-        showToast("🟢 Chauffeur en ligne - En attente de commandes");
+        if (driverId) {
+            checkDriverStatus();
+        } else {
+            document.getElementById('loginGate').classList.add('show');
+        }
+
+        console.log("🆔 Chauffeur ID:", driverId);
     </script>
 </body>
 </html>
