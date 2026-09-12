@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>MOR-TAXI</title>
+<title>GNU DÉM</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,9 +42,12 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 button{ font-family:inherit; border:none; background:none; cursor:pointer; color:inherit; }
-input{ font-family:inherit; border:none; outline:none; background:transparent; color:var(--ink); }
-button:focus-visible, input:focus-visible, a:focus-visible{
+input, textarea{ font-family:inherit; border:none; outline:none; background:transparent; color:var(--ink); }
+button:focus-visible, a:focus-visible{
   outline:2px solid var(--ink); outline-offset:2px;
+}
+input:focus, input:focus-visible, textarea:focus, textarea:focus-visible{
+  outline:none; border:none; box-shadow:none;
 }
 
 #map{ position:fixed; inset:0; z-index:1; }
@@ -664,7 +667,10 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 <div id="map"></div>
 
 <div class="top-bar">
-  <button class="icon-btn" onclick="toggleAccount()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  <div style="display:flex; gap:10px;">
+    <a class="icon-btn" href="index.html" aria-label="Quitter"><i class="fas fa-right-from-bracket"></i></a>
+    <button class="icon-btn" onclick="toggleAccount()" aria-label="Menu"><i class="fas fa-bars"></i></button>
+  </div>
   <a class="icon-btn" href="info.html" target="_blank" rel="noopener" aria-label="Informations"><i class="fas fa-circle-info"></i></a>
 </div>
 
@@ -683,7 +689,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 
 <!-- ===================== BOTTOM SHEET ===================== -->
 <div class="sheet" id="sheet">
-  <div class="sheet-handle"></div>
+  <div class="sheet-handle" id="mainSheetHandle" style="cursor:grab; touch-action:none;"></div>
 
   <!-- ---- État 1 : recherche d'adresse / choix du véhicule ---- -->
   <div id="sheetHome">
@@ -811,7 +817,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
       </div>
     </div>
 
-    <button class="cta-btn" id="orderBtn" onclick="commander()">Commander MOR-TAXI</button>
+    <button class="cta-btn" id="orderBtn" onclick="commander()">Commander  </button>
   </div>
 
   <!-- ---- État 2 : recherche d'un chauffeur ---- -->
@@ -849,7 +855,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
     <div class="driver-card" style="padding:0 0 16px;">
       <div class="driver-avatar" id="driverAvatarInitial">C</div>
       <div>
-        <div class="driver-name" id="driverName">Chauffeur MOR-TAXI</div>
+        <div class="driver-name" id="driverName">Chauffeur </div>
         <div class="driver-rating"><i class="fas fa-star"></i><span id="driverRating">4.9</span></div>
         <div class="driver-car" id="driverCar">Toyota Corolla</div>
       </div>
@@ -971,7 +977,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
       <div class="account-stars" id="accountStars">★★★★★</div>
       <div class="account-contact-row"><i class="fas fa-phone"></i><input type="tel" id="userPhone" class="account-inline-input" placeholder="Numéro de téléphone"></div>
       <div class="account-contact-row"><i class="fas fa-envelope"></i><input type="email" id="userEmail" class="account-inline-input" placeholder="Adresse email"></div>
-      <button class="account-save-inline" onclick="saveUserProfile()"><i class="fas fa-check"></i> Enregistrer</button>
+      <button class="account-save-inline" id="profileSaveBtn" style="display:none;" onclick="saveUserProfile()"><i class="fas fa-check"></i> Enregistrer</button>
     </div>
 
     <div style="padding:20px;">
@@ -1080,7 +1086,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let startCoords = [14.7167, -17.4677];
 let endCoords = null;
-let startMarker, endMarker, polyline = null;
+let startMarker, endMarker, routeLayer = null;
 let activeInputId = 'startInput';
 let distance = 0;
 let durationMin = 0;
@@ -1126,7 +1132,7 @@ function revealRideOptions(context) {
         btn.innerText = 'Continuer';
         btn.onclick = proceedToSharedTiers;
     } else {
-        btn.innerText = 'Commander MOR-TAXI';
+        btn.innerText = 'Commander';
         btn.onclick = commander;
     }
 }
@@ -1498,6 +1504,7 @@ async function saveUserProfile() {
     localStorage.setItem('mor_taxi_profile', JSON.stringify(profileData));
     userProfile = profileData;
     updateHeaderIdentity(profileData);
+    document.getElementById('profileSaveBtn').style.display = 'none';
 
     try {
         await database.ref('clients/' + clientId).set(profileData);
@@ -1507,6 +1514,13 @@ async function saveUserProfile() {
         alert("✅ Profil enregistré sur cet appareil (pas de connexion pour le synchroniser en ligne pour l'instant)");
     }
 }
+
+// N'affiche "Enregistrer" que lorsqu'un champ du profil est réellement modifié
+['userName', 'userPhone', 'userEmail'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+        document.getElementById('profileSaveBtn').style.display = 'flex';
+    });
+});
 
 async function loadUserProfile() {
     // 1) Chargement immédiat depuis le stockage local (toujours disponible, même hors-ligne)
@@ -2062,6 +2076,54 @@ function updateEnd(lat, lon, name) {
 }
 
 // ==================== ITINERAIRE (OSRM) ====================
+function drawTricolorRoute(latlngs) {
+    if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
+    if (latlngs.length < 2) return;
+
+    routeLayer = L.layerGroup().addTo(map);
+
+    // Découpe en 3 tronçons de longueur égale (en distance réelle, pas juste en nombre de points)
+    const cum = [0];
+    for (let i = 1; i < latlngs.length; i++) {
+        cum.push(cum[i - 1] + distanceKm(latlngs[i - 1][0], latlngs[i - 1][1], latlngs[i][0], latlngs[i][1]));
+    }
+    const total = cum[cum.length - 1] || 1;
+    const colors = ['#2ECC71', '#F5C518', '#E5484D']; // vert → jaune → rouge
+
+    function pointAtDistance(targetD) {
+        for (let i = 1; i < cum.length; i++) {
+            if (cum[i] >= targetD) {
+                const segLen = cum[i] - cum[i - 1] || 1;
+                const t = (targetD - cum[i - 1]) / segLen;
+                const lat = latlngs[i - 1][0] + (latlngs[i][0] - latlngs[i - 1][0]) * t;
+                const lng = latlngs[i - 1][1] + (latlngs[i][1] - latlngs[i - 1][1]) * t;
+                return [lat, lng];
+            }
+        }
+        return latlngs[latlngs.length - 1];
+    }
+
+    for (let s = 0; s < 3; s++) {
+        const startD = total * s / 3, endD = total * (s + 1) / 3;
+        const segPoints = [pointAtDistance(startD)];
+        latlngs.forEach((p, i) => { if (cum[i] > startD && cum[i] < endD) segPoints.push(p); });
+        segPoints.push(pointAtDistance(endD));
+        L.polyline(segPoints, { color: colors[s], weight: 5, opacity: 0.95, lineCap: 'round', lineJoin: 'round' }).addTo(routeLayer);
+    }
+
+    // Petite étoile verte au milieu exact de l'itinéraire, pas plus épaisse que la ligne
+    const mid = pointAtDistance(total / 2);
+    const STAR_SIZE = 9; // ne dépasse pas l'épaisseur de la ligne (weight:5 + une marge fine)
+    L.marker(mid, {
+        icon: L.divIcon({
+            className: '', iconSize: [STAR_SIZE, STAR_SIZE], iconAnchor: [STAR_SIZE / 2, STAR_SIZE / 2],
+            html: `<svg viewBox="0 0 24 24" width="${STAR_SIZE}" height="${STAR_SIZE}" fill="#1E9E4A">
+                     <path d="M12 1.5l2.9 6.6 7.1.6-5.4 4.7 1.7 6.9L12 16.9 5.7 20.3l1.7-6.9L2 8.7l7.1-.6Z"/>
+                   </svg>`
+        })
+    }).addTo(routeLayer);
+}
+
 async function drawRoute() {
     if (!startCoords || !endCoords) return;
 
@@ -2075,16 +2137,15 @@ async function drawRoute() {
             distance = route.distance / 1000;
             durationMin = route.duration / 60;
 
-            if (polyline) map.removeLayer(polyline);
-            polyline = L.geoJSON(route.geometry, { style: { color: '#0A0A0B', weight: 4, dashArray: '1,9', lineCap: 'round' } }).addTo(map);
+            const latlngs = route.geometry.coordinates.map(c => [c[1], c[0]]);
+            drawTricolorRoute(latlngs);
 
             map.fitBounds(L.latLngBounds([startCoords, endCoords]), { padding: [70, 70] });
             updatePrices();
         }
     } catch (error) {
         console.error("Erreur de calcul d'itinéraire:", error);
-        if (polyline) map.removeLayer(polyline);
-        polyline = L.polyline([startCoords, endCoords], { color: '#0A0A0B', weight: 4, dashArray: '1,9' }).addTo(map);
+        drawTricolorRoute([startCoords, endCoords]);
         distance = map.distance(L.latLng(startCoords), L.latLng(endCoords)) / 1000;
         durationMin = (distance / 25) * 60; // estimation à 25 km/h si l'itinéraire routier n'a pas pu être calculé
         updatePrices();
@@ -2529,7 +2590,51 @@ function showSheetState(state) {
     const locked = currentFlowState !== null;
     if (startMarker && startMarker.dragging) locked ? startMarker.dragging.disable() : startMarker.dragging.enable();
     if (endMarker && endMarker.dragging) locked ? endMarker.dragging.disable() : endMarker.dragging.enable();
+
+    // Par défaut, la feuille reprend toujours sa meilleure hauteur automatique pour ce contenu
+    // (l'utilisateur peut ensuite la faire glisser librement s'il le souhaite).
+    resetSheetHeight();
 }
+
+// ==================== FEUILLE DU BAS DÉPLAÇABLE ====================
+function resetSheetHeight() {
+    const sheet = document.getElementById('sheet');
+    sheet.style.height = '';
+}
+
+(function makeSheetDraggable() {
+    const sheet = document.getElementById('sheet');
+    const handle = document.getElementById('mainSheetHandle');
+    let dragging = false, startY = 0, startHeight = 0;
+
+    handle.addEventListener('pointerdown', (e) => {
+        dragging = true;
+        startY = e.clientY;
+        startHeight = sheet.getBoundingClientRect().height;
+        sheet.style.transition = 'none';
+        handle.style.cursor = 'grabbing';
+        handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const dy = startY - e.clientY; // glisser vers le haut = agrandir
+        const maxH = window.innerHeight * 0.88;
+        const minH = 130;
+        let newHeight = Math.min(Math.max(startHeight + dy, minH), maxH);
+        sheet.style.maxHeight = maxH + 'px';
+        sheet.style.height = newHeight + 'px';
+    });
+
+    function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        sheet.style.transition = '';
+        handle.style.cursor = 'grab';
+    }
+    handle.addEventListener('pointerup', endDrag);
+    handle.addEventListener('pointercancel', endDrag);
+})();
 
 function resetToHome() {
     if (orderListener && currentOrderId) {
@@ -2788,11 +2893,24 @@ function toggleTrustedFromTrip() {
     updateTripFavoriteButton();
 }
 
- updateStart(14.7167, -17.4677, "Dakar Centre");
+// ==================== INITIALISATION ====================
+// On essaie d'abord la vraie position de l'utilisateur ; le centre de Dakar n'est
+// qu'un repli si la géolocalisation est refusée, indisponible ou trop lente.
+updateStart(14.7167, -17.4677, "Dakar Centre");
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            updateStart(pos.coords.latitude, pos.coords.longitude, "Ma position");
+            map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+        },
+        (err) => console.warn("Géolocalisation au démarrage indisponible, repli sur Dakar Centre:", err.message),
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+}
 renderGreeting(null);
 loadUserProfile();
 loadFavorites();
 console.log("🆔 Client ID:", clientId);
 </script>
 </body>
-</html>     
+</html>
