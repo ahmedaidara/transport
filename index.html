@@ -53,27 +53,17 @@
             margin-bottom: 30px;
         }
 
+        /* ✨ LOGO COLORÉ : GN en VERT, UD en JAUNE, ÉM en ROUGE ✨ */
         .logo-title {
-            color: #1a7a4c;
             font-size: 40px;
             font-weight: 800;
             margin-bottom: 5px;
+            letter-spacing: 1px;
         }
 
-        .location-header {
-            display: flex;
-            align-items: center;
-            font-size: 16px;
-            color: #555;
-            font-weight: 500;
-        }
-
-        .location-header svg {
-            width: 18px;
-            height: 18px;
-            fill: #1a7a4c;
-            margin-right: 5px;
-        }
+        .logo-title .gn { color: #1a7a4c; }      /* Vert */
+        .logo-title .ud { color: #f5b800; }      /* Jaune */
+        .logo-title .em { color: #d62828; }      /* Rouge */
 
         /* --- GRILLE DES SERVICES --- */
         .services-grid {
@@ -102,7 +92,6 @@
             overflow: hidden;
             margin-bottom: 10px;
             transition: transform 0.2s;
-            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
             border: none;
             box-shadow: none;
             padding: 0;
@@ -119,7 +108,6 @@
             max-height: 220px;
             object-fit: contain;
             display: block;
-            /* ✨ SEULEMENT LES COINS ARRONDIS, RIEN D'AUTRE ✨ */
             border-radius: 20px;
         }
 
@@ -127,12 +115,6 @@
             font-size: 16px;
             font-weight: 600;
             line-height: 1.2;
-        }
-
-        .eta-text {
-            font-size: 13px;
-            color: #777;
-            margin-top: 4px;
         }
 
         /* --- BANNIÈRE RECTANGLE CLIQUABLE --- */
@@ -151,7 +133,6 @@
             justify-content: center;
             align-items: center;
             transition: transform 0.2s;
-            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
             border: none;
             box-shadow: none;
             padding: 0;
@@ -167,7 +148,6 @@
             max-height: 180px;
             object-fit: contain;
             display: block;
-            /* ✨ SEULEMENT LES COINS ARRONDIS ✨ */
             border-radius: 20px;
         }
 
@@ -197,7 +177,6 @@
             align-items: center;
             margin-bottom: 15px;
             background-color: transparent;
-            /* ✨ AUCUN TRAIT, AUCUN FOND, AUCUNE OMBRE ✨ */
             border: none;
             box-shadow: none;
             padding: 0;
@@ -208,7 +187,6 @@
             max-height: 110px;
             object-fit: contain;
             display: block;
-            /* ✨ SEULEMENT LES COINS ARRONDIS ✨ */
             border-radius: 16px;
         }
 
@@ -282,22 +260,24 @@
 <body>
 
     <div class="app-container">
+        <!-- EN-TÊTE : Logo coloré, plus de "Point de départ" -->
         <header>
-            <div class="logo-title">Gnu dém</div>
-            <div class="location-header">
-                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                Point de départ : Votre position actuelle
+            <div class="logo-title">
+                <span class="gn">Gnu</span> <span class="ud">dém</span>
             </div>
         </header>
 
+        <!-- Grille des services -->
         <div class="services-grid">
-            <a href="tiak-tiak.html" class="service-card">
+            <!-- Tiak-Tiak -->
+            <a href="tiaktiak.html" class="service-card">
                 <div class="image-container">
                     <img src="image1.png" alt="Tiak-Tiak">
                 </div>
                 <div class="service-title">Tiak-Tiak</div>
             </a>
 
+            <!-- Food -->
             <a href="food.html" class="service-card">
                 <div class="image-container">
                     <img src="image2.png" alt="Food">
@@ -305,40 +285,53 @@
                 <div class="service-title">Food</div>
             </a>
 
+            <!-- School (NOUVEAU, avant Course) -->
+            <a href="school.html" class="service-card">
+                <div class="image-container">
+                    <img src="image3.png" alt="School">
+                </div>
+                <div class="service-title">School</div>
+                <div class="eta-text">Programmer un transport pour votre enfant à l'école toute l'année</div>
+            </a>
+
+            <!-- Course 2 (Remplace Courses en Car Rapide + ETA) -->
             <a href="course.html" class="service-card">
                 <div class="image-container">
-                    <img src="image4.png" alt="Courses en Car Rapide">
+                    <img src="image4.png" alt="Course 2">
                 </div>
-                <div class="service-title">Courses en Car Rapide</div>
-                <div class="eta-text">ETA à partir de 3 min<br>ET à partir de 3 min</div>
+                <div class="service-title">Course 2</div>
             </a>
         </div>
 
+        <!-- Bannière -->
         <a href="course.html" class="banner-link">
             <div class="banner-image-box">
                 <img src="banniere.png" alt="Bannière">
             </div>
         </a>
 
+        <!-- Cartes du bas -->
         <div class="bottom-cards">
+            <!-- Carte Sécurité (Textes originaux) -->
             <div class="info-card">
                 <div class="card-img-box">
                     <img src="image5.png" alt="Sécurité">
                 </div>
-                <h3>Sécurité en voyage</h3>
-                <p>Votre sécurité est primordiale. Contactez les services d'urgence ou des contacts de confiance en un clic.</p>
+                <h3>Roulez l'esprit tranquille</h3>
+                <p>Chaque trajet est suivi et sécurisé. En cas de pépin, notre équipe et les secours sont alertés en un instant. Votre tranquillité, notre priorité.</p>
                 <a href="tel:151" class="btn-phone">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
                     151
                 </a>
             </div>
 
+            <!-- Carte Chauffeur (Textes originaux) -->
             <div class="info-card">
                 <div class="card-img-box">
                     <img src="image6.png" alt="Chauffeur">
                 </div>
-                <h3>Devenez Chauffeur</h3>
-                <p>Rejoignez la famille Gnu dém Pro. Des revenus garantis et des avantages sociaux.</p>
+                <h3>Prenez le volant avec nous</h3>
+                <p>Gagnez votre vie à votre rythme. Rejoignez une communauté de chauffeurs motivés et profitez d'avantages exclusifs réservés aux membres Gnu dém.</p>
                 <button class="btn-join">Rejoindre</button>
             </div>
         </div>
