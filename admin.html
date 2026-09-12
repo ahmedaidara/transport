@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Administration — GNU DÉM</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+:root{
+  --ink:#0A0A0B; --muted:#6E6E73; --line:#E7E7E9; --surface:#F3F3F4; --bg:#FFFFFF;
+  --accent:#C8FA3E; --accent-ink:#173300; --danger:#E5484D; --success:#1DAA5C;
+  --r-lg:22px; --r-md:14px;
+  --font-body:'Inter', system-ui, sans-serif;
+  --font-display:'Space Grotesk','Inter',sans-serif;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{ font-family:var(--font-body); color:var(--ink); background:var(--surface); -webkit-tap-highlight-color:transparent; }
+button{ font-family:inherit; border:none; cursor:pointer; }
+input, textarea{ font-family:inherit; border:none; outline:none; }
+
+/* ---------- Portail mot de passe ---------- */
+#gate{
+  position:fixed; inset:0; background:var(--ink); display:flex; align-items:center; justify-content:center;
+  z-index:100; padding:20px;
+}
+.gate-card{ background:var(--bg); border-radius:var(--r-lg); padding:32px 26px; width:100%; max-width:340px; text-align:center; }
+.gate-card i{ font-size:26px; color:var(--accent-ink); background:var(--accent); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.gate-card h2{ font-size:17px; font-weight:800; margin-bottom:6px; }
+.gate-card p{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+.gate-card input{ width:100%; background:var(--surface); border-radius:var(--r-md); padding:14px; font-size:15px; text-align:center; margin-bottom:12px; letter-spacing:2px; }
+.gate-card button{ width:100%; background:var(--ink); color:#fff; padding:14px; border-radius:var(--r-md); font-weight:700; }
+.gate-error{ color:var(--danger); font-size:12.5px; margin-top:8px; display:none; }
+
+/* ---------- Layout général ---------- */
+#app{ display:none; }
+#app.show{ display:block; }
+
+.topbar{
+  background:var(--ink); color:#fff; padding:18px 20px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:10;
+}
+.topbar-title{ font-family:var(--font-display); font-weight:700; font-size:16px; display:flex; align-items:center; gap:10px; }
+.topbar-title i{ color:var(--accent); }
+.logout-link{ color:rgba(255,255,255,0.7); font-size:12.5px; background:none; }
+
+.tabs{ display:flex; gap:8px; padding:16px 20px 0; max-width:900px; margin:0 auto; }
+.tab{
+  flex:1; text-align:center; padding:12px 8px; border-radius:var(--r-md); font-weight:700; font-size:13px;
+  background:var(--bg); color:var(--muted); position:relative;
+}
+.tab.active{ background:var(--ink); color:#fff; }
+.tab .count{ display:inline-block; margin-left:6px; background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:1px 7px; font-size:11px; }
+.tab.active .count{ background:rgba(255,255,255,0.2); color:#fff; }
+
+.list{ max-width:900px; margin:0 auto; padding:16px 20px 60px; display:flex; flex-direction:column; gap:12px; }
+.empty-state{ text-align:center; padding:60px 20px; color:var(--muted); font-size:14px; }
+
+.app-card{ background:var(--bg); border-radius:var(--r-lg); padding:18px; }
+.app-card-top{ display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.app-avatar{ width:48px; height:48px; border-radius:50%; background:var(--ink); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:18px; flex:0 0 auto; }
+.app-name{ font-weight:700; font-size:15.5px; }
+.app-date{ font-size:12px; color:var(--muted); }
+.status-chip{ margin-left:auto; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; }
+.status-chip.en_attente{ background:#FDF3D8; color:#B8860B; }
+.status-chip.valide{ background:#DFF6E3; color:var(--success); }
+.status-chip.rejete{ background:#FCE4E4; color:var(--danger); }
+
+.app-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; margin-bottom:14px; }
+.app-field{ font-size:13px; }
+.app-field label{ display:block; font-size:10.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px; }
+.app-field div{ font-weight:600; }
+
+.app-photos{ display:flex; gap:10px; margin-bottom:14px; }
+.app-photos img{ width:90px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--line); cursor:pointer; }
+.app-photos .no-photo{ width:90px; height:64px; border-radius:10px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; text-align:center; }
+
+.app-actions{ display:flex; gap:10px; }
+.app-actions button{ flex:1; padding:12px; border-radius:var(--r-md); font-weight:700; font-size:13.5px; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-approve{ background:var(--success); color:#fff; }
+.btn-reject{ background:var(--surface); color:var(--danger); }
+.btn-revoke{ background:var(--surface); color:var(--ink); }
+
+.rejection-note{ background:#FCE4E4; color:#8a2222; border-radius:10px; padding:10px 12px; font-size:12.5px; margin-bottom:12px; }
+
+/* Aperçu photo plein écran */
+#photoViewer{ position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+#photoViewer.show{ display:flex; }
+#photoViewer img{ max-width:100%; max-height:100%; border-radius:12px; }
+#photoViewer button{ position:absolute; top:20px; right:20px; width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); color:#fff; font-size:16px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <i class="fas fa-lock"></i>
+    <h2>Espace administrateur</h2>
+    <p>Accès réservé à l'équipe GNU DÉM.</p>
+    <input type="password" id="gatePassword" placeholder="Code d'accès" onkeydown="if(event.key==='Enter') checkPassword();">
+    <button onclick="checkPassword()">Entrer</button>
+    <div class="gate-error" id="gateError">Code incorrect, réessayez.</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-title"><i class="fas fa-shield-halved"></i> Administration chauffeurs</div>
+    <button class="logout-link" onclick="location.reload()">Se déconnecter</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="en_attente" onclick="switchTab('en_attente')">En attente <span class="count" id="countPending">0</span></div>
+    <div class="tab" data-tab="valide" onclick="switchTab('valide')">Validés <span class="count" id="countApproved">0</span></div>
+    <div class="tab" data-tab="rejete" onclick="switchTab('rejete')">Rejetés <span class="count" id="countRejected">0</span></div>
+  </div>
+
+  <div class="list" id="list"></div>
+</div>
+
+<div id="photoViewer" onclick="closePhotoViewer()">
+  <button onclick="closePhotoViewer()"><i class="fas fa-xmark"></i></button>
+  <img id="photoViewerImg" src="" alt="">
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyD_Cj2crubK08ffhx9DQ1KNr2-dR8zkmsQ",
+    authDomain: "clubsaldia.firebaseapp.com",
+    projectId: "clubsaldia",
+    databaseURL: "https://clubsaldia-default-rtdb.firebaseio.com",
+    storageBucket: "clubsaldia.firebasestorage.app",
+    messagingSenderId: "965460761858",
+    appId: "1:965460761858:web:fdc57522e506f51050b61b"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// ==================== ACCÈS (portail simple par code) ====================
+// NOTE IMPORTANTE : cette protection est côté client uniquement — pratique pour un usage
+// interne restreint, mais elle ne remplace pas une vraie authentification côté serveur.
+// Pour une sécurité plus sérieuse, il faudrait ajouter Firebase Authentication + des règles
+// de sécurité sur la base de données restreignant l'accès au nœud "chauffeurs".
+const ADMIN_PASSCODE = 'GNUDEM-ADMIN-2026';
+
+function checkPassword() {
+    const val = document.getElementById('gatePassword').value.trim();
+    if (val === ADMIN_PASSCODE) {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        sessionStorage.setItem('admin_ok', '1');
+        startListening();
+    } else {
+        document.getElementById('gateError').style.display = 'block';
+    }
+}
+if (sessionStorage.getItem('admin_ok') === '1') {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').classList.add('show');
+    startListeningWhenReady();
+}
+function startListeningWhenReady() {
+    // startListening est défini plus bas ; on attend le prochain tick pour être sûr qu'il existe
+    setTimeout(startListening, 0);
+}
+
+// ==================== DONNÉES ====================
+let allApplications = [];
+let currentTab = 'en_attente';
+
+function startListening() {
+    database.ref('chauffeurs').on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        allApplications = Object.keys(data).map(id => ({ id, ...data[id] }));
+        allApplications.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+        renderCounts();
+        renderList();
+    });
+}
+
+function renderCounts() {
+    document.getElementById('countPending').innerText = allApplications.filter(a => a.status === 'en_attente').length;
+    document.getElementById('countApproved').innerText = allApplications.filter(a => a.status === 'valide').length;
+    document.getElementById('countRejected').innerText = allApplications.filter(a => a.status === 'rejete').length;
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderList();
+}
+
+function renderList() {
+    const container = document.getElementById('list');
+    const items = allApplications.filter(a => a.status === currentTab);
+    container.innerHTML = '';
+
+    if (items.length === 0) {
+        container.innerHTML = `<div class="empty-state">Aucun dossier ${currentTab === 'en_attente' ? 'en attente' : currentTab === 'valide' ? 'validé' : 'rejeté'} pour l'instant.</div>`;
+        return;
+    }
+
+    items.forEach(app => container.appendChild(buildAppCard(app)));
+}
+
+function buildAppCard(app) {
+    const card = document.createElement('div');
+    card.className = 'app-card';
+
+    const date = app.submittedAt ? new Date(app.submittedAt) : null;
+    const dateStr = date ? `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}` : '—';
+    const initial = (app.name || '?').charAt(0).toUpperCase();
+    const statusLabel = app.status === 'en_attente' ? 'En attente' : app.status === 'valide' ? 'Validé' : 'Rejeté';
+
+    let photosHtml = '<div class="app-photos">';
+    photosHtml += app.idPhoto ? `<img src="${app.idPhoto}" onclick="viewPhoto('${app.idPhoto.replace(/'/g, "\\'")}')" alt="Pièce d'identité">` : `<div class="no-photo">Pas de photo<br>pièce d'identité</div>`;
+    photosHtml += app.carPhoto ? `<img src="${app.carPhoto}" onclick="viewPhoto('${app.carPhoto.replace(/'/g, "\\'")}')" alt="Véhicule">` : `<div class="no-photo">Pas de photo<br>véhicule</div>`;
+    photosHtml += '</div>';
+
+    const rejectionHtml = app.status === 'rejete' && app.rejectionReason
+        ? `<div class="rejection-note"><strong>Motif du rejet :</strong> ${app.rejectionReason}</div>` : '';
+
+    let actionsHtml = '';
+    if (app.status === 'en_attente') {
+        actionsHtml = `
+            <div class="app-actions">
+                <button class="btn-approve" onclick="approveApplication('${app.id}')"><i class="fas fa-check"></i> Valider</button>
+                <button class="btn-reject" onclick="rejectApplication('${app.id}')"><i class="fas fa-xmark"></i> Rejeter</button>
+            </div>`;
+    } else if (app.status === 'valide') {
+        actionsHtml = `
+            <div class="app-actions">
+                <button class="btn-revoke" onclick="revokeApplication('${app.id}')"><i class="fas fa-ban"></i> Révoquer l'accès</button>
+            </div>`;
+    } else if (app.status === 'rejete') {
+        actionsHtml = `
+            <div class="app-actions">
+                <button class="btn-approve" onclick="approveApplication('${app.id}')"><i class="fas fa-check"></i> Valider quand même</button>
+            </div>`;
+    }
+
+    card.innerHTML = `
+        <div class="app-card-top">
+            <div class="app-avatar">${initial}</div>
+            <div>
+                <div class="app-name">${app.name || 'Sans nom'}</div>
+                <div class="app-date">Reçu le ${dateStr}</div>
+            </div>
+            <div class="status-chip ${app.status}">${statusLabel}</div>
+        </div>
+        <div class="app-grid">
+            <div class="app-field"><label>Téléphone</label><div>${app.phone || '—'}</div></div>
+            <div class="app-field"><label>Email</label><div>${app.email || '—'}</div></div>
+            <div class="app-field"><label>Adresse</label><div>${app.address || '—'}</div></div>
+            <div class="app-field"><label>N° pièce d'identité</label><div>${app.idNumber || '—'}</div></div>
+            <div class="app-field"><label>Véhicule</label><div>${app.car ? `${app.car.brand || ''} ${app.car.model || ''} ${app.car.year ? '(' + app.car.year + ')' : ''}` : '—'}</div></div>
+            <div class="app-field"><label>Plaque</label><div>${app.car?.plate || '—'}</div></div>
+            <div class="app-field"><label>N° permis</label><div>${app.licenseNumber || '—'}</div></div>
+        </div>
+        ${photosHtml}
+        ${rejectionHtml}
+        ${actionsHtml}
+    `;
+    return card;
+}
+
+async function approveApplication(id) {
+    try {
+        await database.ref('chauffeurs/' + id).update({
+            status: 'valide', validatedAt: Date.now(), rejectionReason: null
+        });
+    } catch (error) {
+        console.error("Erreur validation:", error);
+        alert("Erreur lors de la validation.");
+    }
+}
+
+async function rejectApplication(id) {
+    const reason = prompt("Motif du rejet (visible par le chauffeur) :", "");
+    if (reason === null) return; // annulé
+    try {
+        await database.ref('chauffeurs/' + id).update({
+            status: 'rejete', rejectedAt: Date.now(), rejectionReason: reason || null
+        });
+    } catch (error) {
+        console.error("Erreur rejet:", error);
+        alert("Erreur lors du rejet.");
+    }
+}
+
+async function revokeApplication(id) {
+    if (!confirm("Révoquer l'accès de ce chauffeur ? Il ne pourra plus recevoir de courses tant qu'il n'est pas revalidé.")) return;
+    try {
+        await database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: "Accès révoqué par l'administrateur" });
+    } catch (error) {
+        console.error("Erreur révocation:", error);
+        alert("Erreur lors de la révocation.");
+    }
+}
+
+function viewPhoto(src) {
+    document.getElementById('photoViewerImg').src = src;
+    document.getElementById('photoViewer').classList.add('show');
+}
+function closePhotoViewer() {
+    document.getElementById('photoViewer').classList.remove('show');
+}
+</script>
+</body>
+</html>
