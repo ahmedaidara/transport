@@ -63,7 +63,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
   width:46px; height:46px; border-radius:50%;
   background:var(--bg); box-shadow:var(--shadow-float);
   display:flex; align-items:center; justify-content:center;
-  font-size:17px;
+  font-size:17px; color:var(--ink); text-decoration:none;
 }
 .icon-btn:active{ transform:scale(0.94); }
 
@@ -77,6 +77,33 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 .status-pill.busy .dot{ background:#F5A623; }
 .status-pill.ok .dot{ background:var(--accent); }
 .status-pill.done .dot{ background:#3DDC84; }
+
+/* ---------- Notification flottante (recherche / course en cours) ---------- */
+.live-status-bar{
+  display:none; position:fixed; top:calc(14px + env(safe-area-inset-top)); left:16px; right:16px; z-index:1900;
+  max-width:420px; margin:0 auto;
+  background:var(--bg); border-radius:20px; box-shadow:var(--shadow-float);
+  align-items:center; gap:12px; padding:12px 10px 12px 14px; cursor:pointer;
+}
+.live-status-bar.show{ display:flex; animation:rise-in 0.35s cubic-bezier(.2,.8,.2,1) both; }
+.live-status-bar.done .live-status-icon{ background:#3DDC84; color:#fff; }
+
+.live-status-icon{
+  width:38px; height:38px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:14px; flex:0 0 auto;
+}
+.live-status-text{ flex:1; min-width:0; }
+.live-status-title{ font-weight:700; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.live-status-sub{ font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.live-status-price{ font-family:var(--font-display); font-weight:700; font-size:14px; flex:0 0 auto; white-space:nowrap; }
+.live-status-toggle{
+  width:28px; height:28px; border-radius:50%; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); flex:0 0 auto;
+}
+
+.live-status-bar.reduced{ max-width:180px; padding:8px 14px 8px 10px; gap:8px; }
+.live-status-bar.reduced .live-status-text{ display:none; }
+.live-status-bar.reduced .live-status-icon{ width:30px; height:30px; }
 
 .avatar-btn{
   width:46px; height:46px; border-radius:50%;
@@ -215,6 +242,9 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 #sheetSearching{ display:none; padding:6px 0 4px; }
 #sheetSearching.show{ display:block; }
 
+#sheetSharedWait{ display:none; padding:6px 0 4px; }
+#sheetSharedWait.show{ display:block; }
+
 .spinner-ring{
   width:52px; height:52px; margin:6px auto 18px; border-radius:50%;
   border:4px solid var(--surface); border-top-color:var(--ink);
@@ -270,107 +300,107 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 
 .section-title{ font-size:13px; font-weight:700; color:var(--muted); text-transform:none; margin-bottom:12px; letter-spacing:0.2px; }
 
-/* ---------- Page compte : habillage "photo + verre" ---------- */
-#account-page{ background:#10181B; overflow:hidden; }
-#account-page .account-bg{
-  position:absolute; inset:0; z-index:0;
-  background-image:url('background.png');
-  background-size:cover; background-position:center;
+/* ---------- Page compte : en-tête photo/logo + vague ---------- */
+#account-page{ background:var(--bg); }
+
+.account-hero{
+  position:relative; width:100%; height:250px; flex:0 0 auto;
+  background:linear-gradient(135deg, #ECECEE, #F8F8F9);
+  overflow:hidden;
 }
-#account-page .account-bg::after{
-  content:''; position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(8,14,16,0.55) 0%, rgba(8,14,16,0.35) 35%, rgba(6,10,12,0.75) 100%);
+.account-hero-logo{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+.account-hero-logo .logo-badge{
+  width:92px; height:92px; border-radius:50%; background:var(--ink); color:var(--accent);
+  display:flex; align-items:center; justify-content:center; font-size:36px;
 }
-#account-page .page-header,
-#account-page .page-body{ position:relative; z-index:1; }
-#account-page .page-header{ border-bottom:none; }
-#account-page .page-header h1{
-  font-family:var(--font-serif); font-weight:700; font-size:21px; color:#fff;
+.account-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
+.account-hero-wave{ position:absolute; bottom:-1px; left:0; width:100%; height:40px; line-height:0; }
+.account-hero-back{
+  position:absolute; top:calc(14px + env(safe-area-inset-top)); left:16px; z-index:2;
+  width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.92);
+  display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:var(--shadow-float); color:var(--ink);
 }
-.icon-btn-glass{
-  width:38px; height:38px; border-radius:50%;
-  background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2);
-  backdrop-filter:blur(8px); color:#fff; font-size:14px;
-  display:flex; align-items:center; justify-content:center;
+.account-hero-photo-btn{
+  position:absolute; bottom:14px; right:16px; z-index:2; cursor:pointer;
+  width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.92);
+  display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow:var(--shadow-float); color:var(--ink);
 }
 
-#account-page .profile-card{
-  background:rgba(255,255,255,0.09);
-  border:1px solid rgba(255,255,255,0.18);
-  backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
-  border-radius:30px; padding:26px 22px 22px; text-align:center;
-  box-shadow:0 20px 50px rgba(0,0,0,0.35);
+.account-identity{ padding:2px 20px 0; }
+.account-identity h2{ font-size:21px; font-weight:800; margin-bottom:8px; }
+.account-name-input{
+  font-size:21px; font-weight:800; font-family:inherit; color:var(--ink);
+  border:none; background:transparent; width:100%; padding:2px 0; margin-bottom:8px;
 }
-.profile-avatar-wrap{ position:relative; width:96px; margin:0 auto 14px; }
-#account-page .profile-avatar-lg{
-  width:96px; height:96px; font-size:34px;
-  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);
-  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+.account-name-input::placeholder{ color:var(--faint); font-weight:700; }
+.account-inline-input{
+  border:none; background:transparent; font-family:inherit; font-size:13.5px; color:var(--muted);
+  flex:1; padding:2px 0;
 }
-.add-photo-pill{
-  position:absolute; bottom:-4px; left:50%; transform:translateX(-50%);
-  background:rgba(20,28,30,0.85); color:#fff; font-size:10.5px; font-weight:600;
-  padding:4px 10px; border-radius:20px; white-space:nowrap; cursor:pointer;
-  display:flex; align-items:center; gap:5px; border:1px solid rgba(255,255,255,0.25);
+.account-save-inline{
+  display:flex; align-items:center; gap:8px; margin-top:12px;
+  background:var(--ink); color:#fff; border:none; padding:11px 18px; border-radius:999px;
+  font-weight:700; font-size:13px;
 }
-#account-page .profile-card h3{
-  font-family:var(--font-serif); font-weight:700; font-size:22px; color:#fff; margin-top:4px;
-}
-#account-page .profile-card > p{ font-size:13px; color:rgba(255,255,255,0.65); margin-bottom:20px; }
+.account-save-inline:active{ transform:scale(0.97); }
+.account-stars{ color:#E0B84A; font-size:15px; margin-bottom:14px; letter-spacing:2px; }
+.account-contact-row{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--muted); margin-bottom:6px; }
+.account-contact-row i{ width:16px; text-align:center; color:var(--ink); }
 
-#account-page .input-group{
-  display:flex; align-items:center; gap:12px;
-  background:rgba(255,255,255,0.05);
-  border:1.5px solid #2FD9C6; border-radius:30px;
-  padding:12px 18px; margin-bottom:14px; text-align:left;
+.account-toolbar{ display:flex; border:1px solid var(--line); border-radius:18px; overflow:hidden; margin:16px 0 26px; }
+.account-toolbar button{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:14px 4px; font-size:12px; font-weight:600; color:var(--ink);
 }
-#account-page .input-group > i{ color:#2FD9C6; font-size:15px; flex:0 0 auto; }
-#account-page .input-group-text{ flex:1; min-width:0; }
-#account-page .input-group label{
-  display:block; font-size:11.5px; color:rgba(255,255,255,0.55); font-weight:500; margin-bottom:2px;
+.account-toolbar button + button{ border-left:1px solid var(--line); }
+.account-toolbar button:disabled{ opacity:0.35; }
+.account-toolbar button i{ font-size:15px; }
+
+#account-page .place-row{ cursor:pointer; border:1.5px solid transparent; }
+#account-page .place-row.selected{ border-color:var(--ink); background:var(--surface); }
+#account-page .place-icon{ background:#F5E9D3; color:#7A5A1E; }
+
+/* ---------- Chauffeurs de confiance ---------- */
+.trusted-driver-row{
+  display:flex; align-items:center; gap:12px; padding:12px 4px; border-bottom:1px solid var(--line);
 }
-#account-page .input-group input{
-  width:100%; font-size:14.5px; font-weight:500; color:#fff; background:transparent;
+.trusted-driver-row:last-child{ border-bottom:none; }
+.trusted-driver-avatar{
+  width:42px; height:42px; border-radius:50%; background:var(--ink); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; flex:0 0 auto;
 }
-#account-page .input-group input::placeholder{ color:rgba(255,255,255,0.45); }
+.trusted-driver-text{ flex:1; min-width:0; }
+.trusted-driver-text strong{ font-size:14px; display:block; }
+.trusted-driver-text small{ font-size:12px; color:var(--muted); }
+.trusted-driver-remove{ color:var(--danger); font-size:13px; padding:6px; }
+.trusted-empty{ font-size:13px; color:var(--muted); text-align:center; padding:18px 10px; border:1px dashed var(--line); border-radius:16px; margin-bottom:26px; }
+
+/* ---------- Historique des commandes ---------- */
+.history-card{ border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; }
+.history-card-top{ display:flex; justify-content:space-between; font-weight:700; font-size:14px; margin-bottom:4px; }
+.history-card-meta{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+.history-card-bottom{ display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+.history-status{ color:#1DAA5C; font-weight:600; }
+.history-price{ font-family:var(--font-display); font-weight:700; }
+.history-fav-btn{ font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); }
+.history-fav-btn.active{ color:#E0B84A; font-weight:700; }
+.history-empty{ font-size:13px; color:var(--muted); text-align:center; padding:18px 10px; }
+.history-voir-tout{ text-align:center; padding:14px; color:var(--muted); font-weight:600; font-size:13.5px; cursor:pointer; }
+
+.account-danger-zone{ margin-top:34px; padding-top:6px; border-top:1px solid var(--line); }
+.account-danger-link{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; text-align:center; padding:15px; font-weight:600; font-size:14px; color:var(--ink);
+}
+.account-danger-link.delete{ color:var(--danger); }
 
 .save-profile-btn{
-  width:100%; background:linear-gradient(135deg, #14454A, #0D3336);
-  color:#fff; border:none; padding:16px; border-radius:30px;
+  width:100%; background:var(--ink); color:#fff; border:none; padding:16px; border-radius:var(--r-md);
   font-weight:700; font-size:15px; margin-top:6px;
   display:flex; align-items:center; justify-content:center; gap:10px;
-  box-shadow:0 10px 24px rgba(0,0,0,0.3);
 }
 .save-profile-btn i{ font-size:15px; opacity:0.85; }
 .save-profile-btn:active{ transform:scale(0.98); }
-
-.favorites-card{
-  background:rgba(20,24,26,0.4); border:1px solid rgba(255,255,255,0.12);
-  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-  border-radius:26px; padding:18px 16px; margin-bottom:18px;
-}
-#account-page .section-title{
-  font-family:var(--font-serif); font-weight:700; font-size:19px; color:#fff;
-  margin-bottom:14px;
-}
-#account-page .place-row{
-  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
-  border-radius:18px; padding:12px 14px; margin-bottom:10px; border-bottom:none;
-}
-#account-page .place-row:last-child{ margin-bottom:0; }
-#account-page .place-icon{ color:#fff; }
-#account-page .place-icon.icon-teal{ background:linear-gradient(135deg,#2FD9C6,#1B9E8E); }
-#account-page .place-icon.icon-gold{ background:linear-gradient(135deg,#D9B84A,#8A6D1E); }
-#account-page .place-icon.icon-orange{ background:linear-gradient(135deg,#F0954B,#B5591C); }
-#account-page .place-text strong{ color:#fff; }
-#account-page .place-text small{ color:rgba(255,255,255,0.55); }
-#account-page .place-row i.chev{ color:rgba(255,255,255,0.5); }
-
-#account-page .add-place-row{
-  justify-content:center; gap:10px; color:#fff; font-weight:600;
-  font-size:14px; padding:14px 4px 6px;
-}
-#account-page .add-place-form .input-group{ background:rgba(255,255,255,0.05); }
 
 .places-list{ margin-bottom:4px; }
 .place-row{
@@ -480,6 +510,39 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 .overlay-item .overlay-item-text small{ font-size:12.5px; color:var(--muted); }
 .overlay-empty{ text-align:center; color:var(--muted); font-size:13.5px; padding:30px 10px; }
 
+.overlay-item-icon-accent{ background:var(--accent); color:var(--ink); }
+
+/* ---------- Mode "Sélectionner sur la carte" ---------- */
+.map-pick-banner{
+  display:none; position:fixed; top:0; left:0; right:0; z-index:2600;
+  align-items:center; gap:10px;
+  padding:calc(16px + env(safe-area-inset-top)) 16px 30px;
+  background:linear-gradient(to bottom, rgba(255,255,255,0.95) 40%, rgba(255,255,255,0));
+}
+.map-pick-banner.show{ display:flex; }
+.map-pick-banner span{
+  font-weight:600; font-size:13.5px; background:var(--bg); padding:12px 16px;
+  border-radius:999px; box-shadow:var(--shadow-float); flex:1;
+}
+
+.map-pick-pin{
+  display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -100%);
+  z-index:900; pointer-events:none; flex-direction:column; align-items:center;
+}
+.map-pick-pin.show{ display:flex; animation:pin-drop 0.35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes pin-drop{ from{ transform:translate(-50%, -130%); opacity:0; } to{ transform:translate(-50%, -100%); opacity:1; } }
+.map-pick-pin-shadow{ width:12px; height:5px; border-radius:50%; background:rgba(0,0,0,0.3); margin-top:-3px; filter:blur(1px); }
+
+.map-pick-confirm-btn{
+  display:none; align-items:center; justify-content:center; gap:10px;
+  position:fixed; left:16px; right:16px; bottom:calc(20px + env(safe-area-inset-bottom));
+  z-index:2600; max-width:480px; margin:0 auto;
+  background:var(--ink); color:#fff; padding:17px; border-radius:var(--r-md);
+  font-weight:700; font-size:15.5px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+.map-pick-confirm-btn.show{ display:flex; }
+.map-pick-confirm-btn:disabled{ opacity:0.6; }
+
 /* ---------- Modal "Quand voulez-vous partir ?" ---------- */
 .schedule-option{
   display:flex; align-items:center; gap:14px; padding:14px;
@@ -502,9 +565,94 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 .schedule-datetime.show{ display:flex; }
 .schedule-datetime .input-group{ flex:1; }
 
+/* ---------- Modal "Pourquoi annulez-vous ?" ---------- */
+.cancel-reason-list{ max-height:44vh; overflow-y:auto; margin-bottom:4px; }
+.cancel-reason-row{
+  padding:14px 4px; border-bottom:1px solid var(--line);
+  font-size:14.5px; font-weight:500; display:flex; align-items:center; justify-content:space-between;
+}
+.cancel-reason-row:last-child{ border-bottom:none; }
+.cancel-reason-row::after{ content:''; width:18px; height:18px; border-radius:50%; border:2px solid var(--line); flex:0 0 auto; }
+.cancel-reason-row.active{ font-weight:700; color:var(--danger); }
+.cancel-reason-row.active::after{ border-color:var(--danger); background:radial-gradient(var(--danger) 0 40%, transparent 42%); }
+
+/* ---------- Toast (message temporaire) ---------- */
+.app-toast{
+  position:fixed; bottom:calc(110px + env(safe-area-inset-bottom)); left:16px; right:16px; z-index:5600;
+  max-width:420px; margin:0 auto;
+  background:var(--ink); color:#fff; padding:14px 18px; border-radius:14px;
+  font-size:13.5px; font-weight:600; text-align:center; line-height:1.4;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  opacity:0; pointer-events:none; transform:translateY(10px);
+  transition:opacity 0.25s, transform 0.25s;
+}
+.app-toast.show{ opacity:1; transform:translateY(0); }
+
 /* ---------- Bouton "ma position" déplaçable ---------- */
 .locate-btn{ touch-action:none; user-select:none; }
 .locate-btn.dragging{ box-shadow:0 10px 30px rgba(10,10,11,0.3); transition:none; }
+
+/* ---------- Type de course (privée / partagée) ---------- */
+.ride-type-picker{ display:none; margin-top:18px; }
+.ride-type-picker.show{ display:block; animation:rise-in 0.4s cubic-bezier(.2,.8,.2,1) both; }
+
+.ride-type-card{
+  display:flex; align-items:center; gap:14px;
+  background:var(--surface); border-radius:var(--r-md);
+  padding:16px; cursor:pointer;
+}
+.ride-type-card + .ride-type-card{ margin-top:10px; }
+.ride-type-icon{
+  width:46px; height:46px; border-radius:50%; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; font-size:18px; flex:0 0 auto;
+}
+.ride-type-icon-accent{ background:var(--accent); color:var(--ink); }
+.ride-type-text{ flex:1; min-width:0; }
+.ride-type-title{ font-weight:700; font-size:15px; }
+.ride-type-sub{ font-size:12.5px; color:var(--muted); margin-top:1px; }
+
+.back-link{
+  display:block; color:var(--muted); font-weight:600; font-size:13px;
+  margin-bottom:14px; padding:2px 0;
+}
+
+/* ---------- Course partagée : tarifs ---------- */
+.shared-picker{ display:none; margin-top:18px; }
+.shared-picker.show{ display:block; animation:rise-in 0.4s cubic-bezier(.2,.8,.2,1) both; }
+
+.shared-intro{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.shared-intro-icon{
+  width:46px; height:46px; border-radius:50%; background:var(--accent); color:var(--ink);
+  display:flex; align-items:center; justify-content:center; font-size:18px; flex:0 0 auto;
+}
+.shared-intro-title{ font-weight:700; font-size:15.5px; }
+.shared-intro-sub{ font-size:12.5px; color:var(--muted); margin-top:1px; }
+
+.shared-tier-list{ background:var(--surface); border-radius:var(--r-md); overflow:hidden; margin-bottom:12px; }
+.shared-tier-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:14px 16px;
+}
+.shared-tier-row + .shared-tier-row{ border-top:1px solid var(--line); }
+.shared-tier-row.best .shared-tier-people{ color:var(--ink); }
+.shared-tier-people{ font-weight:700; font-size:14px; display:flex; align-items:center; gap:8px; }
+.shared-tier-people i{ font-size:12px; color:var(--muted); }
+.shared-tier-price{ text-align:right; }
+.shared-tier-price b{ font-family:var(--font-display); font-size:15.5px; }
+.shared-tier-badge{
+  display:inline-block; background:var(--accent); color:var(--ink);
+  font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px;
+}
+.shared-note{ font-size:12px; color:var(--muted); line-height:1.5; margin-bottom:16px; text-align:center; }
+
+.shared-progress{ text-align:center; font-size:14px; font-weight:600; color:var(--muted); margin-bottom:16px; }
+.shared-progress span{ font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--ink); }
+
+.shared-next-tier-row{
+  display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted);
+  padding-top:8px; margin-top:8px; border-top:1px solid var(--line);
+}
+.shared-next-tier-row b{ color:var(--ink); font-family:var(--font-display); }
 
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
@@ -517,8 +665,18 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 
 <div class="top-bar">
   <button class="icon-btn" onclick="toggleAccount()" aria-label="Menu"><i class="fas fa-bars"></i></button>
-  <div class="status-pill ok" id="orderStatusPill"><span class="dot"></span><span id="orderStatus">Prêt</span></div>
-  <button class="avatar-btn" id="userInfoHeader" onclick="toggleAccount()" aria-label="Mon compte"><span id="headerUserInitial"><i class="fas fa-user" style="font-size:15px;"></i></span></button>
+  <a class="icon-btn" href="info.html" target="_blank" rel="noopener" aria-label="Informations"><i class="fas fa-circle-info"></i></a>
+</div>
+
+<!-- ===================== NOTIFICATION FLOTTANTE (course/recherche en cours) ===================== -->
+<div class="live-status-bar" id="liveStatusBar" onclick="handleLiveStatusBarClick()">
+  <div class="live-status-icon" id="liveStatusIcon"><i class="fas fa-magnifying-glass"></i></div>
+  <div class="live-status-text">
+    <div class="live-status-title" id="liveStatusTitle">Recherche…</div>
+    <div class="live-status-sub" id="liveStatusSub"></div>
+  </div>
+  <div class="live-status-price" id="liveStatusPrice"></div>
+  <button class="live-status-toggle" id="liveStatusToggleBtn" onclick="toggleLiveStatusSize(event)" aria-label="Réduire"><i class="fas fa-chevron-up"></i></button>
 </div>
 
 <button class="locate-btn" id="locateBtn" style="bottom:220px;" onclick="getCurrentLocation()" aria-label="Ma position"><i class="fas fa-location-crosshairs"></i></button>
@@ -558,8 +716,44 @@ button:focus-visible, input:focus-visible, a:focus-visible{
       </div>
     </div>
 
+    <!-- ---- Choix : course privée ou partagée ---- -->
+    <div class="ride-type-picker" id="rideTypePicker">
+      <div class="ride-type-card" onclick="chooseRideType('private')">
+        <div class="ride-type-icon"><i class="fas fa-user"></i></div>
+        <div class="ride-type-text">
+          <div class="ride-type-title">Course privée</div>
+          <div class="ride-type-sub">Vous êtes seul ou avec votre groupe</div>
+        </div>
+        <i class="fas fa-chevron-right chev"></i>
+      </div>
+      <div class="ride-type-card" onclick="chooseRideType('shared')">
+        <div class="ride-type-icon ride-type-icon-accent"><i class="fas fa-people-group"></i></div>
+        <div class="ride-type-text">
+          <div class="ride-type-title">Course partagée</div>
+          <div class="ride-type-sub">Partagez le trajet, payez moins cher</div>
+        </div>
+        <i class="fas fa-chevron-right chev"></i>
+      </div>
+    </div>
+
+    <!-- ---- Course partagée : tarifs selon le nombre de passagers ---- -->
+    <div class="shared-picker" id="sharedPicker">
+      <button class="back-link" onclick="backFromSharedPicker()"><i class="fas fa-arrow-left"></i> Choix du véhicule</button>
+      <div class="shared-intro">
+        <div class="shared-intro-icon"><i class="fas fa-people-group"></i></div>
+        <div>
+          <div class="shared-intro-title">Course partagée</div>
+          <div class="shared-intro-sub">Jusqu'à 4 passagers — plus on est nombreux, moins on paie chacun</div>
+        </div>
+      </div>
+      <div class="shared-tier-list" id="sharedTierList"></div>
+      <p class="shared-note">Le prix final dépend du nombre de passagers réellement trouvés — jamais facturé plus cher que ce qui est affiché.</p>
+      <button class="cta-btn show" onclick="startSharedSearch()">Rechercher des passagers</button>
+    </div>
+
     <div class="ride-list" id="rideList">
-      <div class="ride-row active" data-vehicle="eco" data-base="500" data-rate="350" onclick="setActiveRide(this)">
+      <button class="back-link" onclick="backToRideType()"><i class="fas fa-arrow-left"></i> Type de course</button>
+      <div class="ride-row active" data-vehicle="eco" data-base="500" data-rate-km="100" data-rate-min="10" data-min="700" onclick="setActiveRide(this)">
         <div class="ride-icon">
           <svg viewBox="0 0 24 24" width="27" height="27" fill="currentColor">
             <path d="M5.2 15.2 6.4 12a2 2 0 0 1 1.9-1.3h7.4A2 2 0 0 1 17.6 12l1.2 3.2c.8.2 1.3 1 1.3 1.8v1.5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-.5H6.9v.5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V17c0-.9.5-1.6 1.3-1.8Zm2.3-2.8-.8 2.3h10.6l-.8-2.3a.6.6 0 0 0-.6-.4H8.1a.6.6 0 0 0-.6.4Z"/>
@@ -573,7 +767,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
         </div>
         <div class="ride-price">--- F</div>
       </div>
-      <div class="ride-row" data-vehicle="xl" data-base="900" data-rate="500" onclick="setActiveRide(this)">
+      <div class="ride-row" data-vehicle="xl" data-base="900" data-rate-km="175" data-rate-min="10" data-min="1300" onclick="setActiveRide(this)">
         <div class="ride-icon">
           <svg viewBox="0 0 24 24" width="27" height="27" fill="currentColor">
             <path d="M3.5 8.5A1.5 1.5 0 0 1 5 7h13a2 2 0 0 1 2 1.6l.8 4.1c.7.2 1.2.9 1.2 1.6v1.7a1 1 0 0 1-1 1h-1.1a1 1 0 0 1-1-1v-.4H6.1v.4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1.7c0-.9.6-1.6 1.4-1.8Zm1.5 1v3.6h14v-2.9a.6.6 0 0 0-.5-.6L18 9.4V9H5.4a.4.4 0 0 0-.4.5Z"/>
@@ -587,7 +781,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
         </div>
         <div class="ride-price">--- F</div>
       </div>
-      <div class="ride-row" data-vehicle="suv" data-base="1200" data-rate="650" onclick="setActiveRide(this)">
+      <div class="ride-row" data-vehicle="suv" data-base="1000" data-rate-km="200" data-rate-min="10" data-min="1500" onclick="setActiveRide(this)">
         <div class="ride-icon">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
             <path d="M4.3 15.4v-4.6a1 1 0 0 1 1-1h1l1.4-2.4A2 2 0 0 1 9.4 6.3h5.2a2 2 0 0 1 1.7 1l1.5 2.5h1a1 1 0 0 1 1 1v4.6a1 1 0 0 1-1 1h-.6a2.2 2.2 0 0 1-4.3 0H9.9a2.2 2.2 0 0 1-4.3 0h-.3a1 1 0 0 1-1-1Zm3.9-5.6h7.6l-.9-1.5a.6.6 0 0 0-.5-.3H9.6a.6.6 0 0 0-.5.3Z"/>
@@ -601,7 +795,7 @@ button:focus-visible, input:focus-visible, a:focus-visible{
         </div>
         <div class="ride-price">--- F</div>
       </div>
-      <div class="ride-row" data-vehicle="luxe" data-base="2000" data-rate="900" onclick="setActiveRide(this)">
+      <div class="ride-row" data-vehicle="luxe" data-base="1500" data-rate-km="300" data-rate-min="10" data-min="2500" onclick="setActiveRide(this)">
         <div class="ride-icon ride-icon-luxe">
           <svg viewBox="0 0 24 24" width="27" height="27" fill="currentColor">
             <path d="M2.6 15.8v-2.3a1 1 0 0 1 .4-.8l2.7-2a2 2 0 0 1 .9-.4l2.1-.3.9-1.5a2 2 0 0 1 1.7-1h2.3a2 2 0 0 1 1.7 1l.9 1.5 2.4.4a1 1 0 0 1 .7.5l1 1.7c.1.2.2.4.2.6v2.6a1 1 0 0 1-1 1h-.6a2.1 2.1 0 0 1-4.2 0H9a2.1 2.1 0 0 1-4.2 0h-.6a1 1 0 0 1-1-1Z"/>
@@ -630,7 +824,23 @@ button:focus-visible, input:focus-visible, a:focus-visible{
       <div class="trip-summary-row"><span class="dot" style="background:var(--ink); border-radius:2px;"></span><span class="addr" id="searchingTo">Destination</span></div>
       <div class="trip-summary-price"><span>Prix estimé</span><b id="searchingPrice">--- F</b></div>
     </div>
-    <button class="cta-btn secondary show" onclick="cancelSearch()">Annuler la recherche</button>
+    <button class="cta-btn secondary show" onclick="openCancelReasonModal('private')">Annuler la recherche</button>
+  </div>
+
+  <!-- ---- État 2b : recherche de passagers pour une course partagée ---- -->
+  <div id="sheetSharedWait">
+    <div class="spinner-ring"></div>
+    <div class="searching-title">Recherche de passagers en cours…</div>
+    <div class="shared-progress">
+      <span id="sharedProgressCount">1/4</span> passagers trouvés
+    </div>
+    <div class="trip-summary">
+      <div class="trip-summary-price"><span>Prix actuel estimé</span><b id="sharedCurrentPrice">--- F</b></div>
+      <div id="sharedNextTiers"></div>
+    </div>
+    <p class="shared-note" id="sharedRangeNote" style="display:none;"></p>
+    <button class="cta-btn show" id="sharedLeaveNowBtn" onclick="finalizeSharedGroup()">Partir maintenant à ce prix</button>
+    <button class="cta-btn secondary show" onclick="openCancelReasonModal('shared')">Annuler</button>
   </div>
 
   <!-- ---- État 3 : chauffeur trouvé / course en cours ---- -->
@@ -648,11 +858,15 @@ button:focus-visible, input:focus-visible, a:focus-visible{
       <a class="action-btn call" id="driverCallBtn" href="tel:"><i class="fas fa-phone"></i> Appeler</a>
       <div class="action-btn"><i class="fas fa-message"></i> Message</div>
     </div>
+    <button class="history-fav-btn" id="tripFavoriteBtn" style="display:none; width:100%; justify-content:center; cursor:pointer;" onclick="toggleTrustedFromTrip()">
+      <i class="far fa-star"></i> Ajouter à mes chauffeurs de confiance
+    </button>
     <div class="trip-summary">
       <div class="trip-summary-row"><span class="dot" style="background:var(--accent); border:2px solid var(--ink); border-radius:50%;"></span><span class="addr" id="tripFrom">Départ</span></div>
       <div class="trip-summary-row"><span class="dot" style="background:var(--ink); border-radius:2px;"></span><span class="addr" id="tripTo">Destination</span></div>
       <div class="trip-summary-price"><span>Prix de la course</span><b id="tripPrice">--- F</b></div>
     </div>
+    <button class="back-link" id="tripCancelLink" style="text-align:center; margin:14px auto 0; color:var(--danger);" onclick="openCancelReasonModal('trip')">Annuler la course</button>
   </div>
 </div>
 
@@ -667,6 +881,22 @@ button:focus-visible, input:focus-visible, a:focus-visible{
   </div>
   <div class="overlay-results" id="overlayResults"></div>
 </div>
+
+<!-- ===================== MODE "SÉLECTIONNER SUR LA CARTE" ===================== -->
+<div class="map-pick-banner" id="mapPickBanner">
+  <button class="icon-btn" style="box-shadow:none;width:40px;height:40px;font-size:14px;" onclick="cancelMapPick()" aria-label="Annuler"><i class="fas fa-arrow-left"></i></button>
+  <span id="mapPickLabel">Faites glisser la carte pour placer le repère</span>
+</div>
+<div class="map-pick-pin" id="mapPickPin">
+  <svg viewBox="0 0 28 36" width="34" height="44">
+    <path d="M14 0C6.8 0 1 5.8 1 13c0 9.7 13 23 13 23s13-13.3 13-23C27 5.8 21.2 0 14 0Z" fill="#0A0A0B"/>
+    <circle cx="14" cy="13" r="6" fill="#C8FA3E"/>
+  </svg>
+  <div class="map-pick-pin-shadow"></div>
+</div>
+<button class="map-pick-confirm-btn" id="mapPickConfirmBtn" onclick="confirmMapPick()">
+  <i class="fas fa-check"></i> Confirmer cet endroit
+</button>
 
 <!-- ===================== MODAL "QUAND VOULEZ-VOUS PARTIR ?" ===================== -->
 <div class="modal-sheet" id="scheduleModal">
@@ -708,73 +938,108 @@ button:focus-visible, input:focus-visible, a:focus-visible{
   <button class="cta-btn show" style="margin-top:18px;" onclick="confirmSchedule()">Confirmer</button>
 </div>
 
+<!-- ===================== MODAL "POURQUOI ANNULEZ-VOUS ?" ===================== -->
+<div class="modal-sheet" id="cancelReasonModal">
+  <div class="sheet-handle"></div>
+  <div class="modal-title-row">
+    <h2 style="font-size:16.5px;font-weight:700;">Pourquoi annulez-vous ?</h2>
+    <button class="icon-btn" style="box-shadow:none;background:var(--surface);width:34px;height:34px;font-size:13px;" onclick="closeCancelReasonModal()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cancel-reason-list" id="cancelReasonList"></div>
+  <div class="input-group" id="cancelOtherGroup" style="display:none; margin-top:4px;">
+    <label>Précisez</label>
+    <textarea id="cancelOtherText" rows="2" placeholder="Expliquez brièvement…" style="width:100%; font-size:14.5px; font-weight:500; font-family:inherit; border:none; outline:none; resize:none; background:transparent;"></textarea>
+  </div>
+  <button class="cta-btn show" id="cancelConfirmBtn" style="margin-top:16px; background:var(--danger);" disabled onclick="confirmCancellation()">Confirmer l'annulation</button>
+</div>
+
 <!-- ===================== ACCOUNT PAGE ===================== -->
 <div class="page" id="account-page">
-  <div class="account-bg"></div>
-  <div class="page-header">
-    <button class="icon-btn-glass" onclick="toggleAccount()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
-    <h1>Mon Compte</h1>
-    <div style="width:40px;"></div>
-  </div>
+  <div class="page-body" style="padding:0;">
 
-  <div class="page-body">
-    <div class="profile-card">
-      <div class="profile-avatar-wrap">
-        <div class="profile-avatar-lg" id="profileAvatarInitial">?</div>
-        <label class="add-photo-pill" for="profilePhotoInput"><i class="fas fa-image"></i> Add Photo</label>
-        <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;">
-      </div>
-      <h3 id="profileDisplayName">Nouveau Client</h3>
-      <p>Modifiez vos informations ci-dessous</p>
-
-      <div class="input-group">
-        <i class="fas fa-user"></i>
-        <div class="input-group-text">
-          <label>Nom Complet</label>
-          <input type="text" id="userName" placeholder="Entrez votre nom">
-        </div>
-      </div>
-      <div class="input-group">
-        <i class="fas fa-phone"></i>
-        <div class="input-group-text">
-          <label>Numéro de téléphone</label>
-          <input type="tel" id="userPhone" placeholder="+221 77 000 00 00">
-        </div>
-      </div>
-      <button class="save-profile-btn" onclick="saveUserProfile()">Enregistrer mon profil <i class="fas fa-check-circle"></i></button>
+    <div class="account-hero" id="accountHero">
+      <div class="account-hero-logo" id="accountHeroLogo"><div class="logo-badge"><i class="fas fa-car"></i></div></div>
+      <img id="accountHeroPhoto" style="display:none;" alt="">
+      <button class="account-hero-back" onclick="toggleAccount()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
+      <label class="account-hero-photo-btn" for="profilePhotoInput" aria-label="Changer la photo"><i class="fas fa-camera"></i></label>
+      <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;">
+      <svg class="account-hero-wave" viewBox="0 0 500 60" preserveAspectRatio="none"><path d="M0,30 C150,70 350,-10 500,30 L500,60 L0,60 Z" fill="var(--bg)"/></svg>
     </div>
 
-    <div class="favorites-card">
-      <p class="section-title">Adresses favorites</p>
+    <div class="account-identity">
+      <input type="text" id="userName" class="account-name-input" placeholder="Votre nom">
+      <div class="account-stars" id="accountStars">★★★★★</div>
+      <div class="account-contact-row"><i class="fas fa-phone"></i><input type="tel" id="userPhone" class="account-inline-input" placeholder="Numéro de téléphone"></div>
+      <div class="account-contact-row"><i class="fas fa-envelope"></i><input type="email" id="userEmail" class="account-inline-input" placeholder="Adresse email"></div>
+      <button class="account-save-inline" onclick="saveUserProfile()"><i class="fas fa-check"></i> Enregistrer</button>
+    </div>
+
+    <div style="padding:20px;">
+      <p class="section-title" style="margin-top:6px;">Chauffeurs de confiance</p>
+      <div id="trustedDriversList"></div>
+
+      <p class="section-title" style="margin-top:30px;">Mes Adresses</p>
       <div id="favorites-list" class="places-list"></div>
-    </div>
 
-    <button class="add-place-row" onclick="toggleAddPlaceForm()">
-      <i class="fas fa-plus"></i> Ajouter une nouvelle adresse
-    </button>
+      <div class="account-toolbar">
+        <button onclick="openAddAddressPage()"><i class="fas fa-plus"></i>Ajouter une adresse</button>
+        <button id="editAddressBtn" disabled onclick="editSelectedAddress()"><i class="fas fa-pen"></i>Modifier</button>
+        <button id="deleteAddressBtn" disabled onclick="deleteSelectedAddress()"><i class="fas fa-trash"></i>Supprimer</button>
+      </div>
 
-    <div class="add-place-form" id="addPlaceForm" style="display:none;">
-      <div class="input-group">
-        <i class="fas fa-tag"></i>
-        <div class="input-group-text">
-          <label>Nom</label>
-          <input type="text" id="newFavName" placeholder="Ex : Maison, Travail">
-        </div>
+      <p class="section-title" style="margin-top:30px;">Historique des commandes</p>
+      <div id="orderHistoryList"></div>
+      <div class="history-voir-tout" id="historyVoirTout" onclick="expandOrderHistory()" style="display:none;">Voir tout</div>
+
+      <div class="account-danger-zone">
+        <button class="account-danger-link" onclick="openAccountActionModal('logout')"><i class="fas fa-right-from-bracket"></i> Se déconnecter</button>
+        <button class="account-danger-link delete" onclick="openAccountActionModal('delete')"><i class="fas fa-trash"></i> Supprimer mon compte</button>
       </div>
-      <div class="input-group">
-        <i class="fas fa-location-dot"></i>
-        <div class="input-group-text">
-          <label>Adresse</label>
-          <input type="text" id="newFavAddr" placeholder="Adresse à Dakar">
-        </div>
-      </div>
-      <button class="save-profile-btn" onclick="addFavorite()">Ajouter aux favoris</button>
     </div>
   </div>
 </div>
 
+<!-- ===================== NOUVELLE ADRESSE (plein écran) ===================== -->
+<div class="page" id="addAddressPage">
+  <div class="page-header">
+    <button class="icon-btn" style="box-shadow:none;background:var(--surface);width:40px;height:40px;font-size:14px;" onclick="closeAddAddressPage()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
+    <h1 id="addAddressTitle">Nouvelle adresse</h1>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="page-body">
+    <div class="input-group">
+      <i class="fas fa-tag"></i>
+      <div class="input-group-text">
+        <label>Nom</label>
+        <input type="text" id="newFavName" placeholder="Ex : Maison, Travail">
+      </div>
+    </div>
+    <div class="input-group">
+      <i class="fas fa-location-dot"></i>
+      <div class="input-group-text">
+        <label>Adresse</label>
+        <input type="text" id="newFavAddr" placeholder="Rechercher ou sélectionner sur la carte" readonly onclick="openSearchOverlay('favAddress')">
+      </div>
+    </div>
+    <button class="save-profile-btn" id="addPlaceSubmitBtn" onclick="addFavorite()">Ajouter aux favoris</button>
+  </div>
+</div>
+
+<!-- ===================== MODAL ACTION COMPTE (déconnexion / suppression) ===================== -->
+<div class="modal-sheet" id="accountActionModal">
+  <div class="sheet-handle"></div>
+  <div class="centered-modal">
+    <div class="badge-circle" id="accountActionIcon"><i class="fas fa-right-from-bracket"></i></div>
+    <h3 id="accountActionTitle">Se déconnecter ?</h3>
+    <p id="accountActionText">Vos informations resteront enregistrées sur cet appareil.</p>
+  </div>
+  <button class="cta-btn show" id="accountActionConfirmBtn" onclick="confirmAccountAction()">Confirmer</button>
+  <button class="cta-btn secondary show" onclick="closeAccountActionModal()">Annuler</button>
+</div>
+
 <!-- ===================== MODAL BACKDROP ===================== -->
 <div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
+<div class="app-toast" id="appToast"></div>
 
 <!-- ===================== ACCOUNT-REQUIRED MODAL ===================== -->
 <div class="modal-sheet" id="accountRequiredModal">
@@ -818,6 +1083,7 @@ let endCoords = null;
 let startMarker, endMarker, polyline = null;
 let activeInputId = 'startInput';
 let distance = 0;
+let durationMin = 0;
 let selectedVehicle = 'eco';
 let currentOrderId = null;
 let orderListener = null;
@@ -846,38 +1112,417 @@ function expandSheet() {
     document.getElementById('endInput').focus();
     activeInputId = 'endInput';
 }
-function revealRideOptions() {
+let ridePickerContext = 'private'; // 'private' | 'sharedVehicle'
+
+function revealRideOptions(context) {
+    ridePickerContext = context || 'private';
     document.getElementById('sheetHome').classList.add('expanded');
     document.getElementById('searchForm').classList.add('open');
     document.getElementById('rideList').classList.add('show');
     document.getElementById('orderBtn').classList.add('show');
+
+    const btn = document.getElementById('orderBtn');
+    if (ridePickerContext === 'sharedVehicle') {
+        btn.innerText = 'Continuer';
+        btn.onclick = proceedToSharedTiers;
+    } else {
+        btn.innerText = 'Commander MOR-TAXI';
+        btn.onclick = commander;
+    }
+}
+
+// ==================== TYPE DE COURSE : PRIVÉE OU PARTAGÉE ====================
+function hideRideChoiceScreens() {
+    document.getElementById('rideTypePicker').classList.remove('show');
+    document.getElementById('sharedPicker').classList.remove('show');
+    document.getElementById('rideList').classList.remove('show');
+    document.getElementById('orderBtn').classList.remove('show');
+}
+
+function revealRideTypeChoice() {
+    document.getElementById('sheetHome').classList.add('expanded');
+    document.getElementById('searchForm').classList.add('open');
+    hideRideChoiceScreens();
+    document.getElementById('rideTypePicker').classList.add('show');
+}
+
+function chooseRideType(type) {
+    hideRideChoiceScreens();
+    if (type === 'private') {
+        revealRideOptions('private');
+    } else {
+        showAppToast("Si vous êtes plus d'une personne, vous ne pouvez pas choisir l'option Course partagée !");
+        revealRideOptions('sharedVehicle'); // on choisit d'abord le type de véhicule
+    }
+}
+
+// Depuis la liste des véhicules en contexte "partagé" : passe à l'écran des tarifs partagés
+function proceedToSharedTiers() {
+    hideRideChoiceScreens();
+    renderSharedTierList();
+    document.getElementById('sharedPicker').classList.add('show');
+}
+
+// Depuis l'écran des tarifs partagés : retour au choix du véhicule (pas jusqu'au type de course)
+function backFromSharedPicker() {
+    hideRideChoiceScreens();
+    revealRideOptions('sharedVehicle');
+}
+
+function backToRideType() {
+    hideRideChoiceScreens();
+    document.getElementById('rideTypePicker').classList.add('show');
+}
+
+// ==================== COURSE PARTAGÉE ====================
+// Règle de revenu : le prix par personne baisse, mais le revenu TOTAL de la course
+// (prix x nombre de passagers) augmente toujours avec le nombre de passagers,
+// donc le chauffeur ne gagne jamais moins qu'une course privée normale.
+const SHARED_MAX = 4;
+const SHARED_DISCOUNT = { 1: 0, 2: 0.35, 3: 0.55, 4: 0.65 };
+const SHARED_MAX_DETOUR_KM = 2;                 // détour maximum accepté pour ajouter un passager
+const SHARED_GROUP_MAX_AGE_MS = 15 * 60 * 1000; // un groupe trop vieux n'est plus proposé
+const SHARED_WAIT_TIMEOUT_MS = 90 * 1000;       // au-delà, on part avec ce qu'on a trouvé
+
+function getSharedSoloPrice() {
+    // Basé sur le véhicule choisi juste avant (Bou Eco / XL / SUV / Luxe)
+    return roundToFifty(getVehiclePrice(selectedVehicle));
+}
+function sharedPricePerPerson(n, soloPrice) {
+    return roundToFifty((soloPrice ?? getSharedSoloPrice()) * (1 - SHARED_DISCOUNT[n]));
+}
+
+function renderSharedTierList() {
+    const container = document.getElementById('sharedTierList');
+    container.innerHTML = '';
+    for (let n = 1; n <= SHARED_MAX; n++) {
+        const row = document.createElement('div');
+        row.className = 'shared-tier-row' + (n === SHARED_MAX ? ' best' : '');
+        const pct = Math.round(SHARED_DISCOUNT[n] * 100);
+        row.innerHTML = `
+            <div class="shared-tier-people"><i class="fas fa-user"></i> ${n} passager${n > 1 ? 's' : ''}</div>
+            <div class="shared-tier-price"><b>${sharedPricePerPerson(n)} F</b> / personne ${pct > 0 ? `<span class="shared-tier-badge">-${pct}%</span>` : ''}</div>
+        `;
+        container.appendChild(row);
+    }
+}
+
+// ---- Distance et itinéraire (formule haversine — pas d'appel réseau nécessaire pour comparer des trajets) ----
+function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function routeLength(stops) {
+    let total = 0;
+    for (let i = 0; i < stops.length - 1; i++) {
+        total += distanceKm(stops[i].lat, stops[i].lng, stops[i + 1].lat, stops[i + 1].lng);
+    }
+    return total;
+}
+
+// Cherche la meilleure façon d'insérer un départ + une arrivée dans un itinéraire existant,
+// en respectant l'ordre (le départ doit toujours précéder l'arrivée du même passager).
+// Retourne le nouvel itinéraire et le détour (en km) que cela ajoute au trajet du groupe.
+function evaluateInsertion(stops, pickupStop, dropoffStop) {
+    const originalLen = routeLength(stops);
+    let best = null;
+    for (let i = 0; i <= stops.length; i++) {
+        const withPickup = [...stops.slice(0, i), pickupStop, ...stops.slice(i)];
+        for (let j = i + 1; j <= withPickup.length; j++) {
+            const withBoth = [...withPickup.slice(0, j), dropoffStop, ...withPickup.slice(j)];
+            const added = routeLength(withBoth) - originalLen;
+            if (best === null || added < best.added) best = { added, stops: withBoth };
+        }
+    }
+    return best;
+}
+
+// ---- État du groupe en cours ----
+let sharedGroupId = null;
+let sharedGroupListener = null;
+let sharedWaitTimer = null;
+
+function detachSharedGroupListener() {
+    if (sharedGroupListener && sharedGroupId) {
+        database.ref('groupes_partages/' + sharedGroupId).off('value', sharedGroupListener);
+    }
+    sharedGroupListener = null;
+    sharedGroupId = null;
+    clearTimeout(sharedWaitTimer);
+}
+
+// Tente de rejoindre un groupe précis de façon sûre (transaction Firebase) : si un autre
+// passager a rempli/modifié le groupe entre-temps, la transaction ré-évalue automatiquement
+// et abandonne proprement plutôt que d'écraser les données de quelqu'un d'autre.
+async function tryJoinGroup(gid, pickupStop, dropoffStop, myRider) {
+    let joined = false;
+    await database.ref('groupes_partages/' + gid).transaction((g) => {
+        if (!g || g.status !== 'recherche') return g;
+        const count = g.riders ? Object.keys(g.riders).length : 0;
+        if (count >= SHARED_MAX) return g;
+        const result = evaluateInsertion(g.stops || [], pickupStop, dropoffStop);
+        if (result.added > SHARED_MAX_DETOUR_KM) return g; // trop de détour : on n'écrit rien, on essaiera un autre groupe
+        g.stops = result.stops;
+        g.riders = g.riders || {};
+        g.riders[myRider.clientId] = myRider;
+        joined = true;
+        return g;
+    });
+    return joined;
+}
+
+async function startSharedSearch() {
+    if (!hasCompleteAccount()) { showAccountRequiredModal(); return; }
+
+    const startAddr = document.getElementById('startInput').value || "Départ";
+    const endAddr = document.getElementById('endInput').value || "Destination";
+    const userName = (userProfile && userProfile.name) || document.getElementById('userName').value;
+    const userPhone = (userProfile && userProfile.phone) || document.getElementById('userPhone').value;
+    const soloPrice = getSharedSoloPrice();
+
+    const pickupStop = { clientId, type: 'pickup', lat: startCoords[0], lng: startCoords[1], address: startAddr };
+    const dropoffStop = { clientId, type: 'dropoff', lat: endCoords[0], lng: endCoords[1], address: endAddr };
+    const myRider = { clientId, name: userName, phone: userPhone, pickup: pickupStop, dropoff: dropoffStop, soloPrice, joinedAt: Date.now() };
+
+    setStatus('Recherche de passagers…', 'busy', '1/' + SHARED_MAX + ' trouvés', soloPrice + ' F');
+    showSheetState('sharedWaiting');
+    updateSharedWaitDisplay(1, soloPrice);
+
+    try {
+        // 1) On repère les groupes ouverts et on les classe par détour ajouté (le plus économe d'abord)
+        const snapshot = await database.ref('groupes_partages').orderByChild('status').equalTo('recherche').once('value');
+        const candidates = [];
+        if (snapshot.exists()) {
+            const groups = snapshot.val();
+            for (const gid in groups) {
+                const g = groups[gid];
+                const count = g.riders ? Object.keys(g.riders).length : 0;
+                const age = Date.now() - (g.createdAt || 0);
+                if (count === 0 || count >= SHARED_MAX || age >= SHARED_GROUP_MAX_AGE_MS || !g.stops) continue;
+                const result = evaluateInsertion(g.stops, pickupStop, dropoffStop);
+                if (result.added <= SHARED_MAX_DETOUR_KM) candidates.push({ gid, added: result.added });
+            }
+        }
+        candidates.sort((a, b) => a.added - b.added);
+
+        // 2) On essaie de rejoindre le meilleur candidat ; en cas de conflit on passe au suivant
+        let joinedExisting = false;
+        for (const c of candidates) {
+            if (await tryJoinGroup(c.gid, pickupStop, dropoffStop, myRider)) {
+                sharedGroupId = c.gid;
+                joinedExisting = true;
+                break;
+            }
+        }
+
+        // 3) Sinon, on crée un nouveau groupe avec son propre itinéraire
+        if (!joinedExisting) {
+            sharedGroupId = clientId + '_' + Date.now();
+            await database.ref('groupes_partages/' + sharedGroupId).set({
+                status: 'recherche',
+                createdAt: Date.now(),
+                stops: [pickupStop, dropoffStop],
+                riders: { [clientId]: myRider }
+            });
+        }
+
+        listenToSharedGroup();
+        clearTimeout(sharedWaitTimer);
+        sharedWaitTimer = setTimeout(finalizeSharedGroup, SHARED_WAIT_TIMEOUT_MS);
+
+    } catch (error) {
+        console.error("Erreur recherche de passagers:", error);
+        alert("Erreur lors de la recherche de passagers");
+        resetToHome();
+    }
+}
+
+function listenToSharedGroup() {
+    sharedGroupListener = (snap) => {
+        const g = snap.val();
+        if (!g) return;
+
+        if (g.status === 'confirmee' && g.orderId) {
+            // Le groupe est parti : on rejoint le suivi normal de la course (comme une course privée)
+            detachSharedGroupListener();
+            currentOrderId = g.orderId;
+            watchOrder(g.orderId);
+            return;
+        }
+
+        const count = g.riders ? Object.keys(g.riders).length : 1;
+        updateSharedWaitDisplay(count);
+    };
+    database.ref('groupes_partages/' + sharedGroupId).on('value', sharedGroupListener);
+}
+
+function updateSharedWaitDisplay(count, mySoloPrice) {
+    const soloPrice = mySoloPrice ?? getSharedSoloPrice();
+    const myPrice = sharedPricePerPerson(count, soloPrice);
+
+    document.getElementById('sharedProgressCount').innerText = count + '/' + SHARED_MAX;
+    document.getElementById('sharedCurrentPrice').innerText = myPrice + ' F';
+    setStatus('Recherche de passagers…', 'busy', count + '/' + SHARED_MAX + ' trouvés', myPrice + ' F');
+
+    const nextTiersContainer = document.getElementById('sharedNextTiers');
+    nextTiersContainer.innerHTML = '';
+    for (let n = count + 1; n <= SHARED_MAX; n++) {
+        const row = document.createElement('div');
+        row.className = 'shared-next-tier-row';
+        row.innerHTML = `<span>Si ${n} passagers trouvés</span><b>${sharedPricePerPerson(n, soloPrice)} F</b>`;
+        nextTiersContainer.appendChild(row);
+    }
+
+    const rangeNote = document.getElementById('sharedRangeNote');
+    if (count < SHARED_MAX) {
+        const bestPrice = sharedPricePerPerson(SHARED_MAX, soloPrice);
+        const worstPrice = sharedPricePerPerson(Math.max(count + 1, 2), soloPrice);
+        rangeNote.innerText = `Le prix final variera entre ${worstPrice} F et ${bestPrice} F selon le nombre de passagers trouvés.`;
+        rangeNote.style.display = 'block';
+    } else {
+        rangeNote.style.display = 'none';
+    }
+
+    document.getElementById('sharedLeaveNowBtn').innerText =
+        count === 1 ? 'Partir seul à ce prix' : `Partir maintenant à ${myPrice} F`;
+}
+
+// Retire ce passager (ses 2 arrêts + sa place) d'un groupe partagé, de façon sûre.
+async function leaveSharedGroup(cancellationPayload) {
+    if (!sharedGroupId) return;
+    const gid = sharedGroupId;
+    try {
+        if (cancellationPayload) await database.ref('annulations/' + gid + '_' + clientId).set(cancellationPayload);
+        await database.ref('groupes_partages/' + gid).transaction((g) => {
+            if (!g) return g;
+            if (g.riders) delete g.riders[clientId];
+            if (g.stops) g.stops = g.stops.filter(s => s.clientId !== clientId);
+            if (!g.riders || Object.keys(g.riders).length === 0) return null;
+            return g;
+        });
+    } catch (error) {
+        console.error("Erreur en quittant le groupe partagé:", error);
+    }
+}
+
+async function cancelSharedSearch() {
+    await leaveSharedGroup(null);
+    resetToHome();
+}
+
+// Un seul rider (généralement celui dont le minuteur arrive à échéance, ou qui clique
+// "Partir maintenant") déclenche la finalisation — protégée par transaction pour n'être
+// exécutée qu'une seule fois même si plusieurs passagers la déclenchent en même temps.
+async function finalizeSharedGroup() {
+    clearTimeout(sharedWaitTimer);
+    if (!sharedGroupId) return;
+    const gid = sharedGroupId;
+
+    try {
+        let finalGroup = null;
+        const txResult = await database.ref('groupes_partages/' + gid).transaction((g) => {
+            if (!g) return g;
+            if (g.status === 'confirmee') return g; // déjà finalisé par un autre passager
+            g.status = 'confirmee';
+            g.orderId = gid + '_order';
+            return g;
+        });
+
+        finalGroup = txResult.snapshot.val();
+        if (!finalGroup) { resetToHome(); return; }
+
+        currentOrderId = finalGroup.orderId;
+
+        // Si c'est nous qui venons de faire passer le groupe à "confirmée", on crée la commande.
+        // Sinon (quelqu'un d'autre l'a fait juste avant), on se contente de suivre la commande déjà créée.
+        const orderSnap = await database.ref('commandes/' + finalGroup.orderId).once('value');
+        if (!orderSnap.exists()) {
+            const riders = Object.values(finalGroup.riders || {});
+            const count = Math.max(1, riders.length);
+            const riderPrices = {};
+            riders.forEach(r => { riderPrices[r.clientId] = sharedPricePerPerson(count, r.soloPrice || getSharedSoloPrice()); });
+            const totalPrice = Object.values(riderPrices).reduce((a, b) => a + b, 0);
+            const stops = finalGroup.stops || riders.flatMap(r => [r.pickup, r.dropoff]);
+
+            const order = {
+                id: finalGroup.orderId,
+                isShared: true,
+                passengerCount: count,
+                riderPrices,
+                stops,
+                pickup: stops.find(s => s.type === 'pickup') || riders[0].pickup,
+                destination: stops.filter(s => s.type === 'dropoff').slice(-1)[0] || riders[0].dropoff,
+                passengers: riders,
+                vehicle: 'eco',
+                price: totalPrice,
+                distance: routeLength(stops).toFixed(1),
+                status: 'en_attente',
+                scheduledFor: null,
+                createdAt: Date.now(),
+                clientId: riders[0].clientId,
+                clientName: riders[0].name,
+                clientPhone: riders[0].phone
+            };
+            await database.ref('commandes/' + finalGroup.orderId).set(order);
+        }
+
+        detachSharedGroupListener();
+        watchOrder(currentOrderId);
+
+    } catch (error) {
+        console.error("Erreur finalisation groupe partagé:", error);
+        alert("Erreur lors du lancement de la course partagée");
+        resetToHome();
+    }
 }
 
 // ==================== PROFIL UTILISATEUR (FIREBASE) ====================
 async function saveUserProfile() {
     const userName = document.getElementById('userName').value.trim();
     const userPhone = document.getElementById('userPhone').value.trim();
+    const userEmail = document.getElementById('userEmail').value.trim();
 
     if (!userName && !userPhone) {
         alert("Veuillez entrer au moins votre nom ou votre téléphone");
         return;
     }
 
-    const profileData = { name: userName, phone: userPhone, updatedAt: Date.now(), clientId: clientId };
+    const profileData = { name: userName, phone: userPhone, email: userEmail, updatedAt: Date.now(), clientId: clientId };
+
+    // Sauvegarde locale systématique et immédiate — fonctionne même hors-ligne,
+    // avant même d'essayer de synchroniser avec le serveur.
+    localStorage.setItem('mor_taxi_profile', JSON.stringify(profileData));
+    userProfile = profileData;
+    updateHeaderIdentity(profileData);
 
     try {
         await database.ref('clients/' + clientId).set(profileData);
-        userProfile = profileData;
         alert("✅ Profil enregistré !");
-        updateHeaderIdentity(userName);
-        localStorage.setItem('client_name', userName);
     } catch (error) {
         console.error("Erreur saveProfile:", error);
-        alert("Erreur lors de l'enregistrement");
+        alert("✅ Profil enregistré sur cet appareil (pas de connexion pour le synchroniser en ligne pour l'instant)");
     }
 }
 
 async function loadUserProfile() {
+    // 1) Chargement immédiat depuis le stockage local (toujours disponible, même hors-ligne)
+    const localProfile = JSON.parse(localStorage.getItem('mor_taxi_profile') || 'null');
+    if (localProfile) {
+        userProfile = localProfile;
+        document.getElementById('userName').value = localProfile.name || '';
+        document.getElementById('userPhone').value = localProfile.phone || '';
+        document.getElementById('userEmail').value = localProfile.email || '';
+        updateHeaderIdentity(localProfile);
+    } else {
+        renderGreeting(null);
+    }
+    loadProfilePhoto();
+
+    // 2) Synchronisation avec Firebase si une connexion est disponible
     try {
         const snapshot = await database.ref('clients/' + clientId).once('value');
         const profile = snapshot.val();
@@ -886,41 +1531,66 @@ async function loadUserProfile() {
             userProfile = profile;
             document.getElementById('userName').value = profile.name || '';
             document.getElementById('userPhone').value = profile.phone || '';
-            if (profile.name) updateHeaderIdentity(profile.name);
-        } else {
-            userProfile = null;
-            const savedName = localStorage.getItem('client_name');
-            if (savedName) {
-                document.getElementById('userName').value = savedName;
-                updateHeaderIdentity(savedName);
-            } else {
-                renderGreeting(null);
-            }
+            document.getElementById('userEmail').value = profile.email || '';
+            updateHeaderIdentity(profile);
+            localStorage.setItem('mor_taxi_profile', JSON.stringify(profile));
         }
     } catch (error) {
         console.error("Erreur loadProfile:", error);
     }
 }
 
-document.getElementById('profilePhotoInput').addEventListener('change', (e) => {
+// ---- Photo de profil : compressée puis stockée localement (persiste après rechargement) ----
+const PROFILE_PHOTO_KEY = 'mor_taxi_profile_photo';
+
+function compressImageFile(file, maxSize = 360, quality = 0.75) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = () => { img.src = reader.result; };
+        reader.onerror = reject;
+        img.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+function showProfilePhoto(dataUrl) {
+    document.getElementById('accountHeroPhoto').src = dataUrl;
+    document.getElementById('accountHeroPhoto').style.display = 'block';
+    document.getElementById('accountHeroLogo').style.display = 'none';
+}
+function showProfileLogo() {
+    document.getElementById('accountHeroPhoto').style.display = 'none';
+    document.getElementById('accountHeroLogo').style.display = 'flex';
+}
+function loadProfilePhoto() {
+    const saved = localStorage.getItem(PROFILE_PHOTO_KEY);
+    if (saved) showProfilePhoto(saved); else showProfileLogo();
+}
+
+document.getElementById('profilePhotoInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-        const avatar = document.getElementById('profileAvatarInitial');
-        avatar.style.backgroundImage = `url('${reader.result}')`;
-        avatar.style.backgroundSize = 'cover';
-        avatar.style.backgroundPosition = 'center';
-        avatar.innerText = '';
-    };
-    reader.readAsDataURL(file);
+    try {
+        const dataUrl = await compressImageFile(file);
+        localStorage.setItem(PROFILE_PHOTO_KEY, dataUrl);
+        showProfilePhoto(dataUrl);
+    } catch (error) {
+        console.error("Erreur photo de profil:", error);
+        showAppToast("Impossible d'enregistrer cette photo.");
+    }
 });
 
-function updateHeaderIdentity(name) {
-    const initial = name ? name.trim().charAt(0).toUpperCase() : '';
-    document.getElementById('headerUserInitial').innerHTML = initial || '<i class="fas fa-user" style="font-size:15px;"></i>';
-    document.getElementById('profileAvatarInitial').innerHTML = initial || '?';
-    document.getElementById('profileDisplayName').innerText = name ? name.split(' ')[0] : 'Nouveau client';
+function updateHeaderIdentity(profile) {
+    const name = profile && profile.name;
     renderGreeting(name);
 }
 
@@ -970,12 +1640,19 @@ function saveRecentAddress(name, lat, lon) {
     localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
 }
 
+let searchOverlayMode = 'end'; // 'start' | 'end' | 'favAddress'
+
 function openSearchOverlay(which) {
-    activeInputId = which === 'start' ? 'startInput' : 'endInput';
-    const currentField = document.getElementById(activeInputId);
+    if (which !== 'favAddress' && isTrajectoryLocked()) {
+        showAppToast("Impossible de modifier le trajet pendant la recherche ou la course en cours.");
+        return;
+    }
+    searchOverlayMode = which;
+    if (which === 'start' || which === 'end') activeInputId = which === 'start' ? 'startInput' : 'endInput';
+
     const overlayInput = document.getElementById('overlayInput');
     overlayInput.value = '';
-    overlayInput.placeholder = which === 'start' ? 'Lieu de départ' : 'Où allez-vous ?';
+    overlayInput.placeholder = which === 'start' ? 'Lieu de départ' : which === 'end' ? 'Où allez-vous ?' : 'Adresse de ce lieu';
     document.getElementById('overlayDot').style.cssText = which === 'start'
         ? 'border-radius:50%; background:var(--accent); border:2px solid var(--ink); width:10px; height:10px;'
         : 'border-radius:2px; background:var(--ink); width:10px; height:10px;';
@@ -992,6 +1669,9 @@ function closeSearchOverlay() {
 function renderOverlayResults(query, remoteResults) {
     const container = document.getElementById('overlayResults');
     container.innerHTML = '';
+
+    // Toujours en premier : l'option pour choisir le point directement sur la carte
+    container.appendChild(buildMapPickItem());
 
     const recent = getRecentAddresses();
     const q = query.trim().toLowerCase();
@@ -1042,8 +1722,106 @@ function buildOverlayItem(iconClass, title, subtitle, onClick) {
     return div;
 }
 
+// Icône moderne "repère + cible" pour l'option "Sélectionner sur la carte"
+const MAP_PICK_ICON_SVG = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 21s-6.5-5.8-6.5-11A6.5 6.5 0 0 1 18.5 10c0 5.2-6.5 11-6.5 11Z"/>
+    <circle cx="12" cy="10" r="4.6" stroke-dasharray="2 3"/>
+    <circle cx="12" cy="10" r="2.2" fill="currentColor" stroke="none"/>
+</svg>`;
+
+function buildMapPickItem() {
+    const div = document.createElement('div');
+    div.className = 'overlay-item';
+    div.innerHTML = `<div class="overlay-item-icon overlay-item-icon-accent">${MAP_PICK_ICON_SVG}</div>
+                      <div class="overlay-item-text"><strong>Sélectionner sur la carte</strong><small>Positionnez le repère vous-même</small></div>`;
+    div.onclick = () => {
+        const field = searchOverlayMode === 'favAddress' ? 'favAddress' : (activeInputId === 'startInput' ? 'start' : 'end');
+        closeSearchOverlay();
+        startMapPickMode(field);
+    };
+    return div;
+}
+
+// ==================== MODE "SÉLECTIONNER SUR LA CARTE" ====================
+let mapPickField = null;
+let mapPickReturnToAddressPage = false;
+
+function startMapPickMode(which) {
+    if (which !== 'favAddress' && isTrajectoryLocked()) return;
+    mapPickField = which;
+
+    // Si on vient de la fiche "nouvelle adresse", on la masque le temps de choisir sur la carte
+    mapPickReturnToAddressPage = which === 'favAddress' && document.getElementById('addAddressPage').classList.contains('open');
+    if (mapPickReturnToAddressPage) document.getElementById('addAddressPage').classList.remove('open');
+
+    document.getElementById('sheet').style.display = 'none';
+    document.querySelector('.top-bar').style.display = 'none';
+    document.getElementById('locateBtn').style.display = 'none';
+    document.getElementById('mapPickLabel').innerText = which === 'start'
+        ? 'Faites glisser la carte pour placer votre départ'
+        : which === 'end'
+        ? 'Faites glisser la carte pour placer votre destination'
+        : 'Faites glisser la carte pour placer ce lieu';
+    document.getElementById('mapPickBanner').classList.add('show');
+    document.getElementById('mapPickPin').classList.add('show');
+    document.getElementById('mapPickConfirmBtn').classList.add('show');
+
+    map.setView(which === 'end' && endCoords ? endCoords : startCoords, 16);
+}
+
+function exitMapPickMode() {
+    document.getElementById('mapPickBanner').classList.remove('show');
+    document.getElementById('mapPickPin').classList.remove('show');
+    document.getElementById('mapPickConfirmBtn').classList.remove('show');
+    document.getElementById('sheet').style.display = '';
+    document.querySelector('.top-bar').style.display = '';
+    document.getElementById('locateBtn').style.display = '';
+    if (mapPickReturnToAddressPage) {
+        document.getElementById('addAddressPage').classList.add('open');
+        mapPickReturnToAddressPage = false;
+    }
+    mapPickField = null;
+}
+
+function cancelMapPick() {
+    exitMapPickMode();
+}
+
+async function confirmMapPick() {
+    const center = map.getCenter();
+    const btn = document.getElementById('mapPickConfirmBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche de l\'adresse…';
+
+    let label = 'Position sélectionnée sur la carte';
+    try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${center.lat}&lon=${center.lng}`);
+        const data = await resp.json();
+        if (data && data.display_name) label = data.display_name.split(',').slice(0, 3).join(',').trim();
+    } catch (error) {
+        console.error("Erreur reverse geocoding:", error);
+    }
+
+    if (mapPickField === 'start') updateStart(center.lat, center.lng, label);
+    else if (mapPickField === 'end') updateEnd(center.lat, center.lng, label);
+    else if (mapPickField === 'favAddress') {
+        document.getElementById('newFavAddr').value = label;
+        document.getElementById('newFavAddr').dataset.lat = center.lat;
+        document.getElementById('newFavAddr').dataset.lon = center.lng;
+    }
+    saveRecentAddress(label, center.lat, center.lng);
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> Confirmer cet endroit';
+    exitMapPickMode();
+}
+
 function chooseOverlayResult(name, lat, lon) {
-    if (activeInputId === 'startInput') updateStart(lat, lon, name);
+    if (searchOverlayMode === 'favAddress') {
+        document.getElementById('newFavAddr').value = name;
+        document.getElementById('newFavAddr').dataset.lat = lat;
+        document.getElementById('newFavAddr').dataset.lon = lon;
+    } else if (activeInputId === 'startInput') updateStart(lat, lon, name);
     else updateEnd(lat, lon, name);
     saveRecentAddress(name, lat, lon);
     closeSearchOverlay();
@@ -1077,19 +1855,68 @@ startMarker.on('dragend', (e) => {
 });
 
 map.on('click', (e) => {
+    if (mapPickField) return; // en mode "sélectionner sur la carte", on utilise le repère central + Confirmer
+    if (isTrajectoryLocked()) return; // trajet verrouillé pendant une recherche/course en cours
     if (activeInputId === 'startInput') updateStart(e.latlng.lat, e.latlng.lng, "Point sur la carte");
     else if (activeInputId === 'endInput') updateEnd(e.latlng.lat, e.latlng.lng, "Point sur la carte");
 });
 
 // ==================== GEOLOCALISATION ====================
-function setStatus(text, mode) {
-    const pill = document.getElementById('orderStatusPill');
-    pill.classList.remove('ok', 'busy', 'done');
-    pill.classList.add(mode || 'ok');
-    document.getElementById('orderStatus').innerText = text;
+// Petit message temporaire (5s) affiché au centre de l'écran
+let appToastTimer = null;
+function showAppToast(message, duration = 5000) {
+    const toast = document.getElementById('appToast');
+    toast.innerText = message;
+    toast.classList.add('show');
+    clearTimeout(appToastTimer);
+    appToastTimer = setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function setStatus(text, mode, sub, price) {
+    const bar = document.getElementById('liveStatusBar');
+    if (mode === 'ok') {
+        // "Prêt" ne veut rien dire pour l'utilisateur : on masque simplement la notification
+        bar.classList.remove('show');
+        return;
+    }
+    bar.classList.add('show');
+    bar.classList.toggle('done', mode === 'done');
+    document.getElementById('liveStatusTitle').innerText = text;
+    document.getElementById('liveStatusSub').innerText = sub || '';
+    document.getElementById('liveStatusPrice').innerText = price || '';
+    document.getElementById('liveStatusIcon').innerHTML = mode === 'done'
+        ? '<i class="fas fa-car"></i>'
+        : '<i class="fas fa-magnifying-glass"></i>';
+}
+
+// Réduit/agrandit la notification flottante sans interrompre la recherche/course en cours
+function toggleLiveStatusSize(e) {
+    e.stopPropagation();
+    const bar = document.getElementById('liveStatusBar');
+    const reduced = bar.classList.toggle('reduced');
+    document.getElementById('liveStatusToggleBtn').innerHTML = reduced
+        ? '<i class="fas fa-chevron-down"></i>'
+        : '<i class="fas fa-chevron-up"></i>';
+}
+
+// Permet de revenir à l'écran en cours (recherche / course) depuis n'importe où dans l'app
+// (par ex. après être allé voir la page Compte) sans jamais annuler quoi que ce soit.
+function handleLiveStatusBarClick() {
+    const acc = document.getElementById('account-page');
+    if (acc.classList.contains('open')) acc.classList.remove('open');
+    document.getElementById('searchOverlay').classList.remove('open');
+    if (currentFlowState) showSheetState(currentFlowState);
+}
+
+function isTrajectoryLocked() {
+    return currentFlowState !== null;
 }
 
 function getCurrentLocation() {
+    if (isTrajectoryLocked()) {
+        showAppToast("Impossible de modifier le trajet pendant la recherche ou la course en cours.");
+        return;
+    }
     setStatus('Localisation…', 'busy');
     if (!navigator.geolocation) {
         alert("La géolocalisation n'est pas supportée par votre navigateur.");
@@ -1231,7 +2058,7 @@ function updateEnd(lat, lon, name) {
         updateEnd(pos.lat, pos.lng, "Position déplacée");
     });
     drawRoute();
-    revealRideOptions();
+    revealRideTypeChoice();
 }
 
 // ==================== ITINERAIRE (OSRM) ====================
@@ -1246,6 +2073,7 @@ async function drawRoute() {
         if (data.routes && data.routes[0]) {
             const route = data.routes[0];
             distance = route.distance / 1000;
+            durationMin = route.duration / 60;
 
             if (polyline) map.removeLayer(polyline);
             polyline = L.geoJSON(route.geometry, { style: { color: '#0A0A0B', weight: 4, dashArray: '1,9', lineCap: 'round' } }).addTo(map);
@@ -1258,23 +2086,42 @@ async function drawRoute() {
         if (polyline) map.removeLayer(polyline);
         polyline = L.polyline([startCoords, endCoords], { color: '#0A0A0B', weight: 4, dashArray: '1,9' }).addTo(map);
         distance = map.distance(L.latLng(startCoords), L.latLng(endCoords)) / 1000;
+        durationMin = (distance / 25) * 60; // estimation à 25 km/h si l'itinéraire routier n'a pas pu être calculé
         updatePrices();
     }
 }
 
 // ==================== PRIX ====================
+// Arrondit toujours au multiple de 50 le plus proche : jamais de prix du type
+// 5249 F ou se terminant par 1F/4F/9F — toujours 1550, 1750, etc.
+function roundToFifty(value) {
+    return Math.round(value / 50) * 50;
+}
+
+// Tarif = prise en charge + (prix/km × distance) + (prix/min × durée), jamais sous le minimum de la gamme
+function computeRawPrice(base, rateKm, rateMin, min) {
+    return Math.max(min, base + rateKm * distance + rateMin * durationMin);
+}
+function getVehiclePrice(vehicleKey) {
+    const row = document.querySelector(`.ride-row[data-vehicle="${vehicleKey}"]`);
+    if (!row) return 0;
+    return computeRawPrice(
+        parseFloat(row.dataset.base), parseFloat(row.dataset.rateKm),
+        parseFloat(row.dataset.rateMin), parseFloat(row.dataset.min)
+    );
+}
+
 function updatePrices() {
     document.querySelectorAll('.ride-row').forEach(row => {
-        const base = parseFloat(row.dataset.base);
-        const rate = parseFloat(row.dataset.rate);
-        row.querySelector('.ride-price').innerText = Math.round(base + rate * distance) + " F";
+        const raw = computeRawPrice(
+            parseFloat(row.dataset.base), parseFloat(row.dataset.rateKm),
+            parseFloat(row.dataset.rateMin), parseFloat(row.dataset.min)
+        );
+        row.querySelector('.ride-price').innerText = roundToFifty(raw) + " F";
     });
 }
 function getCurrentPrice() {
-    const activeRow = document.querySelector('.ride-row.active');
-    const base = parseFloat(activeRow.dataset.base);
-    const rate = parseFloat(activeRow.dataset.rate);
-    return Math.round(base + rate * distance);
+    return roundToFifty(getVehiclePrice(selectedVehicle));
 }
 
 // ==================== SELECTION VEHICULE ====================
@@ -1291,39 +2138,77 @@ function getPlaceIcon(name) {
     if (n.includes('travail') || n.includes('bureau')) return 'fa-briefcase';
     return 'fa-star';
 }
-const PLACE_ICON_COLORS = ['icon-teal', 'icon-gold', 'icon-orange'];
+
+let selectedFavoriteId = null;
 
 function loadFavorites() {
-    const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    const favorites = getFavorites();
     const container = document.getElementById('favorites-list');
     container.innerHTML = '';
 
+    selectedFavoriteId = null;
+    updateAddressToolbarState();
+
     if (favorites.length === 0) {
-        const defaultFavs = [
-            { name: "Domicile", address: "Sacré Cœur, Dakar" },
-            { name: "Travail", address: "Plateau, Dakar" },
-            { name: "Gare", address: "Route de l'Aéroport, Dakar" }
-        ];
-        defaultFavs.forEach(fav => saveFavoriteToLocal(fav.name, fav.address));
-        return loadFavorites();
+        container.innerHTML = '<div class="trusted-empty">Aucune adresse enregistrée pour l\'instant. Ajoutez-en une avec le bouton ci-dessous.</div>';
+        loadHomeFavorites([]);
+        return;
     }
 
-    favorites.forEach((fav, i) => {
+    favorites.forEach((fav) => {
         const div = document.createElement('div');
         div.className = 'place-row';
-        div.onclick = () => useFavorite(fav.name, fav.address);
-        div.innerHTML = `<div class="place-icon ${PLACE_ICON_COLORS[i % PLACE_ICON_COLORS.length]}"><i class="fas ${getPlaceIcon(fav.name)}"></i></div>
-                          <div class="place-text"><strong>${fav.name}</strong><small>${fav.address}</small></div>
-                          <i class="fas fa-chevron-right chev"></i>`;
+        div.onclick = () => selectFavoriteRow(fav.id, div);
+        div.innerHTML = `<div class="place-icon"><i class="fas ${getPlaceIcon(fav.name)}"></i></div>
+                          <div class="place-text"><strong>${fav.name}</strong><small>${fav.address}</small></div>`;
         container.appendChild(div);
     });
 
     loadHomeFavorites(favorites);
 }
 
+function selectFavoriteRow(id, rowEl) {
+    document.querySelectorAll('#favorites-list .place-row').forEach(r => r.classList.remove('selected'));
+    if (selectedFavoriteId === id) {
+        selectedFavoriteId = null; // toucher à nouveau désélectionne
+    } else {
+        selectedFavoriteId = id;
+        rowEl.classList.add('selected');
+    }
+    updateAddressToolbarState();
+}
+
+function updateAddressToolbarState() {
+    const has = !!selectedFavoriteId;
+    document.getElementById('editAddressBtn').disabled = !has;
+    document.getElementById('deleteAddressBtn').disabled = !has;
+}
+
+function editSelectedAddress() {
+    if (!selectedFavoriteId) return;
+    const fav = getFavorites().find(f => f.id === selectedFavoriteId);
+    if (!fav) return;
+    document.getElementById('newFavName').value = fav.name;
+    document.getElementById('newFavAddr').value = fav.address;
+    if (fav.lat) document.getElementById('newFavAddr').dataset.lat = fav.lat; else delete document.getElementById('newFavAddr').dataset.lat;
+    if (fav.lon) document.getElementById('newFavAddr').dataset.lon = fav.lon; else delete document.getElementById('newFavAddr').dataset.lon;
+    document.getElementById('addAddressPage').dataset.editingId = fav.id;
+    document.getElementById('addPlaceSubmitBtn').innerText = 'Enregistrer les modifications';
+    document.getElementById('addAddressTitle').innerText = "Modifier l'adresse";
+    document.getElementById('addAddressPage').classList.add('open');
+}
+
+function deleteSelectedAddress() {
+    if (!selectedFavoriteId) return;
+    const favorites = getFavorites().filter(f => f.id !== selectedFavoriteId);
+    localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
+    selectedFavoriteId = null;
+    loadFavorites();
+}
+
 // Même liste, affichée directement sur l'écran d'accueil (comme Domicile / Gare)
 function loadHomeFavorites(favorites) {
-    favorites = favorites || JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    favorites = favorites || getFavorites();
     const container = document.getElementById('homeFavoritesList');
     container.innerHTML = '';
 
@@ -1338,25 +2223,58 @@ function loadHomeFavorites(favorites) {
     });
 }
 
-function saveFavoriteToLocal(name, address) {
-    const favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
-    favorites.push({ name, address });
+// Lit les favoris et corrige au passage les entrées anciennes sans identifiant
+// (c'est ce qui empêchait de les sélectionner/modifier/supprimer).
+function getFavorites() {
+    let favorites = JSON.parse(localStorage.getItem('mor_taxi_favorites') || '[]');
+    let changed = false;
+    favorites = favorites.map(f => {
+        if (!f.id) { changed = true; return { ...f, id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7) }; }
+        return f;
+    });
+    if (changed) localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
+    return favorites;
+}
+
+function saveFavoriteToLocal(name, address, lat, lon) {
+    const favorites = getFavorites();
+    favorites.push({ id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), name, address, lat: lat || null, lon: lon || null });
     localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
 }
 
-function toggleAddPlaceForm() {
-    const form = document.getElementById('addPlaceForm');
-    form.style.display = (form.style.display === 'none' || !form.style.display) ? 'block' : 'none';
+// ---- Nouvelle adresse : écran plein écran dédié ----
+function openAddAddressPage() {
+    delete document.getElementById('addAddressPage').dataset.editingId;
+    document.getElementById('newFavName').value = '';
+    document.getElementById('newFavAddr').value = '';
+    delete document.getElementById('newFavAddr').dataset.lat;
+    delete document.getElementById('newFavAddr').dataset.lon;
+    document.getElementById('addPlaceSubmitBtn').innerText = 'Ajouter aux favoris';
+    document.getElementById('addAddressTitle').innerText = 'Nouvelle adresse';
+    document.getElementById('addAddressPage').classList.add('open');
+}
+function closeAddAddressPage() {
+    document.getElementById('addAddressPage').classList.remove('open');
 }
 
 function addFavorite() {
-    const name = document.getElementById('newFavName').value;
-    const addr = document.getElementById('newFavAddr').value;
+    const name = document.getElementById('newFavName').value.trim();
+    const addr = document.getElementById('newFavAddr').value.trim();
     if (!name || !addr) { alert("Veuillez remplir les deux champs"); return; }
-    saveFavoriteToLocal(name, addr);
-    document.getElementById('newFavName').value = '';
-    document.getElementById('newFavAddr').value = '';
-    document.getElementById('addPlaceForm').style.display = 'none';
+
+    const lat = document.getElementById('newFavAddr').dataset.lat || null;
+    const lon = document.getElementById('newFavAddr').dataset.lon || null;
+    const editingId = document.getElementById('addAddressPage').dataset.editingId;
+
+    if (editingId) {
+        const favorites = getFavorites().map(f => f.id === editingId ? { ...f, name, address: addr, lat, lon } : f);
+        localStorage.setItem('mor_taxi_favorites', JSON.stringify(favorites));
+    } else {
+        saveFavoriteToLocal(name, addr, lat, lon);
+    }
+
+    closeAddAddressPage();
+    selectedFavoriteId = null;
     loadFavorites();
 }
 
@@ -1390,6 +2308,8 @@ function toggleAccount() {
         acc.classList.add('open');
         loadFavorites();
         loadUserProfile();
+        renderTrustedDrivers();
+        renderOrderHistory();
     }
 }
 
@@ -1406,20 +2326,209 @@ function goToAccountPage() {
     document.getElementById('account-page').classList.add('open');
     loadFavorites();
     loadUserProfile();
+    renderTrustedDrivers();
+    renderOrderHistory();
 }
 function closeAllModals() {
     closeAccountRequiredModal();
     closeScheduleModal();
+    closeCancelReasonModal();
+    closeAccountActionModal();
+}
+
+// ==================== CHAUFFEURS DE CONFIANCE ====================
+const TRUSTED_DRIVERS_KEY = 'mor_taxi_trusted_drivers';
+
+function getTrustedDrivers() {
+    return JSON.parse(localStorage.getItem(TRUSTED_DRIVERS_KEY) || '[]');
+}
+function isTrustedDriver(driverId) {
+    return getTrustedDrivers().some(d => d.driverId === driverId);
+}
+function addTrustedDriver(driver) {
+    if (!driver || !driver.driverId) return;
+    let list = getTrustedDrivers().filter(d => d.driverId !== driver.driverId);
+    list.unshift(driver);
+    localStorage.setItem(TRUSTED_DRIVERS_KEY, JSON.stringify(list));
+    renderTrustedDrivers();
+}
+function removeTrustedDriver(driverId) {
+    const list = getTrustedDrivers().filter(d => d.driverId !== driverId);
+    localStorage.setItem(TRUSTED_DRIVERS_KEY, JSON.stringify(list));
+    renderTrustedDrivers();
+    updateTripFavoriteButton();
+}
+
+function renderTrustedDrivers() {
+    const container = document.getElementById('trustedDriversList');
+    if (!container) return;
+    const list = getTrustedDrivers();
+    container.innerHTML = '';
+
+    if (list.length === 0) {
+        container.innerHTML = '<div class="trusted-empty">Aucun chauffeur de confiance pour l\'instant. Ajoutez-en un pendant ou après une course, ou depuis votre historique.</div>';
+        return;
+    }
+
+    list.forEach(d => {
+        const row = document.createElement('div');
+        row.className = 'trusted-driver-row';
+        row.innerHTML = `<div class="trusted-driver-avatar">${(d.name || 'C').charAt(0).toUpperCase()}</div>
+                          <div class="trusted-driver-text"><strong>${d.name || 'Chauffeur'}</strong><small>${d.car || ''}${d.rating ? ' · ★ ' + d.rating : ''}</small></div>
+                          <button class="trusted-driver-remove" onclick="removeTrustedDriver('${d.driverId}')" aria-label="Retirer"><i class="fas fa-star"></i></button>`;
+        container.appendChild(row);
+    });
+}
+
+// ==================== HISTORIQUE DES COMMANDES (local) ====================
+const ORDER_HISTORY_KEY = 'mor_taxi_order_history';
+let orderHistoryExpanded = false;
+
+function recordCompletedOrder(order, myPrice) {
+    const history = JSON.parse(localStorage.getItem(ORDER_HISTORY_KEY) || '[]');
+    history.unshift({
+        id: order.id,
+        date: Date.now(),
+        pickup: order.pickup?.address || 'Départ',
+        destination: order.destination?.address || 'Destination',
+        price: myPrice || order.price,
+        isShared: !!order.isShared,
+        driverId: order.driverId || null,
+        driverName: order.driverName || null,
+        driverCar: order.driverCar || null,
+        driverRating: order.driverRating || null,
+        driverPhone: order.driverPhone || null
+    });
+    localStorage.setItem(ORDER_HISTORY_KEY, JSON.stringify(history.slice(0, 30)));
+}
+
+function renderOrderHistory() {
+    const container = document.getElementById('orderHistoryList');
+    const voirTout = document.getElementById('historyVoirTout');
+    if (!container) return;
+    const history = JSON.parse(localStorage.getItem(ORDER_HISTORY_KEY) || '[]');
+    container.innerHTML = '';
+
+    if (history.length === 0) {
+        container.innerHTML = '<div class="history-empty">Aucune course terminée pour l\'instant.</div>';
+        voirTout.style.display = 'none';
+        return;
+    }
+
+    const visible = orderHistoryExpanded ? history : history.slice(0, 2);
+    visible.forEach(h => {
+        const d = new Date(h.date);
+        const dateStr = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML = `
+            <div class="history-card-top"><span>#${h.id.toString().slice(-6)}</span><span class="history-price">${h.price} F</span></div>
+            <div class="history-card-meta">${dateStr} · ${h.pickup} → ${h.destination}${h.isShared ? ' · Partagée' : ''}</div>
+            <div class="history-card-bottom"><span class="history-status">Terminée</span></div>
+            ${h.driverId ? `<div class="history-fav-btn ${isTrustedDriver(h.driverId) ? 'active' : ''}" onclick="toggleTrustedFromHistory('${h.driverId}', this)">
+                <i class="fas fa-star"></i> ${isTrustedDriver(h.driverId) ? 'Chauffeur de confiance' : `Ajouter ${h.driverName || 'ce chauffeur'} en favori`}
+            </div>` : ''}
+        `;
+        card._historyData = h;
+        container.appendChild(card);
+    });
+
+    voirTout.style.display = (!orderHistoryExpanded && history.length > 2) ? 'block' : 'none';
+    voirTout.innerText = orderHistoryExpanded ? '' : 'Voir tout';
+}
+
+function toggleTrustedFromHistory(driverId, el) {
+    if (isTrustedDriver(driverId)) {
+        removeTrustedDriver(driverId);
+    } else {
+        const history = JSON.parse(localStorage.getItem(ORDER_HISTORY_KEY) || '[]');
+        const h = history.find(x => x.driverId === driverId);
+        if (h) addTrustedDriver({ driverId: h.driverId, name: h.driverName, car: h.driverCar, rating: h.driverRating, phone: h.driverPhone });
+    }
+    renderOrderHistory();
+}
+
+function expandOrderHistory() {
+    orderHistoryExpanded = true;
+    renderOrderHistory();
+}
+
+// ==================== DÉCONNEXION / SUPPRESSION DE COMPTE ====================
+let pendingAccountAction = null;
+
+function openAccountActionModal(action) {
+    pendingAccountAction = action;
+    const icon = document.getElementById('accountActionIcon');
+    const title = document.getElementById('accountActionTitle');
+    const text = document.getElementById('accountActionText');
+    const confirmBtn = document.getElementById('accountActionConfirmBtn');
+
+    if (action === 'logout') {
+        icon.innerHTML = '<i class="fas fa-right-from-bracket"></i>';
+        title.innerText = 'Se déconnecter ?';
+        text.innerText = "Votre nom, téléphone et email seront oubliés sur cet appareil. Vos adresses et votre historique resteront enregistrés.";
+        confirmBtn.innerText = 'Se déconnecter';
+        confirmBtn.style.background = 'var(--ink)';
+    } else {
+        icon.innerHTML = '<i class="fas fa-trash"></i>';
+        title.innerText = 'Supprimer mon compte ?';
+        text.innerText = "Toutes vos données (profil, photo, adresses, chauffeurs de confiance, historique) seront définitivement supprimées de cet appareil. Cette action est irréversible.";
+        confirmBtn.innerText = 'Supprimer définitivement';
+        confirmBtn.style.background = 'var(--danger)';
+    }
+
+    document.getElementById('accountActionModal').classList.add('active');
+    document.getElementById('modalBackdrop').classList.add('active');
+}
+function closeAccountActionModal() {
+    document.getElementById('accountActionModal').classList.remove('active');
+    document.getElementById('modalBackdrop').classList.remove('active');
+}
+
+async function confirmAccountAction() {
+    const action = pendingAccountAction;
+    closeAccountActionModal();
+
+    if (action === 'logout') {
+        localStorage.removeItem('mor_taxi_profile');
+        localStorage.removeItem(PROFILE_PHOTO_KEY);
+        userProfile = null;
+        document.getElementById('userName').value = '';
+        document.getElementById('userPhone').value = '';
+        document.getElementById('userEmail').value = '';
+        updateHeaderIdentity(null);
+        showProfileLogo();
+        showAppToast("Vous avez été déconnecté sur cet appareil.");
+    } else if (action === 'delete') {
+        try { await database.ref('clients/' + clientId).remove(); } catch (e) { console.error(e); }
+        ['mor_taxi_profile', PROFILE_PHOTO_KEY, 'mor_taxi_favorites', TRUSTED_DRIVERS_KEY,
+         ORDER_HISTORY_KEY, 'mor_taxi_recent_addresses', 'client_id'].forEach(k => localStorage.removeItem(k));
+        showAppToast("Votre compte a été supprimé.");
+        toggleAccount();
+        setTimeout(() => window.location.reload(), 1200);
+        return;
+    }
+    toggleAccount();
 }
 
 // ==================== ÉTATS DE LA FEUILLE (accueil / recherche / trajet) ====================
+let currentFlowState = null; // 'searching' | 'sharedWaiting' | 'trip' | null (accueil)
+
 function showSheetState(state) {
+    currentFlowState = (state === 'home') ? null : state;
     document.getElementById('sheetHome').classList.remove('show');
     document.getElementById('sheetSearching').classList.remove('show');
+    document.getElementById('sheetSharedWait').classList.remove('show');
     document.getElementById('sheetTrip').classList.remove('show');
     document.getElementById('sheetHome').style.display = state === 'home' ? 'block' : 'none';
     document.getElementById('sheetSearching').classList.toggle('show', state === 'searching');
+    document.getElementById('sheetSharedWait').classList.toggle('show', state === 'sharedWaiting');
     document.getElementById('sheetTrip').classList.toggle('show', state === 'trip');
+
+    // Verrouille le trajet (marqueurs non déplaçables) dès qu'une recherche/course est en cours
+    const locked = currentFlowState !== null;
+    if (startMarker && startMarker.dragging) locked ? startMarker.dragging.disable() : startMarker.dragging.enable();
+    if (endMarker && endMarker.dragging) locked ? endMarker.dragging.disable() : endMarker.dragging.enable();
 }
 
 function resetToHome() {
@@ -1429,24 +2538,108 @@ function resetToHome() {
     orderListener = null;
     currentOrderId = null;
     scheduledFor = null;
+    detachSharedGroupListener();
     document.getElementById('schedulePillLabel').innerText = 'Maint.';
     document.getElementById('orderBtn').disabled = false;
+    document.getElementById('liveStatusBar').classList.remove('reduced');
+    document.getElementById('liveStatusToggleBtn').innerHTML = '<i class="fas fa-chevron-up"></i>';
     document.getElementById('sheetHome').classList.remove('expanded');
     document.getElementById('searchForm').classList.remove('open');
-    document.getElementById('rideList').classList.remove('show');
-    document.getElementById('orderBtn').classList.remove('show');
+    hideRideChoiceScreens();
     setStatus('Prêt', 'ok');
     showSheetState('home');
 }
 
-async function cancelSearch() {
+async function cancelOrderWithReason(cancellationPayload) {
     if (!currentOrderId) { resetToHome(); return; }
     try {
+        if (cancellationPayload) await database.ref('annulations/' + currentOrderId).set(cancellationPayload);
         await database.ref('commandes/' + currentOrderId).remove();
     } catch (e) {
         console.error("Erreur annulation:", e);
     }
     resetToHome();
+}
+
+// ==================== ANNULATION AVEC MOTIF ====================
+const CANCEL_REASONS = [
+    "Prix trop élevé",
+    "Temps d'attente trop long",
+    "Chauffeur trop loin",
+    "J'ai changé d'avis",
+    "Je n'ai plus besoin du trajet",
+    "Mauvaise destination",
+    "J'ai trouvé une autre voiture",
+    "Problème avec le chauffeur",
+    "Je ne me sens pas en sécurité",
+    "Autre raison"
+];
+let selectedCancelReason = null;
+let cancelFlowContext = null; // 'private' | 'shared' | 'trip'
+
+function openCancelReasonModal(context) {
+    cancelFlowContext = context;
+    selectedCancelReason = null;
+
+    const list = document.getElementById('cancelReasonList');
+    list.innerHTML = '';
+    CANCEL_REASONS.forEach((reason) => {
+        const row = document.createElement('div');
+        row.className = 'cancel-reason-row';
+        row.innerText = reason;
+        row.onclick = () => selectCancelReason(reason, row);
+        list.appendChild(row);
+    });
+
+    document.getElementById('cancelOtherGroup').style.display = 'none';
+    document.getElementById('cancelOtherText').value = '';
+    document.getElementById('cancelConfirmBtn').disabled = true;
+
+    document.getElementById('cancelReasonModal').classList.add('active');
+    document.getElementById('modalBackdrop').classList.add('active');
+}
+
+function selectCancelReason(reason, row) {
+    document.querySelectorAll('.cancel-reason-row').forEach(r => r.classList.remove('active'));
+    row.classList.add('active');
+    selectedCancelReason = reason;
+
+    const isOther = reason === "Autre raison";
+    document.getElementById('cancelOtherGroup').style.display = isOther ? 'block' : 'none';
+    document.getElementById('cancelConfirmBtn').disabled = isOther
+        ? document.getElementById('cancelOtherText').value.trim().length === 0
+        : false;
+}
+
+document.getElementById('cancelOtherText').addEventListener('input', (e) => {
+    if (selectedCancelReason === "Autre raison") {
+        document.getElementById('cancelConfirmBtn').disabled = e.target.value.trim().length === 0;
+    }
+});
+
+function closeCancelReasonModal() {
+    document.getElementById('cancelReasonModal').classList.remove('active');
+    document.getElementById('modalBackdrop').classList.remove('active');
+}
+
+async function confirmCancellation() {
+    if (!selectedCancelReason) return;
+    const detail = selectedCancelReason === "Autre raison" ? document.getElementById('cancelOtherText').value.trim() : null;
+    const cancellation = {
+        reason: selectedCancelReason,
+        detail,
+        canceledAt: Date.now(),
+        context: cancelFlowContext,
+        clientId
+    };
+    closeCancelReasonModal();
+
+    if (cancelFlowContext === 'shared') {
+        await leaveSharedGroup(cancellation);
+        resetToHome();
+    } else {
+        await cancelOrderWithReason(cancellation);
+    }
 }
 
 // ==================== COMMANDE (FIREBASE) ====================
@@ -1502,38 +2695,19 @@ async function commander() {
         document.getElementById('searchingSpinner').style.display = 'none';
         document.getElementById('searchingTitle').innerText = 'Course programmée';
         document.getElementById('searchingSub').innerText = 'Un chauffeur sera recherché le ' + label;
-        setStatus('Course programmée', 'busy');
+        setStatus('Course programmée', 'busy', label, price + ' F');
     } else {
         document.getElementById('searchingSpinner').style.display = 'block';
         document.getElementById('searchingTitle').innerText = "Recherche d'un chauffeur…";
         document.getElementById('searchingSub').innerText = 'Nous prévenons les chauffeurs disponibles autour de vous';
-        setStatus('Recherche chauffeur…', 'busy');
+        setStatus('Recherche chauffeur…', 'busy', endAddr, price + ' F');
     }
     showSheetState('searching');
 
     try {
         await database.ref('commandes/' + order.id).set(order);
         currentOrderId = order.id;
-
-        if (orderListener) database.ref('commandes/' + currentOrderId).off('value', orderListener);
-        orderListener = (snapshot) => {
-            const data = snapshot.val();
-            if (!data) { resetToHome(); return; }
-
-            if (data.status === 'en_attente') {
-                setStatus('Recherche chauffeur…', 'busy');
-                showSheetState('searching');
-            } else if (data.status === 'acceptee') {
-                setStatus('Chauffeur en route', 'done');
-                showDriverInfo(data);
-                database.ref('historique/' + order.id).set(data);
-            } else if (data.status === 'terminee') {
-                setStatus('Course terminée', 'done');
-                document.getElementById('tripStatusLabel').innerText = 'COURSE TERMINÉE';
-                setTimeout(resetToHome, 4000);
-            }
-        };
-        database.ref('commandes/' + order.id).on('value', orderListener);
+        watchOrder(order.id);
     } catch (error) {
         console.error("Erreur Firebase:", error);
         alert("Erreur lors de l'envoi de la commande");
@@ -1541,7 +2715,39 @@ async function commander() {
     }
 }
 
-function showDriverInfo(order) {
+// Suit une commande (privée ou partagée) du statut "en_attente" jusqu'à "terminee".
+// Pour une course partagée, chaque passager voit automatiquement SON PROPRE prix
+// (order.riderPrices[clientId]) plutôt qu'un montant transmis de l'extérieur.
+function watchOrder(orderId) {
+    if (orderListener) database.ref('commandes/' + orderId).off('value', orderListener);
+    orderListener = (snapshot) => {
+        const data = snapshot.val();
+        if (!data) { resetToHome(); return; }
+        const myPrice = (data.isShared && data.riderPrices) ? (data.riderPrices[clientId] || data.price) : data.price;
+
+        if (data.status === 'en_attente') {
+            setStatus('Recherche chauffeur…', 'busy', data.destination?.address, myPrice + ' F');
+            document.getElementById('searchingFrom').innerText = data.pickup?.address || 'Départ';
+            document.getElementById('searchingTo').innerText = data.destination?.address || 'Destination';
+            document.getElementById('searchingPrice').innerText = myPrice + ' F';
+            showSheetState('searching');
+        } else if (data.status === 'acceptee') {
+            setStatus('Chauffeur en route', 'done', data.driverName, myPrice + ' F');
+            showDriverInfo(data, myPrice);
+            database.ref('historique/' + orderId).set(data);
+        } else if (data.status === 'terminee') {
+            setStatus('Course terminée', 'done');
+            document.getElementById('tripStatusLabel').innerText = 'COURSE TERMINÉE';
+            recordCompletedOrder(data, myPrice);
+            setTimeout(resetToHome, 4000);
+        }
+    };
+    database.ref('commandes/' + orderId).on('value', orderListener);
+}
+
+let currentTripDriverId = null;
+
+function showDriverInfo(order, myPrice) {
     const name = order.driverName || 'Chauffeur MOR-TAXI';
     document.getElementById('driverAvatarInitial').innerText = name.charAt(0).toUpperCase();
     document.getElementById('driverName').innerText = name;
@@ -1551,16 +2757,42 @@ function showDriverInfo(order) {
     document.getElementById('tripStatusLabel').innerText = 'CHAUFFEUR EN ROUTE';
     document.getElementById('tripFrom').innerText = order.pickup?.address || 'Départ';
     document.getElementById('tripTo').innerText = order.destination?.address || 'Destination';
-    document.getElementById('tripPrice').innerText = order.price + ' F';
+    document.getElementById('tripPrice').innerText = (myPrice || order.price) + ' F';
+
+    currentTripDriverId = order.driverId || null;
+    window._currentTripDriver = {
+        driverId: order.driverId, name: order.driverName, car: order.driverCar,
+        rating: order.driverRating, phone: order.driverPhone
+    };
+    updateTripFavoriteButton();
+
     showSheetState('trip');
 }
 
-// ==================== INITIALISATION ==================== 
-updateStart(14.7167, -17.4677, "Dakar Centre");
+function updateTripFavoriteButton() {
+    const btn = document.getElementById('tripFavoriteBtn');
+    if (!btn) return;
+    if (!currentTripDriverId) { btn.style.display = 'none'; return; }
+    btn.style.display = 'flex';
+    const active = isTrustedDriver(currentTripDriverId);
+    btn.classList.toggle('active', active);
+    btn.innerHTML = active
+        ? '<i class="fas fa-star"></i> Chauffeur de confiance'
+        : '<i class="far fa-star"></i> Ajouter à mes chauffeurs de confiance';
+}
+
+function toggleTrustedFromTrip() {
+    if (!currentTripDriverId) return;
+    if (isTrustedDriver(currentTripDriverId)) removeTrustedDriver(currentTripDriverId);
+    else addTrustedDriver(window._currentTripDriver);
+    updateTripFavoriteButton();
+}
+
+ updateStart(14.7167, -17.4677, "Dakar Centre");
 renderGreeting(null);
 loadUserProfile();
 loadFavorites();
 console.log("🆔 Client ID:", clientId);
 </script>
 </body>
-</html>
+</html>     
