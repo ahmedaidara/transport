@@ -13,8 +13,8 @@
 <style>
 :root{
   --ink:#0A0A0B; --muted:#6E6E73; --line:#E7E7E9; --surface:#F3F3F4; --bg:#FFFFFF;
-  --accent:#C8FA3E; --accent-ink:#173300; --danger:#E5484D;
-  --r-lg:24px; --r-md:16px;
+  --accent:#C8FA3E; --accent-ink:#173300; --danger:#E5484D; --success:#1DAA5C;
+  --r-lg:22px; --r-md:14px;
   --font-body:'Inter', system-ui, sans-serif;
   --font-display:'Space Grotesk','Inter',sans-serif;
 }
@@ -23,68 +23,95 @@ body{ font-family:var(--font-body); color:var(--ink); background:var(--surface);
 button{ font-family:inherit; border:none; cursor:pointer; }
 input, textarea, select{ font-family:inherit; border:none; outline:none; background:transparent; color:var(--ink); width:100%; }
 
-.header{
-  background:var(--ink); color:#fff; padding:calc(20px + env(safe-area-inset-top)) 20px 26px;
-  text-align:center;
-}
-.header .badge{
-  width:56px; height:56px; border-radius:50%; background:var(--accent); color:var(--accent-ink);
-  display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 14px;
-}
-.header h1{ font-size:20px; font-weight:800; margin-bottom:6px; }
-.header p{ font-size:13px; color:rgba(255,255,255,0.7); max-width:340px; margin:0 auto; }
+.header{ background:var(--ink); color:#fff; padding:calc(16px + env(safe-area-inset-top)) 20px 20px; text-align:center; position:sticky; top:0; z-index:20; }
+.header .badge{ width:44px; height:44px; border-radius:50%; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-size:18px; margin:0 auto 8px; }
+.header h1{ font-size:16.5px; font-weight:800; }
+.conn-status{ font-size:11px; margin-top:6px; display:flex; align-items:center; justify-content:center; gap:6px; color:rgba(255,255,255,0.6); }
+.conn-status .dot{ width:6px; height:6px; border-radius:50%; background:#888; }
+.conn-status.ok .dot{ background:var(--accent); }
+.conn-status.err .dot{ background:var(--danger); }
 
-.content{ max-width:520px; margin:0 auto; padding:22px 18px 60px; }
+.content{ max-width:560px; margin:0 auto; padding:18px 16px 100px; }
 
-.step-progress{ display:flex; gap:6px; margin-bottom:22px; }
+.step-progress{ display:flex; gap:5px; margin-bottom:18px; }
 .step-progress div{ flex:1; height:4px; border-radius:4px; background:var(--line); }
 .step-progress div.done{ background:var(--accent); }
+.step-label{ font-size:12px; color:var(--muted); font-weight:600; margin-bottom:16px; }
 
-.section-card{ background:var(--bg); border-radius:var(--r-lg); padding:20px; margin-bottom:16px; }
+.section-card{ background:var(--bg); border-radius:var(--r-lg); padding:18px; margin-bottom:14px; }
 .section-title{ font-size:14.5px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.section-title i{ color:var(--accent-ink); background:var(--accent); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.section-title i{ color:var(--accent-ink); background:var(--accent); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10.5px; }
 
-.input-group{ background:var(--surface); border-radius:var(--r-md); padding:12px 14px; margin-bottom:10px; }
-.input-group label{ font-size:11.5px; color:var(--muted); font-weight:600; display:block; margin-bottom:4px; }
-.input-group input, .input-group select{ font-size:15px; font-weight:500; }
-.input-row{ display:flex; gap:10px; }
-.input-row .input-group{ flex:1; }
+.input-group{ background:var(--surface); border-radius:var(--r-md); padding:11px 14px; margin-bottom:9px; }
+.input-group label{ font-size:11px; color:var(--muted); font-weight:600; display:block; margin-bottom:3px; }
+.input-group input, .input-group select, .input-group textarea{ font-size:14.5px; font-weight:500; }
+.input-row{ display:flex; gap:9px; }
+.input-row .input-group{ flex:1; min-width:0; }
+
+.check-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
+.check-item{ display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:10px; padding:10px 12px; font-size:13px; font-weight:500; cursor:pointer; }
+.check-item input{ width:auto; accent-color:var(--ink); }
+
+.radio-group{ display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
+.radio-card{ display:flex; align-items:center; gap:12px; background:var(--surface); border-radius:var(--r-md); padding:13px 14px; cursor:pointer; border:1.5px solid transparent; }
+.radio-card.selected{ border-color:var(--ink); background:var(--bg); }
+.radio-card input{ width:auto; }
+.radio-card .txt strong{ display:block; font-size:13.5px; }
+.radio-card .txt span{ font-size:11.5px; color:var(--muted); }
+
+.exp-row{ background:var(--surface); border-radius:var(--r-md); padding:12px; margin-bottom:8px; position:relative; }
+.exp-row .remove-exp{ position:absolute; top:8px; right:8px; color:var(--danger); font-size:13px; padding:4px; }
+.add-exp-btn{ display:flex; align-items:center; gap:8px; color:var(--muted); font-weight:600; font-size:13px; padding:8px 0; }
 
 .photo-upload{
   background:var(--surface); border:1.5px dashed var(--line); border-radius:var(--r-md);
-  padding:18px; text-align:center; cursor:pointer; margin-bottom:10px; position:relative; overflow:hidden;
+  padding:16px; text-align:center; cursor:pointer; margin-bottom:9px; position:relative; overflow:hidden; min-height:60px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.photo-upload i{ font-size:20px; color:var(--muted); margin-bottom:6px; display:block; }
-.photo-upload span{ font-size:12.5px; color:var(--muted); font-weight:600; }
+.photo-upload i{ font-size:18px; color:var(--muted); margin-bottom:5px; }
+.photo-upload span{ font-size:12px; color:var(--muted); font-weight:600; }
 .photo-upload img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.photo-upload.filled span{ display:none; }
+.photo-upload.filled i{ display:none; }
 .photo-upload input{ display:none; }
+.photo-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
 
-.submit-btn{
-  width:100%; background:var(--ink); color:#fff; padding:17px; border-radius:var(--r-md);
-  font-weight:700; font-size:15.5px; display:flex; align-items:center; justify-content:center; gap:10px;
-}
-.submit-btn:active{ transform:scale(0.98); }
+.conditional{ display:none; }
+.conditional.show{ display:block; }
+
+.nav-buttons{ display:flex; gap:10px; margin-top:6px; }
+.btn-nav{ flex:1; padding:15px; border-radius:var(--r-md); font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-back{ background:var(--surface); color:var(--ink); }
+.btn-next{ background:var(--ink); color:#fff; }
+.btn-next:disabled{ opacity:0.5; }
+
+.policy-box{ max-height:160px; overflow-y:auto; background:var(--surface); border-radius:var(--r-md); padding:14px; font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:12px; }
+.policy-check{ display:flex; align-items:flex-start; gap:10px; font-size:12.5px; font-weight:600; margin-bottom:16px; }
+.policy-check input{ width:auto; margin-top:2px; }
+
+.recap-row{ display:flex; justify-content:space-between; font-size:13.5px; padding:7px 0; border-bottom:1px solid var(--line); gap:10px; }
+.recap-row span:first-child{ color:var(--muted); }
+.recap-row span:last-child{ font-weight:600; text-align:right; }
+
+.submit-btn{ width:100%; background:var(--ink); color:#fff; padding:16px; border-radius:var(--r-md); font-weight:700; font-size:15px; display:flex; align-items:center; justify-content:center; gap:10px; }
 .submit-btn:disabled{ opacity:0.5; }
+.save-draft-link{ display:block; text-align:center; margin-top:14px; color:var(--muted); font-weight:600; font-size:13px; }
 
-.note{ font-size:12px; color:var(--muted); text-align:center; margin-top:14px; line-height:1.5; }
-
-/* ---- Écrans d'état (confirmation / déjà candidat) ---- */
 .status-screen{ display:none; text-align:center; padding:50px 24px; }
 .status-screen.show{ display:block; }
-.status-icon{
-  width:76px; height:76px; border-radius:50%; margin:0 auto 20px;
-  display:flex; align-items:center; justify-content:center; font-size:30px;
-}
+.status-icon{ width:76px; height:76px; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:30px; }
 .status-icon.pending{ background:#FDF3D8; color:#B8860B; }
-.status-icon.approved{ background:#DFF6E3; color:#1DAA5C; }
+.status-icon.approved{ background:#DFF6E3; color:var(--success); }
 .status-icon.rejected{ background:#FCE4E4; color:var(--danger); }
 .status-screen h2{ font-size:19px; font-weight:800; margin-bottom:10px; }
 .status-screen p{ font-size:13.5px; color:var(--muted); max-width:340px; margin:0 auto 20px; line-height:1.6; }
-.status-detail{ background:var(--bg); border-radius:var(--r-md); padding:14px; text-align:left; font-size:13px; color:var(--muted); margin-bottom:20px; }
+.status-actions{ display:flex; flex-direction:column; gap:10px; max-width:280px; margin:0 auto; }
 .link-btn{ color:var(--ink); font-weight:700; font-size:13.5px; text-decoration:underline; background:none; }
 
 #formScreen{ display:none; }
 #formScreen.show{ display:block; }
+.wizard-step{ display:none; }
+.wizard-step.active{ display:block; }
 </style>
 </head>
 <body>
@@ -92,111 +119,233 @@ input, textarea, select{ font-family:inherit; border:none; outline:none; backgro
 <div class="header">
   <div class="badge"><i class="fas fa-id-card"></i></div>
   <h1>Devenir chauffeur GNU DÉM</h1>
-  <p>Remplissez ce formulaire pour rejoindre notre réseau de chauffeurs. Votre dossier sera examiné avant validation.</p>
+  <div class="conn-status" id="connStatus"><span class="dot"></span><span>Connexion…</span></div>
 </div>
 
 <div class="content">
 
-  <!-- ===== FORMULAIRE ===== -->
-  <div id="formScreen">
-    <div class="step-progress"><div class="done"></div><div class="done"></div><div></div></div>
+  <div id="formScreen" class="show">
+    <div class="step-progress" id="stepProgress"></div>
+    <div class="step-label" id="stepLabel">Étape 1 sur 5 — Informations personnelles</div>
 
-    <div class="section-card">
-      <div class="section-title"><i class="fas fa-user"></i> Vos informations</div>
-      <div class="input-group">
-        <label>Nom complet</label>
-        <input type="text" id="fName" placeholder="Ex : Amadou Diallo">
-      </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label>Téléphone</label>
-          <input type="tel" id="fPhone" placeholder="+221 77 000 00 00">
+    <div class="wizard-step active" data-step="1">
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-user"></i> Identité</div>
+        <div class="input-row">
+          <div class="input-group"><label>Nom</label><input data-field="lastName" placeholder="Diallo"></div>
+          <div class="input-group"><label>Prénom</label><input data-field="firstName" placeholder="Amadou"></div>
         </div>
-        <div class="input-group">
-          <label>Email (optionnel)</label>
-          <input type="email" id="fEmail" placeholder="vous@email.com">
+        <div class="input-row">
+          <div class="input-group"><label>Date de naissance</label><input type="date" data-field="birthDate"></div>
+          <div class="input-group"><label>Lieu de naissance</label><input data-field="birthPlace" placeholder="Ville"></div>
         </div>
+        <div class="input-group"><label>Adresse actuelle (quartier, ville)</label><input data-field="address" placeholder="Ex : Sacré Cœur, Dakar"></div>
       </div>
-      <div class="input-group">
-        <label>Adresse de résidence</label>
-        <input type="text" id="fAddress" placeholder="Quartier, ville">
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-phone"></i> Contact</div>
+        <div class="input-row">
+          <div class="input-group"><label>Téléphone principal</label><input type="tel" data-field="phonePrimary" placeholder="+221 77 000 00 00"></div>
+          <div class="input-group"><label>Téléphone secondaire</label><input type="tel" data-field="phoneSecondary" placeholder="Optionnel"></div>
+        </div>
+        <div class="input-group"><label>Email</label><input type="email" data-field="email" placeholder="vous@email.com"></div>
       </div>
-      <div class="input-group">
-        <label>Numéro de pièce d'identité (CNI)</label>
-        <input type="text" id="fIdNumber" placeholder="Numéro sur la carte d'identité">
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-house-user"></i> Situation familiale</div>
+        <div class="input-group"><label>Situation familiale</label>
+          <select data-field="maritalStatus">
+            <option value="">Sélectionner…</option>
+            <option>Célibataire</option><option>Marié(e)</option><option>Divorcé(e)</option><option>Veuf(ve)</option>
+          </select>
+        </div>
+        <p style="font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 6px;">Personne à prévenir en cas d'urgence</p>
+        <div class="input-row">
+          <div class="input-group"><label>Nom</label><input data-field="emergencyName" placeholder="Nom complet"></div>
+          <div class="input-group"><label>Lien</label><input data-field="emergencyRelation" placeholder="Ex : Épouse, Frère"></div>
+        </div>
+        <div class="input-group"><label>Téléphone</label><input type="tel" data-field="emergencyPhone" placeholder="+221 77 000 00 00"></div>
       </div>
     </div>
 
-    <div class="section-card">
-      <div class="section-title"><i class="fas fa-car"></i> Votre véhicule</div>
-      <div class="input-row">
-        <div class="input-group">
-          <label>Marque</label>
-          <input type="text" id="fCarBrand" placeholder="Ex : Toyota">
-        </div>
-        <div class="input-group">
-          <label>Modèle</label>
-          <input type="text" id="fCarModel" placeholder="Ex : Corolla">
-        </div>
+    <div class="wizard-step" data-step="2">
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-briefcase"></i> Expérience de conduite</div>
+        <div class="input-group"><label>Années d'expérience (conduite professionnelle)</label><input type="number" min="0" data-field="yearsExperience" placeholder="Ex : 5"></div>
+        <p style="font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 8px;">Types de véhicules maîtrisés</p>
+        <div class="check-grid" id="vehicleTypesGrid"></div>
+        <div class="input-group" style="margin-top:8px;"><label>Zones géographiques maîtrisées</label><textarea rows="2" data-field="knownAreas" placeholder="Ex : Dakar centre, Plateau, Aéroport, Route de Rufisque…"></textarea></div>
       </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label>Année</label>
-          <input type="text" id="fCarYear" placeholder="Ex : 2019" inputmode="numeric">
-        </div>
-        <div class="input-group">
-          <label>Plaque d'immatriculation</label>
-          <input type="text" id="fCarPlate" placeholder="DK-1234-AB">
-        </div>
-      </div>
-      <div class="input-group">
-        <label>Numéro de permis de conduire</label>
-        <input type="text" id="fLicenseNumber" placeholder="Numéro du permis">
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-clock-rotate-left"></i> Expériences antérieures</div>
+        <div id="experiencesList"></div>
+        <button class="add-exp-btn" onclick="addExperienceRow()"><i class="fas fa-circle-plus"></i> Ajouter une expérience</button>
       </div>
     </div>
 
-    <div class="section-card">
-      <div class="section-title"><i class="fas fa-camera"></i> Photos (optionnel, mais recommandé)</div>
-      <label class="photo-upload" id="idPhotoLabel">
-        <i class="fas fa-id-badge"></i>
-        <span>Photo de la pièce d'identité</span>
-        <input type="file" accept="image/*" id="idPhotoInput">
-      </label>
-      <label class="photo-upload" id="carPhotoLabel">
-        <i class="fas fa-car-side"></i>
-        <span>Photo du véhicule</span>
-        <input type="file" accept="image/*" id="carPhotoInput">
-      </label>
+    <div class="wizard-step" data-step="3">
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-file-shield"></i> Pièce d'identité</div>
+        <div class="input-group"><label>Type de document</label>
+          <select data-field="idDocType"><option value="">Sélectionner…</option><option>Carte Nationale d'Identité</option><option>Passeport</option></select>
+        </div>
+        <label class="photo-upload" data-photo="idDocPhoto"><i class="fas fa-camera"></i><span>Photo de la pièce d'identité</span><input type="file" accept="image/*"></label>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-id-badge"></i> Permis de conduire</div>
+        <p style="font-size:12px; color:var(--muted); font-weight:600; margin-bottom:8px;">Catégories obtenues</p>
+        <div class="check-grid" id="licenseCategoriesGrid"></div>
+        <div class="input-group" style="margin-top:8px;"><label>Date de délivrance</label><input type="date" data-field="licenseIssueDate"></div>
+        <label class="photo-upload" data-photo="licensePhoto"><i class="fas fa-camera"></i><span>Photo du permis</span><input type="file" accept="image/*"></label>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-scale-balanced"></i> Extrait de casier judiciaire</div>
+        <div class="input-group"><label>Date d'établissement (moins de 3 mois)</label><input type="date" data-field="criminalRecordDate"></div>
+        <label class="photo-upload" data-photo="criminalRecordPhoto"><i class="fas fa-camera"></i><span>Photo du casier judiciaire</span><input type="file" accept="image/*"></label>
+      </div>
     </div>
 
-    <button class="submit-btn" id="submitBtn" onclick="submitApplication()">
-      <i class="fas fa-paper-plane"></i> Envoyer ma candidature
-    </button>
-    <p class="note">Vos informations sont transmises à notre équipe pour vérification. Vous serez informé dès que votre dossier est examiné.</p>
+    <div class="wizard-step" data-step="4">
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-car"></i> Véhicule</div>
+        <div class="radio-group" id="vehicleOptionGroup">
+          <label class="radio-card" data-value="own"><input type="radio" name="vehicleOption"><div class="txt"><strong>J'ai mon propre véhicule</strong><span>Je conduis ma voiture ou celle d'un proche</span></div></label>
+          <label class="radio-card" data-value="assigned"><input type="radio" name="vehicleOption"><div class="txt"><strong>Je souhaite qu'on m'attribue un véhicule</strong><span>Pas besoin de remplir la suite dans ce cas</span></div></label>
+        </div>
+      </div>
+
+      <div class="conditional" id="ownVehicleBlock">
+        <div class="section-card">
+          <div class="section-title"><i class="fas fa-user-check"></i> Propriété du véhicule</div>
+          <div class="radio-group" id="ownershipGroup">
+            <label class="radio-card" data-value="self"><input type="radio" name="ownership"><div class="txt"><strong>C'est ma propriété</strong></div></label>
+            <label class="radio-card" data-value="other"><input type="radio" name="ownership"><div class="txt"><strong>Appartient à quelqu'un d'autre</strong></div></label>
+          </div>
+
+          <div class="conditional" id="ownerFieldsBlock">
+            <div class="input-row">
+              <div class="input-group"><label>Nom du propriétaire</label><input data-field="ownerName"></div>
+              <div class="input-group"><label>Téléphone</label><input type="tel" data-field="ownerPhone"></div>
+            </div>
+            <div class="input-group"><label>Relation avec vous</label><input data-field="ownerRelation" placeholder="Ex : Père, ami, location"></div>
+            <label class="photo-upload" data-photo="procurationPhoto"><i class="fas fa-file-signature"></i><span>Procuration / contrat de location-vente</span><input type="file" accept="image/*"></label>
+          </div>
+
+          <label class="photo-upload" data-photo="carteGrisePhoto"><i class="fas fa-file-lines"></i><span>Carte grise (certificat d'immatriculation)</span><input type="file" accept="image/*"></label>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title"><i class="fas fa-clipboard-check"></i> Visite technique & assurance</div>
+          <div class="input-group"><label>Date de la visite technique</label><input type="date" data-field="visiteTechniqueDate"></div>
+          <label class="photo-upload" data-photo="visiteTechniquePhoto"><i class="fas fa-camera"></i><span>Photo de la visite technique</span><input type="file" accept="image/*"></label>
+          <div class="input-group" style="margin-top:4px;"><label>Date d'échéance de l'assurance TPV</label><input type="date" data-field="assuranceTPVDate"></div>
+          <label class="photo-upload" data-photo="assuranceTPVPhoto"><i class="fas fa-camera"></i><span>Attestation d'assurance transport public de voyageurs (TPV)</span><input type="file" accept="image/*"></label>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title"><i class="fas fa-car-side"></i> Caractéristiques du véhicule</div>
+          <div class="input-row">
+            <div class="input-group"><label>Marque</label><input data-field="carBrand" placeholder="Toyota"></div>
+            <div class="input-group"><label>Modèle</label><input data-field="carModel" placeholder="Corolla"></div>
+          </div>
+          <div class="input-row">
+            <div class="input-group"><label>Année</label><input data-field="carYear" inputmode="numeric" placeholder="2019"></div>
+            <div class="input-group"><label>Couleur</label><input data-field="carColor" placeholder="Gris"></div>
+          </div>
+          <div class="input-row">
+            <div class="input-group"><label>Plaque d'immatriculation</label><input data-field="carPlate" placeholder="DK-1234-AB"></div>
+            <div class="input-group"><label>État général</label>
+              <select data-field="carCondition"><option value="">Sélectionner…</option><option>Excellent</option><option>Bon</option><option>Moyen</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title"><i class="fas fa-camera-retro"></i> Photos du véhicule</div>
+          <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Extérieur sous tous les angles, puis intérieur — pour vérifier le standing en adéquation avec l'image de GNU DÉM.</p>
+          <div class="photo-grid">
+            <label class="photo-upload" data-photo="photoFront"><i class="fas fa-camera"></i><span>Face avant</span><input type="file" accept="image/*"></label>
+            <label class="photo-upload" data-photo="photoBack"><i class="fas fa-camera"></i><span>Face arrière</span><input type="file" accept="image/*"></label>
+            <label class="photo-upload" data-photo="photoLeft"><i class="fas fa-camera"></i><span>Côté gauche</span><input type="file" accept="image/*"></label>
+            <label class="photo-upload" data-photo="photoRight"><i class="fas fa-camera"></i><span>Côté droit</span><input type="file" accept="image/*"></label>
+            <label class="photo-upload" data-photo="photoInteriorFront"><i class="fas fa-camera"></i><span>Intérieur avant</span><input type="file" accept="image/*"></label>
+            <label class="photo-upload" data-photo="photoInteriorBack"><i class="fas fa-camera"></i><span>Intérieur arrière</span><input type="file" accept="image/*"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-step" data-step="5">
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-list-check"></i> Récapitulatif</div>
+        <div id="recapContainer"></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fas fa-shield-halved"></i> Politique de confidentialité</div>
+        <div class="policy-box">
+          <p style="margin-bottom:8px;"><strong>Utilisation de vos données.</strong> Les informations et documents fournis (identité, permis, véhicule, photos) sont utilisés exclusivement pour évaluer votre candidature et, en cas de validation, pour assurer votre activité de chauffeur sur GNU DÉM (identification, sécurité des passagers, contact en cas de besoin).</p>
+          <p style="margin-bottom:8px;"><strong>Conservation.</strong> Vos données sont conservées tant que votre compte chauffeur est actif, ou pendant la durée nécessaire à l'examen de votre dossier si celui-ci n'aboutit pas.</p>
+          <p style="margin-bottom:8px;"><strong>Partage.</strong> Vos informations ne sont partagées avec aucun tiers en dehors de l'équipe GNU DÉM chargée de la validation des chauffeurs.</p>
+          <p><strong>Vos droits.</strong> Vous pouvez à tout moment demander la modification ou la suppression de votre dossier tant qu'il n'a pas été validé, directement depuis cette page.</p>
+        </div>
+        <label class="policy-check">
+          <input type="checkbox" id="policyCheck">
+          <span>J'ai lu et j'accepte la politique de confidentialité, et je certifie que les informations fournies sont exactes.</span>
+        </label>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" disabled onclick="submitApplication()">
+        <i class="fas fa-paper-plane"></i> Envoyer ma candidature
+      </button>
+      <button class="save-draft-link" onclick="saveDraftToFirebase(true)">Enregistrer un brouillon et continuer plus tard</button>
+    </div>
+
+    <div class="nav-buttons" id="navButtons">
+      <button class="btn-nav btn-back" id="backBtn" onclick="goStep(-1)" style="visibility:hidden;"><i class="fas fa-arrow-left"></i> Retour</button>
+      <button class="btn-nav btn-next" id="nextBtn" onclick="goStep(1)">Suivant <i class="fas fa-arrow-right"></i></button>
+    </div>
   </div>
 
-  <!-- ===== ÉCRAN : CANDIDATURE ENVOYÉE / EN ATTENTE ===== -->
   <div class="status-screen" id="pendingScreen">
     <div class="status-icon pending"><i class="fas fa-hourglass-half"></i></div>
     <h2>Candidature en cours d'examen</h2>
-    <p>Votre dossier a bien été reçu. Notre équipe le vérifie et vous serez averti dès qu'une décision sera prise. Cela peut prendre un peu de temps.</p>
-    <a class="link-btn" href="MOR-TAXI-chauffeur.html">Vérifier mon statut</a>
+    <p>Votre dossier a bien été reçu. Notre équipe le vérifie et vous serez averti dès qu'une décision sera prise.</p>
+    <div class="status-actions">
+      <a class="link-btn" href="MOR-TAXI-chauffeur.html">Vérifier mon statut</a>
+      <button class="link-btn" onclick="editSubmittedApplication()">Modifier ma candidature</button>
+      <button class="link-btn" style="color:var(--danger);" onclick="deleteApplication()">Supprimer ma candidature</button>
+    </div>
   </div>
 
-  <!-- ===== ÉCRAN : DÉJÀ VALIDÉ ===== -->
+  <div class="status-screen" id="verifScreen">
+    <div class="status-icon pending"><i class="fas fa-magnifying-glass"></i></div>
+    <h2>Vérification approfondie en cours</h2>
+    <p>Votre dossier nécessite une vérification supplémentaire de notre part. Cela peut prendre un peu plus de temps que d'habitude — merci de votre patience.</p>
+    <div class="status-actions">
+      <a class="link-btn" href="MOR-TAXI-chauffeur.html">Vérifier mon statut</a>
+    </div>
+  </div>
+
   <div class="status-screen" id="approvedScreen">
     <div class="status-icon approved"><i class="fas fa-circle-check"></i></div>
-    <h2>Vous êtes déjà chauffeur validé !</h2>
-    <p>Votre compte a été approuvé. Vous pouvez accéder à votre espace chauffeur pour recevoir des courses.</p>
-    <a class="link-btn" href="MOR-TAXI-chauffeur.html">Ouvrir mon espace chauffeur</a>
+    <h2>Vous êtes chauffeur validé !</h2>
+    <p>Votre compte a été approuvé. Utilisez votre numéro de téléphone et le mot de passe qui vous a été communiqué pour vous connecter à votre espace chauffeur.</p>
+    <div class="status-actions">
+      <a class="link-btn" href="MOR-TAXI-chauffeur.html">Me connecter à mon espace chauffeur</a>
+    </div>
   </div>
 
-  <!-- ===== ÉCRAN : REJETÉ (permet de refaire une demande) ===== -->
   <div class="status-screen" id="rejectedScreen">
     <div class="status-icon rejected"><i class="fas fa-circle-xmark"></i></div>
     <h2>Candidature non retenue</h2>
     <p id="rejectionReasonText">Votre précédente candidature n'a pas été validée.</p>
-    <button class="submit-btn" style="max-width:280px; margin:0 auto;" onclick="showForm(true)">Soumettre une nouvelle candidature</button>
+    <div class="status-actions">
+      <button class="submit-btn" onclick="editSubmittedApplication()">Soumettre une nouvelle candidature</button>
+    </div>
   </div>
 
 </div>
@@ -216,17 +365,32 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// Même identifiant que celui utilisé par l'espace chauffeur (MOR-TAXI-chauffeur.html)
+database.ref('.info/connected').on('value', (snap) => {
+    const el = document.getElementById('connStatus');
+    if (snap.val() === true) {
+        el.className = 'conn-status ok';
+        el.innerHTML = '<span class="dot"></span><span>Connecté</span>';
+    } else {
+        el.className = 'conn-status err';
+        el.innerHTML = '<span class="dot"></span><span>Connexion au serveur en cours…</span>';
+    }
+});
+
 let driverId = localStorage.getItem('driver_id');
 if (!driverId) {
     driverId = 'driver_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
     localStorage.setItem('driver_id', driverId);
 }
 
-let idPhotoData = null;
-let carPhotoData = null;
+const DRAFT_KEY = 'candidature_draft_' + driverId;
+const VEHICLE_TYPES = ['Berline', 'Citadine', 'Utilitaire', 'Boîte manuelle', 'Boîte automatique'];
+const LICENSE_CATEGORIES = ['A', 'B', 'C', 'D', 'E'];
 
-function compressImageFile(file, maxSize = 700, quality = 0.7) {
+let formData = { experiences: [], vehicleTypes: [], licenseCategories: [] };
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+
+function compressImageFile(file, maxSize = 900, quality = 0.72) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         const reader = new FileReader();
@@ -245,91 +409,290 @@ function compressImageFile(file, maxSize = 700, quality = 0.7) {
     });
 }
 
-function wirePhotoInput(inputId, labelId, setter) {
-    document.getElementById(inputId).addEventListener('change', async (e) => {
+document.querySelectorAll('.photo-upload').forEach(label => {
+    const input = label.querySelector('input[type="file"]');
+    const key = label.dataset.photo;
+    input.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         try {
             const dataUrl = await compressImageFile(file);
-            setter(dataUrl);
-            const label = document.getElementById(labelId);
+            formData[key] = dataUrl;
+            label.querySelector('img')?.remove();
             const img = document.createElement('img');
             img.src = dataUrl;
-            label.querySelector('img')?.remove();
             label.appendChild(img);
+            label.classList.add('filled');
+            saveDraftLocal();
         } catch (err) {
             console.error('Erreur photo:', err);
             alert("Impossible de charger cette photo.");
         }
     });
-}
-wirePhotoInput('idPhotoInput', 'idPhotoLabel', (d) => idPhotoData = d);
-wirePhotoInput('carPhotoInput', 'carPhotoLabel', (d) => carPhotoData = d);
+});
 
-function showForm(prefill) {
-    document.getElementById('formScreen').classList.add('show');
-    document.getElementById('pendingScreen').classList.remove('show');
-    document.getElementById('approvedScreen').classList.remove('show');
-    document.getElementById('rejectedScreen').classList.remove('show');
+document.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('input', () => {
+        formData[el.dataset.field] = el.value;
+        saveDraftLocal();
+    });
+});
+
+function buildCheckGrid(containerId, values, formKey) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    values.forEach(v => {
+        const label = document.createElement('label');
+        label.className = 'check-item';
+        label.innerHTML = `<input type="checkbox" value="${v}"> ${v}`;
+        label.querySelector('input').addEventListener('change', (e) => {
+            formData[formKey] = formData[formKey] || [];
+            if (e.target.checked) formData[formKey].push(v);
+            else formData[formKey] = formData[formKey].filter(x => x !== v);
+            saveDraftLocal();
+        });
+        container.appendChild(label);
+    });
 }
-function showScreen(id) {
-    ['formScreen', 'pendingScreen', 'approvedScreen', 'rejectedScreen'].forEach(s =>
-        document.getElementById(s).classList.toggle('show', s === id)
-    );
+buildCheckGrid('vehicleTypesGrid', VEHICLE_TYPES, 'vehicleTypes');
+buildCheckGrid('licenseCategoriesGrid', LICENSE_CATEGORIES, 'licenseCategories');
+
+function addExperienceRow(prefill) {
+    const idx = formData.experiences.length;
+    formData.experiences.push(prefill || { company: '', role: '', startDate: '', endDate: '' });
+    renderExperiences();
+}
+function removeExperienceRow(idx) {
+    formData.experiences.splice(idx, 1);
+    renderExperiences();
+    saveDraftLocal();
+}
+function renderExperiences() {
+    const container = document.getElementById('experiencesList');
+    container.innerHTML = '';
+    formData.experiences.forEach((exp, i) => {
+        const row = document.createElement('div');
+        row.className = 'exp-row';
+        row.innerHTML = `
+            <button class="remove-exp" onclick="removeExperienceRow(${i})"><i class="fas fa-circle-xmark"></i></button>
+            <div class="input-row">
+                <div class="input-group"><label>Entreprise</label><input value="${exp.company}" oninput="formData.experiences[${i}].company=this.value; saveDraftLocal();"></div>
+                <div class="input-group"><label>Poste</label><input value="${exp.role}" oninput="formData.experiences[${i}].role=this.value; saveDraftLocal();"></div>
+            </div>
+            <div class="input-row">
+                <div class="input-group"><label>Début</label><input type="date" value="${exp.startDate}" oninput="formData.experiences[${i}].startDate=this.value; saveDraftLocal();"></div>
+                <div class="input-group"><label>Fin</label><input type="date" value="${exp.endDate}" oninput="formData.experiences[${i}].endDate=this.value; saveDraftLocal();"></div>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function wireRadioGroup(groupId, formKey, onChange) {
+    document.querySelectorAll(`#${groupId} .radio-card`).forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll(`#${groupId} .radio-card`).forEach(c => { c.classList.remove('selected'); c.querySelector('input').checked = false; });
+            card.classList.add('selected');
+            card.querySelector('input').checked = true;
+            formData[formKey] = card.dataset.value;
+            saveDraftLocal();
+            if (onChange) onChange(card.dataset.value);
+        });
+    });
+}
+wireRadioGroup('vehicleOptionGroup', 'vehicleOption', (val) => {
+    document.getElementById('ownVehicleBlock').classList.toggle('show', val === 'own');
+});
+wireRadioGroup('ownershipGroup', 'ownership', (val) => {
+    document.getElementById('ownerFieldsBlock').classList.toggle('show', val === 'other');
+});
+
+const STEP_LABELS = ['Informations personnelles', 'Profil professionnel', 'Documents obligatoires', 'Véhicule', 'Récapitulatif'];
+
+function renderStepProgress() {
+    const bar = document.getElementById('stepProgress');
+    bar.innerHTML = '';
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+        const seg = document.createElement('div');
+        if (i <= currentStep) seg.classList.add('done');
+        bar.appendChild(seg);
+    }
+    document.getElementById('stepLabel').innerText = `Étape ${currentStep} sur ${TOTAL_STEPS} — ${STEP_LABELS[currentStep - 1]}`;
+}
+
+function goStep(direction) {
+    if (direction > 0 && !validateStep(currentStep)) return;
+    const next = currentStep + direction;
+    if (next < 1 || next > TOTAL_STEPS) return;
+    document.querySelector(`.wizard-step[data-step="${currentStep}"]`).classList.remove('active');
+    currentStep = next;
+    document.querySelector(`.wizard-step[data-step="${currentStep}"]`).classList.add('active');
+    renderStepProgress();
+    document.getElementById('backBtn').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+    document.getElementById('navButtons').style.display = currentStep === TOTAL_STEPS ? 'none' : 'flex';
+    if (currentStep === TOTAL_STEPS) renderRecap();
+    window.scrollTo(0, 0);
+    saveDraftLocal();
+}
+
+function validateStep(step) {
+    if (step === 1) {
+        if (!formData.lastName || !formData.firstName || !formData.phonePrimary || !formData.address) {
+            alert("Merci de renseigner au minimum : nom, prénom, téléphone et adresse.");
+            return false;
+        }
+    }
+    if (step === 4 && formData.vehicleOption === 'own') {
+        if (!formData.carBrand || !formData.carModel || !formData.carPlate) {
+            alert("Merci de renseigner au minimum la marque, le modèle et la plaque du véhicule.");
+            return false;
+        }
+    }
+    if (step === 4 && !formData.vehicleOption) {
+        alert("Merci d'indiquer si vous avez votre propre véhicule ou souhaitez qu'on vous en attribue un.");
+        return false;
+    }
+    return true;
+}
+
+function renderRecap() {
+    const c = document.getElementById('recapContainer');
+    const rows = [
+        ['Nom complet', `${formData.firstName || ''} ${formData.lastName || ''}`],
+        ['Téléphone', formData.phonePrimary],
+        ['Adresse', formData.address],
+        ['Expérience', formData.yearsExperience ? formData.yearsExperience + ' ans' : '—'],
+        ['Véhicule', formData.vehicleOption === 'own' ? `${formData.carBrand || ''} ${formData.carModel || ''}`.trim() : (formData.vehicleOption === 'assigned' ? 'À attribuer par GNU DÉM' : '—')],
+        ['Plaque', formData.vehicleOption === 'own' ? (formData.carPlate || '—') : '—'],
+    ];
+    c.innerHTML = rows.map(([label, val]) => `<div class="recap-row"><span>${label}</span><span>${val || '—'}</span></div>`).join('');
+}
+
+function saveDraftLocal() {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+}
+function loadDraftLocal() {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    try {
+        const saved = JSON.parse(raw);
+        formData = { experiences: [], vehicleTypes: [], licenseCategories: [], ...saved };
+        applyFormDataToInputs();
+    } catch (e) { console.error('Erreur lecture brouillon local:', e); }
+}
+
+function applyFormDataToInputs() {
+    document.querySelectorAll('[data-field]').forEach(el => {
+        if (formData[el.dataset.field] !== undefined) el.value = formData[el.dataset.field];
+    });
+    document.querySelectorAll('.photo-upload').forEach(label => {
+        const key = label.dataset.photo;
+        if (formData[key]) {
+            const img = document.createElement('img');
+            img.src = formData[key];
+            label.querySelector('img')?.remove();
+            label.appendChild(img);
+            label.classList.add('filled');
+        }
+    });
+    (formData.vehicleTypes || []).forEach(v => {
+        document.querySelectorAll('#vehicleTypesGrid input').forEach(cb => { if (cb.value === v) cb.checked = true; });
+    });
+    (formData.licenseCategories || []).forEach(v => {
+        document.querySelectorAll('#licenseCategoriesGrid input').forEach(cb => { if (cb.value === v) cb.checked = true; });
+    });
+    if (formData.vehicleOption) {
+        const card = document.querySelector(`#vehicleOptionGroup .radio-card[data-value="${formData.vehicleOption}"]`);
+        if (card) { card.classList.add('selected'); card.querySelector('input').checked = true; document.getElementById('ownVehicleBlock').classList.toggle('show', formData.vehicleOption === 'own'); }
+    }
+    if (formData.ownership) {
+        const card = document.querySelector(`#ownershipGroup .radio-card[data-value="${formData.ownership}"]`);
+        if (card) { card.classList.add('selected'); card.querySelector('input').checked = true; document.getElementById('ownerFieldsBlock').classList.toggle('show', formData.ownership === 'other'); }
+    }
+    renderExperiences();
+}
+
+document.getElementById('policyCheck').addEventListener('change', (e) => {
+    document.getElementById('submitBtn').disabled = !e.target.checked;
+});
+
+async function saveDraftToFirebase(showConfirmation) {
+    try {
+        await database.ref('chauffeurs/' + driverId).update({
+            ...formData, driverId, status: 'brouillon', isDraft: true, updatedAt: Date.now()
+        });
+        if (showConfirmation) alert("Brouillon enregistré. Vous pouvez revenir compléter votre dossier plus tard depuis cet appareil.");
+    } catch (error) {
+        console.error("Erreur sauvegarde brouillon Firebase:", error);
+        if (showConfirmation) alert("Brouillon enregistré sur cet appareil (pas de connexion pour le synchroniser en ligne pour l'instant).");
+    }
 }
 
 async function submitApplication() {
-    const name = document.getElementById('fName').value.trim();
-    const phone = document.getElementById('fPhone').value.trim();
-    const address = document.getElementById('fAddress').value.trim();
-    const carBrand = document.getElementById('fCarBrand').value.trim();
-    const carModel = document.getElementById('fCarModel').value.trim();
-    const carPlate = document.getElementById('fCarPlate').value.trim();
-    const licenseNumber = document.getElementById('fLicenseNumber').value.trim();
-
-    if (!name || !phone || !address || !carBrand || !carModel || !carPlate || !licenseNumber) {
-        alert("Merci de remplir au minimum : nom, téléphone, adresse, véhicule (marque/modèle/plaque) et numéro de permis.");
-        return;
-    }
-
-    const application = {
-        driverId,
-        name, phone,
-        email: document.getElementById('fEmail').value.trim(),
-        address,
-        idNumber: document.getElementById('fIdNumber').value.trim(),
-        car: {
-            brand: carBrand, model: carModel,
-            year: document.getElementById('fCarYear').value.trim(),
-            plate: carPlate
-        },
-        licenseNumber,
-        idPhoto: idPhotoData,
-        carPhoto: carPhotoData,
-        status: 'en_attente',
-        submittedAt: Date.now()
-    };
+    if (!document.getElementById('policyCheck').checked) return;
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours…';
 
+    const application = {
+        ...formData, driverId, status: 'en_attente', isDraft: false,
+        submittedAt: Date.now(), updatedAt: Date.now(),
+        history: [{ action: 'soumise', at: Date.now() }]
+    };
+
     try {
         await database.ref('chauffeurs/' + driverId).set(application);
+        localStorage.removeItem(DRAFT_KEY);
         showScreen('pendingScreen');
     } catch (error) {
         console.error("Erreur envoi candidature:", error);
-        alert("Erreur lors de l'envoi. Vérifiez votre connexion et réessayez.");
+        alert("Erreur lors de l'envoi — vérifiez votre connexion internet et réessayez. (" + error.message + ")");
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer ma candidature';
     }
 }
 
-// Si ce navigateur a déjà un dossier, on affiche directement l'état correspondant
-// plutôt que de laisser repartir de zéro sans le savoir.
+function editSubmittedApplication() {
+    showScreen('formScreen');
+    currentStep = 1;
+    document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+    document.querySelector('.wizard-step[data-step="1"]').classList.add('active');
+    renderStepProgress();
+    document.getElementById('navButtons').style.display = 'flex';
+    document.getElementById('backBtn').style.visibility = 'hidden';
+}
+
+async function deleteApplication() {
+    if (!confirm("Voulez-vous vraiment supprimer votre candidature ? Cette action est irréversible.")) return;
+    try {
+        await database.ref('chauffeurs/' + driverId).remove();
+        localStorage.removeItem(DRAFT_KEY);
+        formData = { experiences: [], vehicleTypes: [], licenseCategories: [] };
+        editSubmittedApplication();
+    } catch (error) {
+        console.error("Erreur suppression:", error);
+        alert("Erreur lors de la suppression.");
+    }
+}
+
+function showScreen(id) {
+    ['formScreen', 'pendingScreen', 'verifScreen', 'approvedScreen', 'rejectedScreen'].forEach(s =>
+        document.getElementById(s).classList.toggle('show', s === id)
+    );
+}
+
+function withTimeout(promise, ms) {
+    return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
+
+renderStepProgress();
+renderExperiences();
+loadDraftLocal();
+
 (async function checkExistingApplication() {
     try {
-        const snap = await database.ref('chauffeurs/' + driverId).once('value');
+        const snap = await withTimeout(database.ref('chauffeurs/' + driverId).once('value'), 10000);
         const data = snap.val();
         if (!data) { showScreen('formScreen'); return; }
 
@@ -337,9 +700,14 @@ async function submitApplication() {
             showScreen('approvedScreen');
         } else if (data.status === 'rejete') {
             document.getElementById('rejectionReasonText').innerText = data.rejectionReason
-                ? `Motif indiqué : ${data.rejectionReason}`
-                : "Votre précédente candidature n'a pas été validée. Vous pouvez soumettre un nouveau dossier corrigé.";
+                ? `Motif indiqué : ${data.rejectionReason}` : "Votre précédente candidature n'a pas été validée.";
             showScreen('rejectedScreen');
+        } else if (data.status === 'verification_approfondie') {
+            showScreen('verifScreen');
+        } else if (data.status === 'brouillon') {
+            formData = { experiences: [], vehicleTypes: [], licenseCategories: [], ...data };
+            applyFormDataToInputs();
+            showScreen('formScreen');
         } else {
             showScreen('pendingScreen');
         }
