@@ -43,6 +43,8 @@ input, textarea{ font-family:inherit; border:none; outline:none; }
 .search-bar input{ background:none; color:#fff; font-size:13px; flex:1; }
 .search-bar input::placeholder{ color:rgba(255,255,255,0.5); }
 .search-bar i{ color:rgba(255,255,255,0.5); font-size:12px; }
+.search-clear{ color:rgba(255,255,255,0.6); font-size:12px; padding:4px; }
+.search-clear:hover{ color:#fff; }
 
 .tabs{ display:flex; gap:6px; padding:16px 20px 0; max-width:1000px; margin:0 auto; overflow-x:auto; }
 .tab{ flex:1; min-width:110px; text-align:center; padding:11px 6px; border-radius:var(--r-md); font-weight:700; font-size:12.5px; background:var(--bg); color:var(--muted); }
@@ -129,7 +131,7 @@ input, textarea{ font-family:inherit; border:none; outline:none; }
 <div id="app">
   <div class="topbar">
     <div class="topbar-title"><i class="fas fa-shield-halved"></i> Chauffeurs</div>
-    <div class="search-bar"><i class="fas fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Rechercher (nom, tél, plaque, email…)" oninput="renderList()"></div>
+    <div class="search-bar"><i class="fas fa-magnifying-glass"></i><input type="text" id="searchInput" name="admin-search-drivers" autocomplete="off" data-lpignore="true" data-1p-ignore placeholder="Rechercher (nom, tél, plaque, email…)" oninput="renderList()"><button class="search-clear" id="searchClearBtn" onclick="clearSearch()" style="display:none;"><i class="fas fa-xmark"></i></button></div>
     <button class="logout-link" onclick="location.reload()">Se déconnecter</button>
   </div>
 
@@ -164,6 +166,17 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+
+function withTimeout(promise, ms) {
+    return Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
+let everConnected = false;
+database.ref('.info/connected').on('value', (snap) => { if (snap.val() === true) everConnected = true; });
+setTimeout(() => {
+    if (!everConnected) {
+        alert("Impossible de se connecter au serveur.\n\nVérifiez votre connexion internet, et assurez-vous que cette page est ouverte via une adresse internet (https://) et non un fichier local (file://).");
+    }
+}, 8000);
 
 // ==================== ACCÈS (portail simple par code) ====================
 // NOTE IMPORTANTE : protection côté client uniquement, pratique pour un usage interne,
@@ -227,14 +240,25 @@ function matchesSearch(app, query) {
 function renderList() {
     const container = document.getElementById('list');
     const query = document.getElementById('searchInput').value.trim();
+    document.getElementById('searchClearBtn').style.display = query ? 'flex' : 'none';
+
     const items = allApplications.filter(a => a.status === currentTab && matchesSearch(a, query));
     container.innerHTML = '';
 
     if (items.length === 0) {
-        container.innerHTML = `<div class="empty-state">Aucun dossier ${query ? 'ne correspond à cette recherche' : 'dans cette catégorie'} pour l'instant.</div>`;
+        if (query) {
+            container.innerHTML = `<div class="empty-state">Aucun dossier ne correspond à la recherche "<strong>${query}</strong>".<br><button class="link-btn" style="margin-top:10px; text-decoration:underline; color:var(--ink); background:none; font-weight:700;" onclick="clearSearch()">Effacer la recherche</button></div>`;
+        } else {
+            container.innerHTML = `<div class="empty-state">Aucun dossier dans cette catégorie pour l'instant.</div>`;
+        }
         return;
     }
     items.forEach(app => container.appendChild(buildAppCard(app)));
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    renderList();
 }
 
 function fmtDate(ts) {
@@ -354,15 +378,15 @@ function toggleCardDetail(id, el) {
 }
 
 async function logHistory(id, action, note) {
-    const snap = await database.ref('chauffeurs/' + id + '/history').once('value');
+    const snap = await withTimeout(database.ref('chauffeurs/' + id + '/history').once('value'), 15000);
     const history = snap.val() || [];
     history.push({ action, at: Date.now(), note: note || null });
-    await database.ref('chauffeurs/' + id + '/history').set(history);
+    await withTimeout(database.ref('chauffeurs/' + id + '/history').set(history), 15000);
 }
 
 // ==================== MOT DE PASSE UNIQUE (8 chiffres, jamais répété) ====================
 async function generateUniquePassword() {
-    const usedSnap = await database.ref('mots_de_passe_utilises').once('value');
+    const usedSnap = await withTimeout(database.ref('mots_de_passe_utilises').once('value'), 15000);
     const used = usedSnap.val() || {};
     let candidate;
     let attempts = 0;
@@ -370,21 +394,27 @@ async function generateUniquePassword() {
         candidate = String(Math.floor(10000000 + Math.random() * 90000000)); // 8 chiffres
         attempts++;
     } while (used[candidate] && attempts < 50);
-    await database.ref('mots_de_passe_utilises/' + candidate).set(true);
+    await withTimeout(database.ref('mots_de_passe_utilises/' + candidate).set(true), 15000);
     return candidate;
+}
+
+function friendlyError(error) {
+    return error.message === 'timeout'
+        ? "Connexion au serveur impossible (délai dépassé). Vérifiez votre connexion internet."
+        : "Une erreur est survenue : " + error.message;
 }
 
 async function approveApplication(id) {
     try {
         const app = allApplications.find(a => a.id === id);
         const password = (app && app.password) ? app.password : await generateUniquePassword();
-        await database.ref('chauffeurs/' + id).update({
+        await withTimeout(database.ref('chauffeurs/' + id).update({
             status: 'valide', validatedAt: Date.now(), rejectionReason: null, password
-        });
+        }), 15000);
         await logHistory(id, 'validee');
     } catch (error) {
         console.error("Erreur validation:", error);
-        alert("Erreur lors de la validation.");
+        alert(friendlyError(error));
     }
 }
 
@@ -392,32 +422,32 @@ async function rejectApplication(id) {
     const reason = prompt("Motif du rejet (visible par le chauffeur) :", "");
     if (reason === null) return;
     try {
-        await database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: reason || null });
+        await withTimeout(database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: reason || null }), 15000);
         await logHistory(id, 'rejetee', reason);
     } catch (error) {
         console.error("Erreur rejet:", error);
-        alert("Erreur lors du rejet.");
+        alert(friendlyError(error));
     }
 }
 
 async function verifyApplication(id) {
     try {
-        await database.ref('chauffeurs/' + id).update({ status: 'verification_approfondie', updatedAt: Date.now() });
+        await withTimeout(database.ref('chauffeurs/' + id).update({ status: 'verification_approfondie', updatedAt: Date.now() }), 15000);
         await logHistory(id, 'mise en vérification approfondie');
     } catch (error) {
         console.error("Erreur:", error);
-        alert("Erreur lors du changement de statut.");
+        alert(friendlyError(error));
     }
 }
 
 async function revokeApplication(id) {
     if (!confirm("Révoquer l'accès de ce chauffeur ? Il ne pourra plus recevoir de courses tant qu'il n'est pas revalidé.")) return;
     try {
-        await database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: "Accès révoqué par l'administrateur" });
+        await withTimeout(database.ref('chauffeurs/' + id).update({ status: 'rejete', rejectedAt: Date.now(), rejectionReason: "Accès révoqué par l'administrateur" }), 15000);
         await logHistory(id, 'accès révoqué');
     } catch (error) {
         console.error("Erreur révocation:", error);
-        alert("Erreur lors de la révocation.");
+        alert(friendlyError(error));
     }
 }
 
@@ -482,4 +512,4 @@ function exportToPdf(id) {
 }
 </script>
 </body>
-</html>
+</html> 
