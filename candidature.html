@@ -365,9 +365,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+let everConnected = false;
 database.ref('.info/connected').on('value', (snap) => {
     const el = document.getElementById('connStatus');
     if (snap.val() === true) {
+        everConnected = true;
         el.className = 'conn-status ok';
         el.innerHTML = '<span class="dot"></span><span>Connecté</span>';
     } else {
@@ -375,6 +377,14 @@ database.ref('.info/connected').on('value', (snap) => {
         el.innerHTML = '<span class="dot"></span><span>Connexion au serveur en cours…</span>';
     }
 });
+
+// Si la connexion ne s'établit jamais après un délai raisonnable, le dire clairement
+// tout de suite plutôt que de laisser deviner en attendant d'appuyer sur "Envoyer".
+setTimeout(() => {
+    if (!everConnected) {
+        alert("Impossible de se connecter au serveur.\n\nVérifiez votre connexion internet. Si le problème persiste, assurez-vous que cette page est bien ouverte via une adresse internet (https://) et non un fichier ouvert directement sur l'appareil (file://) — cela empêche la connexion au serveur.");
+    }
+}, 8000);
 
 let driverId = localStorage.getItem('driver_id');
 if (!driverId) {
@@ -618,13 +628,13 @@ document.getElementById('policyCheck').addEventListener('change', (e) => {
 
 async function saveDraftToFirebase(showConfirmation) {
     try {
-        await database.ref('chauffeurs/' + driverId).update({
+        await withTimeout(database.ref('chauffeurs/' + driverId).update({
             ...formData, driverId, status: 'brouillon', isDraft: true, updatedAt: Date.now()
-        });
+        }), 15000);
         if (showConfirmation) alert("Brouillon enregistré. Vous pouvez revenir compléter votre dossier plus tard depuis cet appareil.");
     } catch (error) {
         console.error("Erreur sauvegarde brouillon Firebase:", error);
-        if (showConfirmation) alert("Brouillon enregistré sur cet appareil (pas de connexion pour le synchroniser en ligne pour l'instant).");
+        if (showConfirmation) alert("Brouillon enregistré sur cet appareil, mais impossible de le synchroniser en ligne (connexion au serveur indisponible).");
     }
 }
 
@@ -642,12 +652,18 @@ async function submitApplication() {
     };
 
     try {
-        await database.ref('chauffeurs/' + driverId).set(application);
+        // Limite de 15s : mieux vaut un message d'erreur clair qu'un bouton bloqué indéfiniment
+        // si la connexion au serveur ne s'établit pas.
+        await withTimeout(database.ref('chauffeurs/' + driverId).set(application), 15000);
         localStorage.removeItem(DRAFT_KEY);
         showScreen('pendingScreen');
     } catch (error) {
         console.error("Erreur envoi candidature:", error);
-        alert("Erreur lors de l'envoi — vérifiez votre connexion internet et réessayez. (" + error.message + ")");
+        if (error.message === 'timeout') {
+            alert("La connexion au serveur a échoué (délai dépassé). Vérifiez votre connexion internet, ou que cette page est bien ouverte via une adresse internet (https://) et non un fichier local, puis réessayez.");
+        } else {
+            alert("Erreur lors de l'envoi — vérifiez votre connexion internet et réessayez. (" + error.message + ")");
+        }
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer ma candidature';
     }
@@ -666,13 +682,13 @@ function editSubmittedApplication() {
 async function deleteApplication() {
     if (!confirm("Voulez-vous vraiment supprimer votre candidature ? Cette action est irréversible.")) return;
     try {
-        await database.ref('chauffeurs/' + driverId).remove();
+        await withTimeout(database.ref('chauffeurs/' + driverId).remove(), 15000);
         localStorage.removeItem(DRAFT_KEY);
         formData = { experiences: [], vehicleTypes: [], licenseCategories: [] };
         editSubmittedApplication();
     } catch (error) {
         console.error("Erreur suppression:", error);
-        alert("Erreur lors de la suppression.");
+        alert(error.message === 'timeout' ? "Connexion au serveur impossible. Réessayez." : "Erreur lors de la suppression.");
     }
 }
 
