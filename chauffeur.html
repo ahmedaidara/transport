@@ -44,6 +44,42 @@
         .status-badge .dot{ width:8px; height:8px; border-radius:50%; background:var(--accent); }
         .status-badge.offline .dot{ background:#666; }
 
+        .icon-btn-round{
+            width:38px; height:38px; border-radius:50%; background:var(--panel);
+            display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--ink);
+            box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        /* ---------- Page compte ---------- */
+        #accountPage{
+            position:fixed; inset:0; background:var(--bg); z-index:8000;
+            display:none; flex-direction:column;
+        }
+        #accountPage.show{ display:flex; }
+        .account-header{
+            display:flex; align-items:center; justify-content:space-between;
+            padding:calc(16px + env(safe-area-inset-top)) 18px 14px; border-bottom:1px solid var(--line);
+        }
+        .account-header h2{ font-size:16px; font-weight:700; }
+        .account-body{ flex:1; overflow-y:auto; padding:30px 24px; text-align:center; }
+        .account-avatar{
+            width:76px; height:76px; border-radius:50%; background:var(--ink); color:#fff;
+            display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700;
+            font-family:var(--font-display); margin:0 auto 14px;
+        }
+        .account-body h3{ font-size:19px; font-weight:800; margin-bottom:6px; }
+        .account-rating{ color:var(--warn, #B8860B); font-weight:700; font-size:13.5px; margin-bottom:20px; }
+        .account-info-row{
+            display:flex; align-items:center; gap:12px; text-align:left;
+            background:var(--panel-2); border-radius:12px; padding:13px 16px; margin-bottom:10px; font-size:14px; font-weight:600;
+        }
+        .account-info-row i{ color:var(--muted); width:16px; }
+
+        /* ---------- Modale confirmation en ligne / hors ligne ---------- */
+        .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:8500; display:none; align-items:center; justify-content:center; padding:20px; }
+        .modal-overlay.show{ display:flex; }
+        .modal-box{ background:var(--bg); border-radius:20px; padding:26px 22px; max-width:340px; width:100%; }
+
         .locate-btn{
             position:fixed; right:16px; z-index:900;
             width:46px; height:46px; border-radius:50%;
@@ -140,6 +176,11 @@
         .view-details-btn{ margin-top:14px; background:transparent; border:1.5px solid var(--accent-ink); padding:10px; border-radius:20px; width:100%; font-weight:600; font-size:13.5px; color:var(--accent-ink); }
 
         /* Course en cours */
+        .ride-phase-banner{
+            display:flex; align-items:center; gap:10px; background:var(--panel-2);
+            border-radius:14px; padding:12px 14px; margin-bottom:14px; font-weight:700; font-size:13.5px;
+        }
+        .ride-phase-banner i{ color:var(--accent-ink); background:var(--accent); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex:0 0 auto; }
         .active-ride-card{ display:flex; align-items:center; gap:14px; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--line); }
         .client-avatar{ width:52px; height:52px; border-radius:50%; background:var(--panel-2); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:20px; color:var(--accent); flex:0 0 auto; }
         .client-name{ font-size:15.5px; font-weight:700; }
@@ -203,22 +244,23 @@
 </head>
 <body>
 
-    <div id="loginGate" class="show">
+    <div id="loginGate">
         <div class="gate-box">
             <div class="icon none"><i class="fas fa-right-to-bracket"></i></div>
-            <h2>Connexion chauffeur</h2>
-            <p>Connectez-vous avec votre numéro de téléphone et le mot de passe communiqué par l'équipe GNU DÉM après validation de votre dossier.</p>
+            <h2 id="loginTitle">Connexion chauffeur</h2>
+            <p id="loginSubtitle">Connectez-vous avec votre numéro de téléphone et le mot de passe communiqué par l'équipe GNU DÉM après validation de votre dossier.</p>
             <div class="login-field">
                 <label>Numéro de téléphone</label>
                 <input type="tel" id="loginPhone" placeholder="+221 77 000 00 00">
             </div>
-            <div class="login-field">
+            <div class="login-field" id="loginPasswordGroup">
                 <label>Mot de passe (8 chiffres)</label>
                 <input type="password" inputmode="numeric" maxlength="8" id="loginPassword" placeholder="••••••••">
             </div>
             <button class="cta login-btn" onclick="attemptLogin()"><i class="fas fa-right-to-bracket"></i> Se connecter</button>
             <div class="login-error" id="loginError">Numéro ou mot de passe incorrect — ou candidature pas encore validée.</div>
             <div class="login-links">
+                <a href="#" id="switchAccountLink" onclick="forgetDeviceAndSwitchAccount(); return false;" style="display:none;">Ce n'est pas moi / se connecter avec un autre compte</a>
                 <a href="candidature.html">Pas encore chauffeur ? Faire ma candidature</a>
                 <a href="candidature.html">Vérifier le statut de ma candidature</a>
             </div>
@@ -235,8 +277,10 @@
 
     <div class="header">
         <div class="logo"><span style="color:#4C7A0F;">GN</span><span style="color:#B8860B;">U D</span><span style="color:#E5484D;">ÉM</span> <span style="font-size:12px; color:var(--muted); font-weight:600;">Chauffeur</span></div>
-        <div class="status-badge" id="statusBadge"><span class="dot"></span><span id="statusText">En ligne</span></div>
-
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="status-badge" id="statusBadge" onclick="askToggleStatus()" style="cursor:pointer;"><span class="dot"></span><span id="statusText">En ligne</span></div>
+            <button class="icon-btn-round" onclick="openAccountPage()" aria-label="Mon compte"><i class="fas fa-user"></i></button>
+        </div>
     </div>
 
     <button class="locate-btn" id="locateBtn" style="bottom:290px;" onclick="centerOnDriver()" aria-label="Ma position"><i class="fas fa-location-crosshairs"></i></button>
@@ -265,9 +309,37 @@
         <div class="orders-list" id="ordersContainer">
             <div class="no-orders">Chargement des commandes…</div>
         </div>
+    </div>
 
-        <button class="cta-btn online" id="toggleStatusBtn"><i class="fas fa-power-off"></i> Mettre hors ligne</button>
-        <button class="cta-btn offline" style="margin-top:8px;" onclick="logoutDriver()"><i class="fas fa-right-from-bracket"></i> Se déconnecter</button>
+    <!-- ===== Page Compte (icône en haut) ===== -->
+    <div id="accountPage">
+        <div class="account-header">
+            <button class="icon-btn-round" onclick="closeAccountPage()" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
+            <h2>Mon compte</h2>
+            <div style="width:38px;"></div>
+        </div>
+        <div class="account-body">
+            <div class="account-avatar" id="accountAvatarInitial">?</div>
+            <h3 id="accountName">Chauffeur</h3>
+            <div class="account-rating"><i class="fas fa-star"></i> <span id="accountRating">4.9</span></div>
+            <div class="account-info-row"><i class="fas fa-phone"></i><span id="accountPhone">—</span></div>
+            <div class="account-info-row"><i class="fas fa-car"></i><span id="accountCar">—</span></div>
+            <div class="account-info-row"><i class="fas fa-palette"></i><span id="accountCarColor">—</span></div>
+            <button class="cta-btn offline" style="margin-top:24px;" onclick="logoutDriver()"><i class="fas fa-right-from-bracket"></i> Se déconnecter</button>
+        </div>
+    </div>
+
+    <!-- ===== Confirmation mise en ligne / hors ligne ===== -->
+    <div class="modal-overlay" id="toggleStatusModal">
+        <div class="modal-box" style="text-align:center;">
+            <div class="icon none" style="margin:0 auto 16px;"><i class="fas fa-power-off"></i></div>
+            <h2 id="toggleStatusQuestion" style="margin-bottom:8px;">Voulez-vous vous mettre hors ligne ?</h2>
+            <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Vous ne recevrez plus de nouvelles courses tant que vous êtes hors ligne.</p>
+            <div style="display:flex; gap:10px;">
+                <button class="cta-btn offline" style="flex:1;" onclick="closeToggleStatusModal()">Annuler</button>
+                <button class="cta-btn online" style="flex:1;" onclick="confirmToggleStatus()">Confirmer</button>
+            </div>
+        </div>
     </div>
 
     <!-- ===================== BACKDROP ===================== -->
@@ -330,6 +402,7 @@
     <!-- ===================== COURSE EN COURS ===================== -->
     <div class="modal-sheet" id="activeRidePanel">
         <div class="modal-title-row"><h3>Course en cours</h3></div>
+        <div class="ride-phase-banner" id="ridePhaseBanner"><i class="fas fa-route"></i> <span id="ridePhaseText">En route vers le client</span></div>
         <div class="active-ride-card">
             <div class="client-avatar" id="clientAvatarInitial">C</div>
             <div>
@@ -357,7 +430,8 @@
             <div class="detail-label">Gain de la course</div>
             <div class="detail-value detail-price" id="ridePrice">-- F</div>
         </div>
-        <button class="cta-btn online" id="completeRideBtn">Course terminée</button>
+        <button class="cta-btn online" id="startRideBtn" onclick="startRideToDestination()" style="display:none;"><i class="fas fa-play"></i> Démarrer la course</button>
+        <button class="cta-btn online" id="completeRideBtn" style="display:none;">Course terminée</button>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -391,6 +465,8 @@
         let driverName = 'Chauffeur';
         let driverPhone = '';
         let driverCar = 'Véhicule non renseigné';
+        let driverCarColor = null;
+        let driverCarColorHex = '#8A8A8F'; // gris par défaut si aucune couleur connue
         let driverRating = 4.9;
 
         // ==================== VARIABLES ====================
@@ -418,14 +494,38 @@
             updateDashboard();
         }
 
+        // 12 couleurs standard (identiques à candidature.html et admin.html)
+        const CAR_COLOR_HEX = {
+            'Blanc': '#F5F5F5', 'Noir': '#0A0A0B', 'Gris': '#808080', 'Argent': '#C0C0C0',
+            'Rouge': '#E53935', 'Bleu': '#1E88E5', 'Vert': '#2E7D32', 'Jaune': '#FDD835',
+            'Orange': '#FB8C00', 'Marron': '#6D4C41', 'Beige': '#D2B48C', 'Violet': '#8E24AA'
+        };
+
+        // Icône "voiture vue de dessus", colorée selon la couleur réelle du véhicule du chauffeur
+        function buildDriverCarIcon(hex) {
+            const needsDarkOutline = ['#F5F5F5', '#FDD835', '#D2B48C', '#C0C0C0'].includes(hex);
+            const outline = needsDarkOutline ? '#0A0A0B' : '#fff';
+            return L.divIcon({
+                className: '', iconSize: [30, 30], iconAnchor: [15, 15],
+                html: `<div style="filter:drop-shadow(0 2px 5px rgba(0,0,0,0.4));">
+                         <svg viewBox="0 0 24 24" width="30" height="30" fill="${hex}" stroke="${outline}" stroke-width="1">
+                           <path d="M5 16.5V11a1 1 0 011-1h1.2l1.4-2.4A2 2 0 0110.2 6.5h3.6a2 2 0 011.6 1.1l1.4 2.4H18a1 1 0 011 1v5.5a1 1 0 01-1 1H6a1 1 0 01-1-1Z"/>
+                           <circle cx="8.3" cy="17" r="1.7" fill="#0A0A0B" stroke="none"/>
+                           <circle cx="15.7" cy="17" r="1.7" fill="#0A0A0B" stroke="none"/>
+                         </svg>
+                       </div>`
+            });
+        }
+
         const driverCoords = { lat: 14.7167, lng: -17.4677 };
         const driverMarker = L.marker([driverCoords.lat, driverCoords.lng], {
-            icon: L.divIcon({
-                className: '',
-                html: '<div style="background:#C8FA3E; width:20px; height:20px; border-radius:50%; border:3px solid #0A0A0B; box-shadow:0 0 12px rgba(200,250,62,0.7);"></div>',
-                iconSize: [20, 20], iconAnchor: [10, 10]
-            })
+            icon: buildDriverCarIcon(driverCarColorHex)
         }).addTo(map);
+
+        // Met à jour la couleur de l'icône une fois la vraie couleur du véhicule connue
+        function refreshDriverMarkerColor() {
+            driverMarker.setIcon(buildDriverCarIcon(driverCarColorHex));
+        }
 
         function centerOnDriver() {
             map.setView(driverMarker.getLatLng(), 15);
@@ -667,7 +767,8 @@
             document.getElementById('ridePrice').innerText = order.price + ' F' + (order.isShared ? ` (${order.pricePerPassenger} F × ${order.passengerCount})` : '');
             document.getElementById('activeRidePanel').classList.add('active');
             document.getElementById('modalBackdrop').classList.add('active');
-            if (order.pickup) drawRouteToPickup(order.pickup);
+            setRidePhase('to_pickup');
+            if (order.pickup) drawRouteToPoint(order.pickup);
             startSimulatedMovement();
         }
 
@@ -715,10 +816,10 @@
             }
         }
 
-        function drawRouteToPickup(pickup) {
-            if (!pickup) return;
+        function drawRouteToPoint(point) {
+            if (!point) return;
             const driverPos = driverMarker.getLatLng();
-            const url = `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${pickup.lng},${pickup.lat}?overview=full&geometries=geojson`;
+            const url = `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${point.lng},${point.lat}?overview=full&geometries=geojson`;
 
             fetch(url).then(res => res.json()).then(data => {
                 if (data.routes && data.routes[0]) {
@@ -726,7 +827,7 @@
                     rideRoute = L.geoJSON(data.routes[0].geometry, {
                         style: { color: '#C8FA3E', weight: 5 }
                     }).addTo(map);
-                    map.fitBounds(L.latLngBounds([driverPos, [pickup.lat, pickup.lng]]), { padding: [60, 60] });
+                    map.fitBounds(L.latLngBounds([driverPos, [point.lat, point.lng]]), { padding: [60, 60] });
                 }
             }).catch(err => console.error("Erreur itinéraire:", err));
         }
@@ -750,6 +851,7 @@
             closeActiveRidePanel();
             if (rideRoute) { map.removeLayer(rideRoute); rideRoute = null; }
             if (moveInterval) { clearInterval(moveInterval); moveInterval = null; }
+            ridePhase = 'to_pickup';
 
             showToast(`Course terminée ! +${currentOrder.price} F`);
             currentOrder = null;
@@ -804,33 +906,118 @@
         function toggleStatus() {
             isOnline = !isOnline;
             const badge = document.getElementById('statusBadge');
-            const btn = document.getElementById('toggleStatusBtn');
 
             if (isOnline) {
                 badge.classList.remove('offline');
                 document.getElementById('statusText').innerText = 'En ligne';
-                btn.innerHTML = '<i class="fas fa-power-off"></i> Mettre hors ligne';
-                btn.className = 'cta-btn online';
                 showToast("Vous êtes en ligne");
             } else {
                 badge.classList.add('offline');
                 document.getElementById('statusText').innerText = 'Hors ligne';
-                btn.innerHTML = '<i class="fas fa-power-off"></i> Mettre en ligne';
-                btn.className = 'cta-btn offline';
                 showToast("Vous êtes hors ligne");
             }
         }
 
+        // ==================== BASCULE EN LIGNE / HORS LIGNE (avec confirmation) ====================
+        function askToggleStatus() {
+            document.getElementById('toggleStatusQuestion').innerText = isOnline
+                ? 'Voulez-vous vous mettre hors ligne ?' : 'Voulez-vous vous mettre en ligne ?';
+            document.getElementById('toggleStatusModal').classList.add('show');
+        }
+        function closeToggleStatusModal() {
+            document.getElementById('toggleStatusModal').classList.remove('show');
+        }
+        function confirmToggleStatus() {
+            toggleStatus();
+            closeToggleStatusModal();
+        }
+
+        // ==================== PAGE COMPTE ====================
+        function openAccountPage() {
+            document.getElementById('accountAvatarInitial').innerText = (driverName || 'C').charAt(0).toUpperCase();
+            document.getElementById('accountName').innerText = driverName || 'Chauffeur';
+            document.getElementById('accountRating').innerText = driverRating || '4.9';
+            document.getElementById('accountPhone').innerText = driverPhone || 'Non renseigné';
+            document.getElementById('accountCar').innerText = driverCar || 'Non renseigné';
+            document.getElementById('accountCarColor').innerText = driverCarColor || 'Non renseignée';
+            document.getElementById('accountPage').classList.add('show');
+        }
+        function closeAccountPage() {
+            document.getElementById('accountPage').classList.remove('show');
+        }
+
         // ==================== MOUVEMENT SIMULÉ VERS LE CLIENT ====================
+        // ==================== PHASES DE LA COURSE (aller chercher → arrivé → vers la destination) ====================
+        let ridePhase = 'to_pickup'; // 'to_pickup' | 'arrived' | 'in_progress'
+        const ARRIVAL_THRESHOLD_KM = 0.05; // 50 mètres
+
+        function distanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function setRidePhase(phase) {
+            ridePhase = phase;
+            const banner = document.getElementById('ridePhaseText');
+            const startBtn = document.getElementById('startRideBtn');
+            const doneBtn = document.getElementById('completeRideBtn');
+
+            if (phase === 'to_pickup') {
+                banner.innerText = 'En route vers le client';
+                startBtn.style.display = 'none';
+                doneBtn.style.display = 'none';
+            } else if (phase === 'arrived') {
+                banner.innerText = 'Vous êtes arrivé chez le client';
+                startBtn.style.display = 'flex';
+                doneBtn.style.display = 'none';
+                showToast('Vous êtes arrivé chez le client');
+            } else if (phase === 'in_progress') {
+                banner.innerText = 'En route vers la destination';
+                startBtn.style.display = 'none';
+                doneBtn.style.display = 'flex';
+            }
+        }
+
+        // Bouton "Démarrer la course" : le client est monté, on part vers la destination
+        function startRideToDestination() {
+            if (!currentOrder) return;
+            setRidePhase('in_progress');
+            drawRouteToPoint(currentOrder.destination);
+        }
+
         function startSimulatedMovement() {
             if (moveInterval) clearInterval(moveInterval);
             moveInterval = setInterval(() => {
-                if (currentOrder && currentOrder.pickup) {
+                if (!currentOrder) return;
+
+                if (ridePhase === 'to_pickup' && currentOrder.pickup) {
                     const driverPos = driverMarker.getLatLng();
-                    const newLat = driverPos.lat + (currentOrder.pickup.lat - driverPos.lat) * 0.08;
-                    const newLng = driverPos.lng + (currentOrder.pickup.lng - driverPos.lng) * 0.08;
+                    const dist = distanceKm(driverPos.lat, driverPos.lng, currentOrder.pickup.lat, currentOrder.pickup.lng);
+                    if (dist <= ARRIVAL_THRESHOLD_KM) {
+                        driverMarker.setLatLng([currentOrder.pickup.lat, currentOrder.pickup.lng]);
+                        setRidePhase('arrived');
+                        return;
+                    }
+                    const newLat = driverPos.lat + (currentOrder.pickup.lat - driverPos.lat) * 0.25;
+                    const newLng = driverPos.lng + (currentOrder.pickup.lng - driverPos.lng) * 0.25;
                     driverMarker.setLatLng([newLat, newLng]);
-                    drawRouteToPickup(currentOrder.pickup);
+                    drawRouteToPoint(currentOrder.pickup);
+                } else if (ridePhase === 'in_progress' && currentOrder.destination) {
+                    const driverPos = driverMarker.getLatLng();
+                    const dest = currentOrder.destination;
+                    const dist = distanceKm(driverPos.lat, driverPos.lng, dest.lat, dest.lng);
+                    if (dist <= ARRIVAL_THRESHOLD_KM) {
+                        driverMarker.setLatLng([dest.lat, dest.lng]);
+                        clearInterval(moveInterval); moveInterval = null;
+                        showToast("Vous êtes arrivé à destination — appuyez sur \"Course terminée\"");
+                        return;
+                    }
+                    const newLat = driverPos.lat + (dest.lat - driverPos.lat) * 0.25;
+                    const newLng = driverPos.lng + (dest.lng - driverPos.lng) * 0.25;
+                    driverMarker.setLatLng([newLat, newLng]);
+                    drawRouteToPoint(dest);
                 }
             }, 5000);
         }
@@ -839,7 +1026,6 @@
         document.getElementById('acceptBtn').addEventListener('click', acceptFromAlert);
         document.getElementById('declineBtn').addEventListener('click', declineFromAlert);
         document.getElementById('viewDetailsBtn').addEventListener('click', viewDetailsFromAlert);
-        document.getElementById('toggleStatusBtn').addEventListener('click', toggleStatus);
         document.getElementById('completeRideBtn').addEventListener('click', completeRide);
         document.getElementById('acceptFromDetailBtn').addEventListener('click', acceptFromDetail);
 
@@ -908,7 +1094,11 @@
                     driverPhone = data.phonePrimary || data.phone || driverPhone;
                     driverCar = (data.carBrand || data.carModel)
                         ? `${data.carBrand || ''} ${data.carModel || ''}`.trim()
-                        : (data.car ? `${data.car.brand || ''} ${data.car.model || ''}`.trim() || driverCar : driverCar);
+                        : (data.assignedVehicle ? `${data.assignedVehicle.brand || ''} ${data.assignedVehicle.model || ''}`.trim()
+                        : (data.car ? `${data.car.brand || ''} ${data.car.model || ''}`.trim() || driverCar : driverCar));
+                    driverCarColor = data.carColor || (data.assignedVehicle && data.assignedVehicle.color) || null;
+                    driverCarColorHex = CAR_COLOR_HEX[driverCarColor] || driverCarColorHex;
+                    refreshDriverMarkerColor();
                     document.getElementById('accessGate').classList.remove('show');
                     document.getElementById('loginGate').classList.remove('show');
                     loadEarningsForCurrentDriver();
@@ -934,14 +1124,26 @@
             return (p || '').replace(/\D/g, '').slice(-9); // 9 derniers chiffres, insensible au format
         }
 
+        // "Cet appareil se souvient de vous" : après une 1ère connexion réussie (téléphone +
+        // mot de passe), on retient le téléphone sur CET appareil. Les fois suivantes,
+        // le mot de passe n'est plus redemandé — seul le téléphone suffit à se reconnecter.
+        // Se déconnecter n'oublie pas l'appareil : il faut "Se connecter avec un autre compte"
+        // pour repartir sur une connexion complète (utile sur un appareil partagé).
+        const REMEMBERED_PHONE_KEY = 'driver_remembered_phone';
+
         async function attemptLogin() {
             const phone = document.getElementById('loginPhone').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
             const errorEl = document.getElementById('loginError');
             errorEl.classList.remove('show');
 
-            if (!phone || !password) {
-                errorEl.innerText = "Merci de renseigner votre téléphone et votre mot de passe.";
+            const rememberedPhone = localStorage.getItem(REMEMBERED_PHONE_KEY);
+            const simplifiedMode = !!rememberedPhone && document.getElementById('loginPasswordGroup').style.display === 'none';
+
+            if (!phone || (!simplifiedMode && !password)) {
+                errorEl.innerText = simplifiedMode
+                    ? "Merci de renseigner votre numéro de téléphone."
+                    : "Merci de renseigner votre téléphone et votre mot de passe.";
                 errorEl.classList.add('show');
                 return;
             }
@@ -957,15 +1159,20 @@
                 const matchId = Object.keys(all).find(id => {
                     const d = all[id];
                     const dPhone = normalizePhone(d.phonePrimary || d.phone);
-                    return dPhone && dPhone === normalizedInput && d.password === password && d.status === 'valide';
+                    if (!dPhone || dPhone !== normalizedInput || d.status !== 'valide') return false;
+                    // En mode simplifié (appareil déjà reconnu), le mot de passe n'est plus exigé.
+                    return simplifiedMode ? true : d.password === password;
                 });
 
                 if (matchId) {
                     driverId = matchId;
                     localStorage.setItem('driver_id', driverId);
+                    localStorage.setItem(REMEMBERED_PHONE_KEY, normalizedInput);
                     await checkDriverStatus();
                 } else {
-                    errorEl.innerText = "Numéro ou mot de passe incorrect — ou candidature pas encore validée.";
+                    errorEl.innerText = simplifiedMode
+                        ? "Numéro non reconnu sur cet appareil, ou candidature plus valide."
+                        : "Numéro ou mot de passe incorrect — ou candidature pas encore validée.";
                     errorEl.classList.add('show');
                 }
             } catch (error) {
@@ -974,7 +1181,40 @@
                 errorEl.classList.add('show');
             }
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Se connecter';
+            btn.innerHTML = simplifiedMode
+                ? '<i class="fas fa-right-to-bracket"></i> Se connecter'
+                : '<i class="fas fa-right-to-bracket"></i> Se connecter';
+        }
+
+        // Affiche l'écran de connexion simplifié (téléphone seul) si cet appareil a déjà
+        // été reconnu une fois, sinon l'écran complet (téléphone + mot de passe).
+        function showLoginScreen() {
+            const rememberedPhone = localStorage.getItem(REMEMBERED_PHONE_KEY);
+            const passwordGroup = document.getElementById('loginPasswordGroup');
+            const switchLink = document.getElementById('switchAccountLink');
+
+            if (rememberedPhone) {
+                document.getElementById('loginPhone').value = '';
+                passwordGroup.style.display = 'none';
+                document.getElementById('loginTitle').innerText = 'Content de vous revoir';
+                document.getElementById('loginSubtitle').innerText = "Cet appareil vous reconnaît — confirmez juste votre numéro de téléphone pour continuer.";
+                switchLink.style.display = 'block';
+            } else {
+                passwordGroup.style.display = 'block';
+                document.getElementById('loginTitle').innerText = 'Connexion chauffeur';
+                document.getElementById('loginSubtitle').innerText = "Connectez-vous avec votre numéro de téléphone et le mot de passe communiqué par l'équipe GNU DÉM après validation de votre dossier.";
+                switchLink.style.display = 'none';
+            }
+            document.getElementById('loginGate').classList.add('show');
+        }
+
+        // "Ce n'est pas moi / se connecter avec un autre compte" : repasse en connexion complète
+        function forgetDeviceAndSwitchAccount() {
+            localStorage.removeItem(REMEMBERED_PHONE_KEY);
+            document.getElementById('loginPasswordGroup').style.display = 'block';
+            document.getElementById('switchAccountLink').style.display = 'none';
+            document.getElementById('loginTitle').innerText = 'Connexion chauffeur';
+            document.getElementById('loginSubtitle').innerText = "Connectez-vous avec votre numéro de téléphone et le mot de passe communiqué par l'équipe GNU DÉM après validation de votre dossier.";
         }
 
         function logoutDriver() {
@@ -987,7 +1227,7 @@
         if (driverId) {
             checkDriverStatus();
         } else {
-            document.getElementById('loginGate').classList.add('show');
+            showLoginScreen();
         }
 
         console.log("🆔 Chauffeur ID:", driverId);
