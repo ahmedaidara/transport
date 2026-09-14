@@ -52,6 +52,13 @@ input, textarea, select{ font-family:inherit; border:none; outline:none; backgro
 .check-item{ display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:10px; padding:10px 12px; font-size:13px; font-weight:500; cursor:pointer; }
 .check-item input{ width:auto; accent-color:var(--ink); }
 
+.color-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; }
+.color-swatch{ display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; }
+.color-swatch .dot{ width:36px; height:36px; border-radius:50%; border:2px solid var(--line); box-shadow:inset 0 0 0 2px rgba(255,255,255,0.6); }
+.color-swatch.selected .dot{ border-color:var(--ink); box-shadow:0 0 0 2px var(--ink); }
+.color-swatch span{ font-size:10.5px; color:var(--muted); font-weight:600; text-align:center; }
+.color-swatch.selected span{ color:var(--ink); }
+
 .radio-group{ display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
 .radio-card{ display:flex; align-items:center; gap:12px; background:var(--surface); border-radius:var(--r-md); padding:13px 14px; cursor:pointer; border:1.5px solid transparent; }
 .radio-card.selected{ border-color:var(--ink); background:var(--bg); }
@@ -186,6 +193,12 @@ input, textarea, select{ font-family:inherit; border:none; outline:none; backgro
 
     <div class="wizard-step" data-step="3">
       <div class="section-card">
+        <div class="section-title"><i class="fas fa-camera-retro"></i> Photo personnelle</div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">Une photo de vous prise en direct (pas depuis la galerie), pour vous identifier facilement.</p>
+        <label class="photo-upload" data-photo="selfiePhoto"><i class="fas fa-camera"></i><span>Prendre ma photo</span><input type="file" accept="image/*" capture="user"></label>
+      </div>
+
+      <div class="section-card">
         <div class="section-title"><i class="fas fa-file-shield"></i> Pièce d'identité</div>
         <div class="input-group"><label>Type de document</label>
           <select data-field="idDocType"><option value="">Sélectionner…</option><option>Carte Nationale d'Identité</option><option>Passeport</option></select>
@@ -253,13 +266,12 @@ input, textarea, select{ font-family:inherit; border:none; outline:none; backgro
           </div>
           <div class="input-row">
             <div class="input-group"><label>Année</label><input data-field="carYear" inputmode="numeric" placeholder="2019"></div>
-            <div class="input-group"><label>Couleur</label><input data-field="carColor" placeholder="Gris"></div>
-          </div>
-          <div class="input-row">
             <div class="input-group"><label>Plaque d'immatriculation</label><input data-field="carPlate" placeholder="DK-1234-AB"></div>
-            <div class="input-group"><label>État général</label>
-              <select data-field="carCondition"><option value="">Sélectionner…</option><option>Excellent</option><option>Bon</option><option>Moyen</option></select>
-            </div>
+          </div>
+          <p style="font-size:12px; color:var(--muted); font-weight:600; margin:4px 0 8px;">Couleur du véhicule</p>
+          <div class="color-grid" id="carColorGrid"></div>
+          <div class="input-group" style="margin-top:10px;"><label>État général</label>
+            <select data-field="carCondition"><option value="">Sélectionner…</option><option>Excellent</option><option>Bon</option><option>Moyen</option></select>
           </div>
         </div>
 
@@ -396,6 +408,16 @@ const DRAFT_KEY = 'candidature_draft_' + driverId;
 const VEHICLE_TYPES = ['Berline', 'Citadine', 'Utilitaire', 'Boîte manuelle', 'Boîte automatique'];
 const LICENSE_CATEGORIES = ['A', 'B', 'C', 'D', 'E'];
 
+// 12 couleurs standard, utilisées à la fois ici, dans l'admin et pour la voiture sur la carte
+const CAR_COLORS = [
+    { name: 'Blanc', hex: '#F5F5F5' }, { name: 'Noir', hex: '#0A0A0B' },
+    { name: 'Gris', hex: '#808080' }, { name: 'Argent', hex: '#C0C0C0' },
+    { name: 'Rouge', hex: '#E53935' }, { name: 'Bleu', hex: '#1E88E5' },
+    { name: 'Vert', hex: '#2E7D32' }, { name: 'Jaune', hex: '#FDD835' },
+    { name: 'Orange', hex: '#FB8C00' }, { name: 'Marron', hex: '#6D4C41' },
+    { name: 'Beige', hex: '#D2B48C' }, { name: 'Violet', hex: '#8E24AA' }
+];
+
 let formData = { experiences: [], vehicleTypes: [], licenseCategories: [] };
 let currentStep = 1;
 const TOTAL_STEPS = 5;
@@ -466,6 +488,27 @@ function buildCheckGrid(containerId, values, formKey) {
 }
 buildCheckGrid('vehicleTypesGrid', VEHICLE_TYPES, 'vehicleTypes');
 buildCheckGrid('licenseCategoriesGrid', LICENSE_CATEGORIES, 'licenseCategories');
+
+// ==================== COULEUR DU VÉHICULE (sélection unique parmi 12) ====================
+function buildColorGrid() {
+    const container = document.getElementById('carColorGrid');
+    container.innerHTML = '';
+    CAR_COLORS.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'color-swatch';
+        el.dataset.hex = c.hex;
+        el.innerHTML = `<div class="dot" style="background:${c.hex};"></div><span>${c.name}</span>`;
+        el.onclick = () => {
+            document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+            el.classList.add('selected');
+            formData.carColor = c.name;
+            formData.carColorHex = c.hex;
+            saveDraftLocal();
+        };
+        container.appendChild(el);
+    });
+}
+buildColorGrid();
 
 function addExperienceRow(prefill) {
     const idx = formData.experiences.length;
@@ -611,6 +654,11 @@ function applyFormDataToInputs() {
     (formData.licenseCategories || []).forEach(v => {
         document.querySelectorAll('#licenseCategoriesGrid input').forEach(cb => { if (cb.value === v) cb.checked = true; });
     });
+    if (formData.carColor) {
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.classList.toggle('selected', s.querySelector('span').innerText === formData.carColor);
+        });
+    }
     if (formData.vehicleOption) {
         const card = document.querySelector(`#vehicleOptionGroup .radio-card[data-value="${formData.vehicleOption}"]`);
         if (card) { card.classList.add('selected'); card.querySelector('input').checked = true; document.getElementById('ownVehicleBlock').classList.toggle('show', formData.vehicleOption === 'own'); }
